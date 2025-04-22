@@ -66,4 +66,29 @@
     <string name="already_account_login">Déjà un compte ? Se connecter</string>
     <string name="save_contact">save</string>
 
+    <!-- Gestion des produits -->
+    <string name="products">Produits</string>
+    <string name="product_management">Gestion de Stock</string>
+    <string name="add_product">Ajouter un produit</string>
+    <string name="create_product">Créer un produit</string>
+    <string name="edit_product">Modifier le produit</string>
+    <string name="delete_product">Supprimer le produit</string>
+    <string name="product_reference">Référence produit</string>
+    <string name="product_label">Libellé</string>
+    <string name="product_name">Nom du produit</string>
+    <string name="product_description">Description</string>
+    <string name="product_barcode">Code-barres</string>
+    <string name="product_quantity">Quantité</string>
+    <string name="product_photo">Photo du produit</string>
+    <string name="add_photo">Ajouter une photo</string>
+    <string name="change_photo">Changer la photo</string>
+    <string name="scan_barcode">Scanner code-barres</string>
+    <string name="no_products_found">Aucun produit trouvé</string>
+    <string name="product_created">Produit créé avec succès</string>
+    <string name="product_updated">Produit mis à jour avec succès</string>
+    <string name="product_deleted">Produit supprimé avec succès</string>
+    <string name="stock_format">Stock: %d</string>
+    <string name="search_products">Rechercher des produits</string>
+    <string name="search_products_hint">Référence, nom, libellé ou code-barres</string>
+    <string name="welcome_message">Bienvenue,</string>
 </resources>

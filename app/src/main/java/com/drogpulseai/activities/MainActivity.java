@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
             intent.putExtra("mode", "create");
             startActivity(intent);
         });
+
     }
 
     /**
@@ -178,6 +180,10 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         if (id == R.id.action_search) {
             // Naviguer vers l'écran de recherche
             startActivity(new Intent(MainActivity.this, ContactSearchActivity.class));
+            return true;
+        } else if (id == R.id.action_products) {
+            // Naviguer vers l'écran de gestion des produits
+            startActivity(new Intent(MainActivity.this, ProductListActivity.class));
             return true;
         } else if (id == R.id.action_logout) {
             // Déconnexion

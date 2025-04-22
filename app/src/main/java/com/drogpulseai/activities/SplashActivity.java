@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.drogpulseai.R;
+import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.ConnectionChecker;
 import com.drogpulseai.utils.SessionManager;
 
@@ -24,7 +25,10 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Vérifier la connexion au serveur
+        //run configuration
+       Config.init(this);
+
+       // Vérifier la connexion au serveur
         connectionChecker = new ConnectionChecker(this, new ConnectionChecker.OnConnectionCheckListener() {
             @Override
             public void onConnectionSuccess() {
