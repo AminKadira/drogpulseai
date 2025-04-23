@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -16,6 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.appuser.LoginActivity;
+import com.drogpulseai.activities.contacts.ContactFormActivity;
+import com.drogpulseai.activities.contacts.ContactSearchActivity;
+import com.drogpulseai.activities.products.ProductListActivity;
 import com.drogpulseai.adapters.ContactAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;

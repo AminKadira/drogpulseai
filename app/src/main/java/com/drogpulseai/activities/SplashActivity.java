@@ -11,9 +11,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.ConnectionChecker;
-import com.drogpulseai.utils.SessionManager;
 
 public class SplashActivity extends AppCompatActivity {
     ConnectionChecker connectionChecker;

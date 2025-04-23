@@ -1,11 +1,7 @@
 package com.drogpulseai.utils;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.widget.Toast;
 
-import com.drogpulseai.activities.ContactFormActivity;
-import com.drogpulseai.activities.SplashActivity;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 
