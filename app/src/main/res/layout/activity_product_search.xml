@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".activities.ProductSearchActivity">
+    tools:context=".activities.products.ProductSearchActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

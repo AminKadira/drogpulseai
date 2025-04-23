@@ -1,4 +1,4 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.products;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.adapters.ProductAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;

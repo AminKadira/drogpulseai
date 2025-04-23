@@ -1,4 +1,4 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.contacts;
 
 import android.content.Intent;
 import android.os.Bundle;

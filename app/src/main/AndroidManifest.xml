@@ -20,7 +20,7 @@
 
         <!-- Page -->
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.appuser.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,38 +34,38 @@
             android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar" />
         <!-- Page de création de compte -->
         <activity
-            android:name=".activities.RegisterActivity"
+            android:name=".activities.appuser.RegisterActivity"
             android:exported="false"
-            android:parentActivityName=".activities.LoginActivity" />
+            android:parentActivityName=".activities.appuser.LoginActivity" />
         <!-- Page d'accueil avec liste des contacts -->
         <activity
             android:name=".activities.MainActivity"
             android:exported="false" />
         <!-- Page création/modification contact -->
         <activity
-            android:name=".activities.ContactFormActivity"
+            android:name=".activities.contacts.ContactFormActivity"
             android:exported="false"
             android:parentActivityName=".activities.MainActivity" />
         <!-- Page recherche contact -->
         <activity
-            android:name=".activities.ContactSearchActivity"
+            android:name=".activities.contacts.ContactSearchActivity"
             android:exported="false"
             android:parentActivityName=".activities.MainActivity" />
         <!-- Page recherche produit -->
         <activity
-            android:name=".activities.ProductFormActivity"
+            android:name=".activities.products.ProductFormActivity"
             android:exported="false"
-            android:parentActivityName=".activities.ProductListActivity" />
+            android:parentActivityName=".activities.products.ProductListActivity" />
         <!-- Page de gestion des produits -->
         <activity
-            android:name=".activities.ProductListActivity"
+            android:name=".activities.products.ProductListActivity"
             android:exported="false"
             android:label="@string/product_management" />
         <!-- Page  -->
         <activity
-            android:name=".activities.ProductSearchActivity"
+            android:name=".activities.products.ProductSearchActivity"
             android:exported="false"
-            android:parentActivityName=".activities.ProductListActivity" />
+            android:parentActivityName=".activities.products.ProductListActivity" />
         <!-- Page  -->
         <activity
             android:name=".activities.HomeActivity"

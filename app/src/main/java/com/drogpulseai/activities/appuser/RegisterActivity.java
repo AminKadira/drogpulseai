@@ -1,4 +1,4 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.appuser;
 
 import android.os.Bundle;
 import android.view.MenuItem;

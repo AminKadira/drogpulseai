@@ -1,10 +1,7 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.appuser;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,10 +12,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.HomeActivity;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.User;
-import com.drogpulseai.utils.ConnectionChecker;
 import com.drogpulseai.utils.SessionManager;
 import com.google.gson.Gson;
 

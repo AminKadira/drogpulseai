@@ -15,6 +15,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -28,9 +29,12 @@ import retrofit2.http.Query;
 public interface ApiService {
 
     // ====== AUTHENTIFICATION ======
+    @Headers({
+            "Content-Type: application/json"
+    })
 
     // Dans ApiService.java
-    @GET("ping.php")
+    @GET("system/ping.php")
     Call<Map<String, Object>> pingServer();
 
     /**
@@ -121,6 +125,8 @@ public interface ApiService {
     @POST("products/create.php")
     Call<Map<String, Object>> createProduct(@Body Product product);
 
+    @POST("products/create.php")
+    Call<Map<String, Object>> createProductRaw(@Body Map<String, Object> product);
     /**
      * Mettre à jour un produit existant
      */

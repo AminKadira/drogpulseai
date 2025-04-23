@@ -1,8 +1,6 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.contacts;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -21,8 +19,6 @@ import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.LocationUtils;
 import com.drogpulseai.utils.SessionManager;
-
-import org.json.JSONObject;
 
 import java.util.Map;
 

@@ -1,6 +1,5 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.products;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,14 +26,20 @@ import com.drogpulseai.models.User;
 import com.drogpulseai.utils.FileUtils;
 import com.drogpulseai.utils.SessionManager;
 
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 public class ProductFormActivity extends AppCompatActivity {
@@ -320,42 +324,102 @@ public class ProductFormActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnSave.setEnabled(false);
 
-        // Logs de débogage
-        Log.d("ProductFormActivity", "Mode: " + mode);
-        Log.d("ProductFormActivity", "Données produit: reference=" + reference +
-                ", label=" + label + ", name=" + name + ", userId=" + currentUser.getId());
-
         if (MODE_CREATE.equals(mode)) {
+
             // Création d'un nouveau produit
             Product newProduct = new Product(reference, label, name, description, photoUrl, barcode, quantity, currentUser.getId());
 
             apiService.createProduct(newProduct).enqueue(new Callback<Map<String, Object>>() {
                 @Override
                 public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                    // Masquer l'indicateur de progression
                     progressBar.setVisibility(View.GONE);
                     btnSave.setEnabled(true);
 
                     if (response.isSuccessful() && response.body() != null) {
                         Map<String, Object> result = response.body();
+
                         boolean success = (boolean) result.get("success");
 
                         if (success) {
+                            // Récupérer le produit créé dans la réponse
+                            Map<String, Object> productData = (Map<String, Object>) result.get("product");
+
+                            // Afficher un message de succès
                             Toast.makeText(ProductFormActivity.this, "Produit créé avec succès", Toast.LENGTH_SHORT).show();
+
+                            // Vous pouvez ici retourner à l'activité précédente ou effectuer d'autres actions
                             finish();
                         } else {
+                            // En cas d'erreur côté serveur
                             String message = (String) result.get("message");
                             Toast.makeText(ProductFormActivity.this, message, Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        Toast.makeText(ProductFormActivity.this, "Erreur lors de la création du produit", Toast.LENGTH_LONG).show();
+                        // En cas d'erreur HTTP
+                        try {
+                            // Essayer de parser l'erreur du serveur
+                            if (response.errorBody() != null) {
+                                String errorJson = response.errorBody().string();
+                                JSONObject errorObject = new JSONObject(errorJson);
+                                String errorMessage = errorObject.getString("message");
+                                Toast.makeText(ProductFormActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(ProductFormActivity.this,
+                                        "Erreur " + response.code() + ": " + response.message(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(ProductFormActivity.this,
+                                    "Erreur lors de la création du produit (" + response.code() + ")",
+                                    Toast.LENGTH_LONG).show();
+
+                            // Log l'erreur pour débogage
+                            Log.e("API", "Erreur: " + e.getMessage());
+                        }
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                    // Masquer l'indicateur de progression
                     progressBar.setVisibility(View.GONE);
                     btnSave.setEnabled(true);
-                    Toast.makeText(ProductFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
+
+                    // Log détaillé de l'erreur
+                    Log.e("API", "URL: " + call.request().url());
+                    Log.e("API", "Méthode: " + call.request().method());
+                    Log.e("API", "Erreur: " + t.getMessage());
+                    Log.e("API", "Classe d'erreur: " + t.getClass().getName());
+
+                    // Afficher des informations utiles en fonction du type d'erreur
+                    if (t instanceof IOException) {
+                        // Problème de réseau
+                        Toast.makeText(ProductFormActivity.this,
+                                "Erreur de connexion réseau. Vérifiez votre connexion Internet.",
+                                Toast.LENGTH_LONG).show();
+                    } else if (t instanceof HttpException) {
+                        // Erreur HTTP
+                        HttpException httpError = (HttpException) t;
+                        Response<?> response = httpError.response();
+
+                        try {
+                            String errorBody = response.errorBody().string();
+                            Log.e("API", "Corps de l'erreur: " + errorBody);
+                            Toast.makeText(ProductFormActivity.this,
+                                    "Erreur serveur: " + response.code() + " - " + errorBody,
+                                    Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            Toast.makeText(ProductFormActivity.this,
+                                    "Erreur serveur: " + response.code(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        // Autre type d'erreur
+                        Toast.makeText(ProductFormActivity.this,
+                                "Erreur: " + t.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
             });
         } else {
@@ -394,7 +458,24 @@ public class ProductFormActivity extends AppCompatActivity {
                 public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
                     btnSave.setEnabled(true);
-                    Toast.makeText(ProductFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("API", "Erreur complète: " + t.toString());
+                        Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
+                        Log.e("API", "Message: " + t.getMessage());
+                        Log.e("API", "URL: " + call.request().url());
+
+                        // Enregistrer la requête pour débogage
+                        Request request = call.request();
+                        try {
+                            Log.e("API", "Headers: " + request.headers().toString());
+                            if (request.body() != null) {
+                                Log.e("API", "Body class: " + request.body().getClass().getName());
+                            }
+                        } catch (Exception e) {
+                            Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
+                        }
+
+                        Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+
                 }
             });
         }

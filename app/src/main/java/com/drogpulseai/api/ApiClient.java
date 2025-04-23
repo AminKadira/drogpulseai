@@ -25,14 +25,19 @@ public class ApiClient {
     public static String getBaseUrl() {
         return BASE_URL;
     }
-    // Configuration Retrofit avec OkHttpClient pour le timeout et le logging
-    private static final OkHttpClient client = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)  // Augmenté à 60 secondes
-            .readTimeout(60, TimeUnit.SECONDS)     // Augmenté à 60 secondes
-            .writeTimeout(60, TimeUnit.SECONDS)    // Augmenté à 60 secondes
-            .build();
 
 
+    private static OkHttpClient createOkHttpClient() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        return new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(loggingInterceptor)
+                .build();
+    }
     // Configuration de Gson pour mieux gérer les erreurs de format
     static Gson gson = new GsonBuilder()
             .setLenient()
@@ -47,7 +52,7 @@ public class ApiClient {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
-                    .client(client)
+                    .client(createOkHttpClient())
                     .build();
         }
         return retrofit.create(serviceClass);
