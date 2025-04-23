@@ -1,6 +1,7 @@
 package com.drogpulseai.activities.contacts;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +23,7 @@ import com.drogpulseai.utils.SessionManager;
 
 import java.util.Map;
 
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -244,8 +246,22 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
                 public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
                     btnSave.setEnabled(true);
+                    Log.e("API", "Erreur complète: " + t.toString());
+                    Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
+                    Log.e("API", "Message: " + t.getMessage());
+                    Log.e("API", "URL: " + call.request().url());
+
+                    // Enregistrer la requête pour débogage
+                    Request request = call.request();
+                    try {
+                        Log.e("API", "Headers: " + request.headers().toString());
+                        if (request.body() != null) {
+                            Log.e("API", "Body class: " + request.body().getClass().getName());
+                        }
+                    } catch (Exception e) {
+                        Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
+                    }
                     Toast.makeText(ContactFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    System.out.println("Erreur réseau : " + t.getMessage());
 
                 }
             });
