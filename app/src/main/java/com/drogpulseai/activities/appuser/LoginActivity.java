@@ -16,6 +16,7 @@ import com.drogpulseai.activities.HomeActivity;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.User;
+import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.SessionManager;
 import com.google.gson.Gson;
 
@@ -44,6 +45,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        //run configuration
+        Config.init(this);
 
         // Initialisation des utilitaires
         apiService = ApiClient.getApiService();

@@ -40,8 +40,8 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         // Exemple: naviguer vers l'activité suivante
-                        // startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                        // finish();
+                         startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                         finish();
                     }
                 }, 1500); // 1.5 secondes
             }

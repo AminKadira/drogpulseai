@@ -51,7 +51,7 @@ public class Config {
 
     public static String getApiBaseUrl() {
         // URL par défaut si la configuration n'est pas initialisée
-        String defaultUrl = "http://192.168.1.15/drogpulseai_Api/api/";
+        String defaultUrl = "https://localhost/drogpulseai_Api/api/";
 
         if (!initialized || properties == null) {
             Log.w(TAG, "Configuration non initialisée, utilisation de l'URL par défaut");
