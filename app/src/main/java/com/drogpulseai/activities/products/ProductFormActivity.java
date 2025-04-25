@@ -3,6 +3,7 @@ package com.drogpulseai.activities.products;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
 import com.drogpulseai.R;
@@ -30,7 +32,10 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import okhttp3.MediaType;
@@ -48,6 +53,7 @@ public class ProductFormActivity extends AppCompatActivity {
     private static final String MODE_CREATE = "create";
     private static final String MODE_EDIT = "edit";
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int TAKE_PHOTO_REQUEST = 2;
 
     // UI Components
     private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity;
@@ -66,6 +72,7 @@ public class ProductFormActivity extends AppCompatActivity {
     private Product currentProduct;
     private String photoUrl = "";
     private Uri selectedImageUri = null;
+    private String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,17 +135,83 @@ public class ProductFormActivity extends AppCompatActivity {
      * Configuration des écouteurs d'événements
      */
     private void setupListeners() {
-        // Bouton d'ajout de photo
-        btnAddPhoto.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intent, PICK_IMAGE_REQUEST);
-        });
+        // Bouton d'ajout de photo - Afficher le dialogue de choix
+        btnAddPhoto.setOnClickListener(v -> showImageSourceDialog());
 
         // Bouton de sauvegarde
         btnSave.setOnClickListener(v -> saveProduct());
 
         // Bouton de suppression
         btnDelete.setOnClickListener(v -> confirmDeleteProduct());
+    }
+
+    /**
+     * Affiche un dialogue pour choisir entre la caméra et la galerie
+     */
+    private void showImageSourceDialog() {
+        String[] options = {"Prendre une photo", "Choisir depuis la galerie"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Ajouter une photo");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                // Prendre une photo avec la caméra
+                dispatchTakePictureIntent();
+            } else {
+                // Sélectionner une image depuis la galerie
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, PICK_IMAGE_REQUEST);
+            }
+        });
+        builder.show();
+    }
+
+    /**
+     * Démarre l'intent pour prendre une photo avec la caméra
+     */
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // S'assurer qu'il y a une activité de caméra pour gérer l'intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Créer le fichier où la photo sera enregistrée
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Erreur lors de la création du fichier
+                Toast.makeText(this, "Erreur lors de la création du fichier image", Toast.LENGTH_SHORT).show();
+            }
+
+            // Continuer seulement si le fichier a été créé avec succès
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.drogpulseai.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, TAKE_PHOTO_REQUEST);
+            }
+        } else {
+            Toast.makeText(this, "Aucune application de caméra disponible", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Crée un fichier image pour stocker la photo prise avec la caméra
+     */
+    private File createImageFile() throws IOException {
+        // Créer un nom de fichier unique basé sur l'horodatage
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* préfixe */
+                ".jpg",         /* suffixe */
+                storageDir      /* répertoire */
+        );
+
+        // Sauvegarder le chemin complet pour utilisation avec ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     /**
@@ -150,27 +223,63 @@ public class ProductFormActivity extends AppCompatActivity {
     }
 
     /**
-     * Gestion du résultat de la sélection d'image
+     * Gestion du résultat de la sélection d'image ou de la prise de photo
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            selectedImageUri = data.getData();
+        if (resultCode == RESULT_OK) {
+            if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
+                // Image sélectionnée depuis la galerie
+                selectedImageUri = data.getData();
 
-            // Afficher l'image sélectionnée
-            Glide.with(this)
-                    .load(selectedImageUri)
-                    .centerCrop()
-                    .into(ivProductPhoto);
+                // Afficher l'image sélectionnée
+                displaySelectedImage(selectedImageUri);
 
-            // Masquer le bouton une fois la photo chargée
-            btnAddPhoto.setText(R.string.change_photo);
+                // Uploader l'image
+                uploadProductPhoto();
 
-            // Uploader directement la photo
-            uploadProductPhoto();
+            } else if (requestCode == TAKE_PHOTO_REQUEST) {
+                // Photo prise avec la caméra
+                File f = new File(currentPhotoPath);
+                selectedImageUri = Uri.fromFile(f);
+
+                // Ajouter la photo à la galerie
+                galleryAddPic();
+
+                // Afficher l'image capturée
+                displaySelectedImage(selectedImageUri);
+
+                // Uploader l'image
+                uploadProductPhoto();
+            }
         }
+    }
+
+    /**
+     * Affiche l'image sélectionnée dans l'ImageView
+     */
+    private void displaySelectedImage(Uri imageUri) {
+        // Afficher l'image sélectionnée
+        Glide.with(this)
+                .load(imageUri)
+                .centerCrop()
+                .into(ivProductPhoto);
+
+        // Mettre à jour le texte du bouton
+        btnAddPhoto.setText(R.string.change_photo);
+    }
+
+    /**
+     * Ajoute la photo prise à la galerie pour qu'elle soit visible dans les applications média
+     */
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(currentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
     /**
@@ -458,23 +567,23 @@ public class ProductFormActivity extends AppCompatActivity {
                 public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
                     btnSave.setEnabled(true);
-                        Log.e("API", "Erreur complète: " + t.toString());
-                        Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
-                        Log.e("API", "Message: " + t.getMessage());
-                        Log.e("API", "URL: " + call.request().url());
+                    Log.e("API", "Erreur complète: " + t.toString());
+                    Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
+                    Log.e("API", "Message: " + t.getMessage());
+                    Log.e("API", "URL: " + call.request().url());
 
-                        // Enregistrer la requête pour débogage
-                        Request request = call.request();
-                        try {
-                            Log.e("API", "Headers: " + request.headers().toString());
-                            if (request.body() != null) {
-                                Log.e("API", "Body class: " + request.body().getClass().getName());
-                            }
-                        } catch (Exception e) {
-                            Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
+                    // Enregistrer la requête pour débogage
+                    Request request = call.request();
+                    try {
+                        Log.e("API", "Headers: " + request.headers().toString());
+                        if (request.body() != null) {
+                            Log.e("API", "Body class: " + request.body().getClass().getName());
                         }
+                    } catch (Exception e) {
+                        Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
+                    }
 
-                        Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
 
                 }
             });
