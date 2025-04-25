@@ -91,4 +91,13 @@
     <string name="search_products">Rechercher des produits</string>
     <string name="search_products_hint">Référence, nom, libellé ou code-barres</string>
     <string name="welcome_message">Bienvenue,</string>
+
+    <!-- Gestion des produits -->
+    <string name="product_price">Prix</string>
+    <string name="barcode_scanned">Code-barres scanné</string>
+    <string name="scan_cancelled">Scan annulé</string>
+    <string name="scan_barcode_prompt">Scannez un code-barres</string>
+    <string name="no_camera_app">Aucune application de caméra disponible</string>
+    <string name="price_format">%.2f €</string>
+    <string name="product_price_stock">Prix: %1$s | Stock: %2$d</string>
 </resources>

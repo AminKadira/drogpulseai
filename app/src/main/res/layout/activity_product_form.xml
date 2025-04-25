@@ -36,79 +36,147 @@
                 android:text="Ajouter une photo" />
         </FrameLayout>
 
-        <!-- Référence produit -->
-        <EditText
-            android:id="@+id/et_reference"
+        <!-- Ligne pour la référence et le scan -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Référence produit"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:orientation="horizontal">
+
+            <!-- Référence produit -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_reference"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Référence produit"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Bouton scan barcode -->
+            <ImageButton
+                android:id="@+id/btn_scan_barcode"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_camera"
+                android:contentDescription="@string/scan_barcode" />
+        </LinearLayout>
 
         <!-- Libellé (court) -->
-        <EditText
-            android:id="@+id/et_label"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Libellé"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Libellé"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Nom du produit -->
-        <EditText
-            android:id="@+id/et_name"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Nom du produit"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nom du produit"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Description -->
-        <EditText
-            android:id="@+id/et_description"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Description"
-            android:inputType="textMultiLine"
-            android:minLines="3"
-            android:gravity="top|start"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Description"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:gravity="top|start" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Code-barres -->
-        <EditText
-            android:id="@+id/et_barcode"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:hint="Code-barres"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <!-- Quantité -->
-        <EditText
-            android:id="@+id/et_quantity"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_barcode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Code-barres"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Ligne pour quantité et prix -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="Quantité"
-            android:inputType="number"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <!-- Quantité -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_quantity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Quantité"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Prix -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Prix"
+                    android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
         <!-- Boutons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp">
 
             <Button
                 android:id="@+id/btn_save"

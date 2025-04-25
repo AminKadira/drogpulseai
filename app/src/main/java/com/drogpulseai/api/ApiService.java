@@ -125,13 +125,23 @@ public interface ApiService {
     @POST("products/create.php")
     Call<Map<String, Object>> createProduct(@Body Product product);
 
+    /**
+     * Créer un nouveau produit avec Map
+     */
     @POST("products/create.php")
     Call<Map<String, Object>> createProductRaw(@Body Map<String, Object> product);
+
     /**
      * Mettre à jour un produit existant
      */
     @PUT("products/update.php")
     Call<Map<String, Object>> updateProduct(@Body Product product);
+
+    /**
+     * Mettre à jour un produit existant avec Map
+     */
+    @PUT("products/update.php")
+    Call<Map<String, Object>> updateProduct(@Body Map<String, Object> product);
 
     /**
      * Supprimer un produit

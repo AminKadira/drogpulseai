@@ -28,6 +28,9 @@ public class Product implements Serializable {
     @SerializedName("quantity")
     private int quantity;
 
+    @SerializedName("price")
+    private double price;
+
     @SerializedName("user_id")
     private int user_id;
 
@@ -35,7 +38,7 @@ public class Product implements Serializable {
 
     // Constructeur pour création
     public Product(String reference, String label, String name, String description,
-                   String photoUrl, String barcode, int quantity, int user_id) {
+                   String photoUrl, String barcode, int quantity, double price, int user_id) {
         this.reference = reference;
         this.label = label;
         this.name = name;
@@ -43,7 +46,14 @@ public class Product implements Serializable {
         if(photoUrl.isEmpty()){ this.photoUrl= "C:/Desktop/picTestjpeg.jpg";}else{this.photoUrl = photoUrl;}
         this.barcode = barcode;
         this.quantity = quantity;
+        this.price = price;
         this.user_id = user_id;
+    }
+
+    // Constructeur pour compatibilité avec le code existant
+    public Product(String reference, String label, String name, String description,
+                   String photoUrl, String barcode, int quantity, int user_id) {
+        this(reference, label, name, description, photoUrl, barcode, quantity, 0.0, user_id);
     }
 
 
@@ -76,6 +86,9 @@ public class Product implements Serializable {
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+
     public int getUserId() { return user_id; }
     public void setUserId(int userId) { this.user_id = userId; }
 
@@ -83,5 +96,4 @@ public class Product implements Serializable {
     public String toString() {
         return reference + " - " + name;
     }
-
 }

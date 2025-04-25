@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -27,6 +28,8 @@ import com.drogpulseai.models.Product;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.FileUtils;
 import com.drogpulseai.utils.SessionManager;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONObject;
 
@@ -49,6 +52,8 @@ import retrofit2.Response;
 
 public class ProductFormActivity extends AppCompatActivity {
 
+    private static final String TAG = "ProductFormActivity";
+
     // Mode de l'activité
     private static final String MODE_CREATE = "create";
     private static final String MODE_EDIT = "edit";
@@ -56,8 +61,9 @@ public class ProductFormActivity extends AppCompatActivity {
     private static final int TAKE_PHOTO_REQUEST = 2;
 
     // UI Components
-    private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity;
+    private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity, etPrice;
     private Button btnSave, btnDelete, btnAddPhoto;
+    private ImageButton btnScanBarcode;
     private ImageView ivProductPhoto;
     private ProgressBar progressBar;
 
@@ -124,8 +130,10 @@ public class ProductFormActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.et_description);
         etBarcode = findViewById(R.id.et_barcode);
         etQuantity = findViewById(R.id.et_quantity);
+        etPrice = findViewById(R.id.et_price);
         ivProductPhoto = findViewById(R.id.iv_product_photo);
         btnAddPhoto = findViewById(R.id.btn_add_photo);
+        btnScanBarcode = findViewById(R.id.btn_scan_barcode);
         btnSave = findViewById(R.id.btn_save);
         btnDelete = findViewById(R.id.btn_delete);
         progressBar = findViewById(R.id.progress_bar);
@@ -138,11 +146,27 @@ public class ProductFormActivity extends AppCompatActivity {
         // Bouton d'ajout de photo - Afficher le dialogue de choix
         btnAddPhoto.setOnClickListener(v -> showImageSourceDialog());
 
+        // Bouton de scan de code-barres
+        btnScanBarcode.setOnClickListener(v -> scanBarcode());
+
         // Bouton de sauvegarde
         btnSave.setOnClickListener(v -> saveProduct());
 
         // Bouton de suppression
         btnDelete.setOnClickListener(v -> confirmDeleteProduct());
+    }
+
+    /**
+     * Initialiser le scanner de code-barres
+     */
+    private void scanBarcode() {
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+        integrator.setPrompt("Scannez un code-barres");
+        integrator.setCameraId(0);  // Utiliser la caméra arrière par défaut
+        integrator.setBeepEnabled(true);
+        integrator.setBarcodeImageEnabled(true);
+        integrator.initiateScan();
     }
 
     /**
@@ -220,15 +244,33 @@ public class ProductFormActivity extends AppCompatActivity {
     private void setupForCreateMode() {
         btnDelete.setVisibility(View.GONE);
         etQuantity.setText("0"); // Valeur par défaut
+        etPrice.setText("0.00"); // Valeur par défaut
     }
 
     /**
-     * Gestion du résultat de la sélection d'image ou de la prise de photo
+     * Gestion du résultat de la sélection d'image, de la prise de photo ou du scan de code-barres
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Vérifier si c'est un résultat de scan de code-barres
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (scanResult != null) {
+            if (scanResult.getContents() != null) {
+                // Scanner a réussi, mettre à jour le champ de code-barres
+                String barcode = scanResult.getContents();
+                etBarcode.setText(barcode);
+                Toast.makeText(this, "Code-barres scanné : " + barcode, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Code-barres scanné : " + barcode);
+            } else {
+                // L'utilisateur a annulé le scan
+                Toast.makeText(this, "Scan annulé", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        // Gestion des autres résultats (image/photo)
         if (resultCode == RESULT_OK) {
             if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
                 // Image sélectionnée depuis la galerie
@@ -357,12 +399,21 @@ public class ProductFormActivity extends AppCompatActivity {
                     etDescription.setText(currentProduct.getDescription());
                     etBarcode.setText(currentProduct.getBarcode());
                     etQuantity.setText(String.valueOf(currentProduct.getQuantity()));
+                    etPrice.setText(String.format(Locale.getDefault(), "%.2f", currentProduct.getPrice()));
 
                     // Charger la photo si disponible
                     if (currentProduct.getPhotoUrl() != null && !currentProduct.getPhotoUrl().isEmpty()) {
                         photoUrl = currentProduct.getPhotoUrl();
+
+                        String imageUrl = currentProduct.getPhotoUrl();
+                        if (!imageUrl.startsWith("http")) {
+                            imageUrl = ApiClient.getBaseUrl().endsWith("/")
+                                    ? ApiClient.getBaseUrl() + photoUrl
+                                    : ApiClient.getBaseUrl() + "/" + photoUrl;
+                        }
+
                         Glide.with(ProductFormActivity.this)
-                                .load(ApiClient.getBaseUrl() + photoUrl)
+                                .load(imageUrl)
                                 .centerCrop()
                                 .into(ivProductPhoto);
                         btnAddPhoto.setText(R.string.change_photo);
@@ -397,6 +448,7 @@ public class ProductFormActivity extends AppCompatActivity {
         String description = etDescription.getText().toString().trim();
         String barcode = etBarcode.getText().toString().trim();
         String quantityStr = etQuantity.getText().toString().trim();
+        String priceStr = etPrice.getText().toString().trim();
 
         // Validation des champs requis
         if (reference.isEmpty()) {
@@ -429,16 +481,36 @@ public class ProductFormActivity extends AppCompatActivity {
             }
         }
 
+        // Convertir le prix
+        double price = 0.0;
+        if (!priceStr.isEmpty()) {
+            try {
+                price = Double.parseDouble(priceStr);
+            } catch (NumberFormatException e) {
+                etPrice.setError("Prix invalide");
+                etPrice.requestFocus();
+                return;
+            }
+        }
+
         // Afficher la progression
         progressBar.setVisibility(View.VISIBLE);
         btnSave.setEnabled(false);
 
         if (MODE_CREATE.equals(mode)) {
-
             // Création d'un nouveau produit
-            Product newProduct = new Product(reference, label, name, description, photoUrl, barcode, quantity, currentUser.getId());
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("reference", reference);
+            productMap.put("label", label);
+            productMap.put("name", name);
+            productMap.put("description", description);
+            productMap.put("photo_url", photoUrl);
+            productMap.put("barcode", barcode);
+            productMap.put("quantity", quantity);
+            productMap.put("price", price);
+            productMap.put("userId", currentUser.getId());
 
-            apiService.createProduct(newProduct).enqueue(new Callback<Map<String, Object>>() {
+            apiService.createProductRaw(productMap).enqueue(new Callback<Map<String, Object>>() {
                 @Override
                 public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                     // Masquer l'indicateur de progression
@@ -533,15 +605,19 @@ public class ProductFormActivity extends AppCompatActivity {
             });
         } else {
             // Mise à jour du produit existant
-            currentProduct.setReference(reference);
-            currentProduct.setLabel(label);
-            currentProduct.setName(name);
-            currentProduct.setDescription(description);
-            currentProduct.setPhotoUrl(photoUrl);
-            currentProduct.setBarcode(barcode);
-            currentProduct.setQuantity(quantity);
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("id", currentProduct.getId());
+            productMap.put("reference", reference);
+            productMap.put("label", label);
+            productMap.put("name", name);
+            productMap.put("description", description);
+            productMap.put("photo_url", photoUrl);
+            productMap.put("barcode", barcode);
+            productMap.put("quantity", quantity);
+            productMap.put("price", price);
+            productMap.put("userId", currentUser.getId());
 
-            apiService.updateProduct(currentProduct).enqueue(new Callback<Map<String, Object>>() {
+            apiService.updateProduct((HashMap<String, Object>) productMap).enqueue(new Callback<Map<String, Object>>() {
                 @Override
                 public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                     progressBar.setVisibility(View.GONE);
@@ -584,7 +660,6 @@ public class ProductFormActivity extends AppCompatActivity {
                     }
 
                     Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
-
                 }
             });
         }

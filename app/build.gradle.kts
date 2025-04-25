@@ -49,6 +49,10 @@ dependencies {
     // Glide pour le chargement des images
     implementation("com.github.bumptech.glide:glide:4.15.1")
 
+    // ZXing pour le scan de code-barres
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.5.1")
+
     // Tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
