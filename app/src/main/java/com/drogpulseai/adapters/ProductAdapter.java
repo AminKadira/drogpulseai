@@ -1,6 +1,7 @@
 package com.drogpulseai.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.drogpulseai.R;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.models.Product;
@@ -22,6 +25,7 @@ import java.util.List;
  */
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
+    private static final String TAG = "ProductAdapter";
     private final List<Product> products;
     private final OnProductClickListener listener;
     private final LayoutInflater inflater;
@@ -58,7 +62,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         // Afficher les informations du produit
         holder.tvReference.setText(product.getReference());
         holder.tvName.setText(product.getName());
-        holder.tvLabel.setText(product.getLabel());
 
         // Afficher le code-barres s'il est disponible
         if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
@@ -71,18 +74,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         // Afficher la quantité
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
-        // Charger l'image si disponible
-        if (product.getPhotoUrl() != null && !product.getPhotoUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(ApiClient.getBaseUrl().endsWith("/") ? ApiClient.getBaseUrl() + product.getPhotoUrl() : ApiClient.getBaseUrl() + "/" + product.getPhotoUrl())
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .centerCrop()
-                    .into(holder.ivThumbnail);
-        } else {
-            // Image par défaut
-            holder.ivThumbnail.setImageResource(android.R.drawable.ic_menu_gallery);
-        }
+        // Charger l'image avec une gestion améliorée
+        loadProductImage(holder.ivThumbnail, product);
 
         // Configurer le clic sur l'élément
         holder.itemView.setOnClickListener(v -> {
@@ -90,6 +83,51 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
                 listener.onProductClick(product);
             }
         });
+    }
+
+    /**
+     * Méthode améliorée pour charger l'image du produit
+     */
+    private void loadProductImage(ImageView imageView, Product product) {
+        String photoUrl = product.getPhotoUrl();
+
+        // Définir une image par défaut
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.ic_image_placeholder)
+                .error(R.drawable.ic_image_error)
+                .diskCacheStrategy(DiskCacheStrategy.ALL);
+
+        if (photoUrl != null && !photoUrl.isEmpty()) {
+            // Construire l'URL complète si nécessaire
+            String fullUrl;
+
+            if (photoUrl.startsWith("http") || photoUrl.startsWith("https")) {
+                // URL déjà complète
+                fullUrl = photoUrl;
+            } else {
+                // Construire l'URL complète
+                String baseUrl = ApiClient.getBaseUrl();
+                // S'assurer que l'URL se termine par un slash si nécessaire
+                if (!baseUrl.endsWith("/") && !photoUrl.startsWith("/")) {
+                    baseUrl += "/";
+                }
+                fullUrl = baseUrl + photoUrl;
+            }
+
+            Log.d(TAG, "Loading image from URL: " + fullUrl);
+
+            // Charger l'image avec Glide
+            Glide.with(context)
+                    .load(fullUrl)
+                    .apply(options)
+                    .into(imageView);
+        } else {
+            Log.d(TAG, "No image URL available, using placeholder");
+            // Pas d'URL d'image, utiliser le placeholder par défaut
+            Glide.with(context)
+                    .load(R.drawable.ic_image_placeholder)
+                    .into(imageView);
+        }
     }
 
     @Override
@@ -101,14 +139,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
      * ViewHolder pour les éléments de produit
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvReference, tvName, tvLabel, tvBarcode, tvQuantity;
+        TextView tvReference, tvName, tvBarcode, tvQuantity;
         ImageView ivThumbnail;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvReference = itemView.findViewById(R.id.tv_product_reference);
             tvName = itemView.findViewById(R.id.tv_product_name);
-            tvLabel = itemView.findViewById(R.id.tv_product_label);
             tvBarcode = itemView.findViewById(R.id.tv_product_barcode);
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);

@@ -2,6 +2,7 @@ package com.drogpulseai.activities.products;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +37,8 @@ import retrofit2.Response;
  * Activité principale pour la gestion des produits
  */
 public class ProductListActivity extends AppCompatActivity implements ProductAdapter.OnProductClickListener {
+
+    private static final String TAG = "ProductListActivity";
 
     // UI Components
     private RecyclerView recyclerView;
@@ -90,6 +93,10 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
         // Chargement des produits
         loadProducts();
+
+        // Log de debug pour vérifier le fonctionnement
+        Log.d(TAG, "ProductListActivity créée, utilisateur ID: " + currentUser.getId());
+        Log.d(TAG, "URL API Base: " + ApiClient.getBaseUrl());
     }
 
     /**
@@ -121,7 +128,6 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         swipeRefreshLayout.setOnRefreshListener(this::loadProducts);
 
         // Bouton d'ajout de produit
-        // Bouton d'ajout de produit
         fabAddProduct.setOnClickListener(v -> {
             try {
                 Intent intent = new Intent(ProductListActivity.this, ProductFormActivity.class);
@@ -129,9 +135,9 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
                 startActivity(intent);
             } catch (Exception e) {
                 // Afficher l'erreur pour diagnostic
+                Log.e(TAG, "Erreur lors du lancement de ProductFormActivity: " + e.getMessage(), e);
                 Toast.makeText(ProductListActivity.this,
                         "Erreur: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                e.printStackTrace(); // Pour le log
             }
         });
     }
@@ -145,6 +151,8 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         }
         tvEmptyList.setVisibility(View.GONE);
 
+        Log.d(TAG, "Chargement des produits pour l'utilisateur ID: " + currentUser.getId());
+
         apiService.getProducts(currentUser.getId()).enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -156,14 +164,25 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
                     products.addAll(response.body());
                     adapter.notifyDataSetChanged();
 
+                    // Log pour débogage
+                    Log.d(TAG, "Produits chargés: " + products.size());
+                    for (Product product : products) {
+                        Log.d(TAG, "Produit: " + product.getId() + " - " + product.getName()
+                                + " - URL: " + product.getPhotoUrl());
+                    }
+
                     // Afficher un message si aucun produit
                     if (products.isEmpty()) {
                         tvEmptyList.setText(R.string.no_products_found);
                         tvEmptyList.setVisibility(View.VISIBLE);
+                        Log.d(TAG, "Aucun produit trouvé");
                     } else {
                         tvEmptyList.setVisibility(View.GONE);
                     }
                 } else {
+                    Log.e(TAG, "Erreur lors du chargement des produits: "
+                            + (response.errorBody() != null ? response.errorBody().toString() : "Inconnu")
+                            + " - Code: " + response.code());
                     Toast.makeText(ProductListActivity.this, "Erreur lors du chargement des produits", Toast.LENGTH_LONG).show();
                 }
             }
@@ -172,6 +191,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
+                Log.e(TAG, "Échec du chargement des produits: " + t.getMessage(), t);
                 Toast.makeText(ProductListActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
@@ -179,6 +199,7 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
     @Override
     public void onProductClick(Product product) {
+        Log.d(TAG, "Clic sur le produit ID: " + product.getId());
         Intent intent = new Intent(ProductListActivity.this, ProductFormActivity.class);
         intent.putExtra("mode", "edit");
         intent.putExtra("product_id", product.getId());

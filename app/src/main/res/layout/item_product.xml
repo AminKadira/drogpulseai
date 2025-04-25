@@ -4,95 +4,85 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="12dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    app:cardElevation="4dp"
     app:strokeWidth="1dp"
     app:strokeColor="@color/cardview_dark_background">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
+        <!-- Image plus grande à gauche -->
         <ImageView
             android:id="@+id/iv_product_thumbnail"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
             android:scaleType="centerCrop"
             android:contentDescription="@string/product_photo"
             android:background="@color/cardview_dark_background"
             android:padding="1dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             tools:src="@android:drawable/ic_menu_gallery" />
 
+        <!-- Informations du produit à droite -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="12dp"
-            app:layout_constraintStart_toEndOf="@+id/iv_product_thumbnail"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:gravity="center_vertical"
+            android:padding="16dp">
 
+            <!-- Référence du produit -->
             <TextView
                 android:id="@+id/tv_product_reference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/primaryText"
-                android:textSize="12sp"
+                android:textSize="14sp"
+                android:textStyle="bold"
                 tools:text="REF-12345" />
 
+            <!-- Nom du produit -->
             <TextView
                 android:id="@+id/tv_product_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/primaryText"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 tools:text="Nom du produit" />
 
+            <!-- Code-barres -->
             <TextView
-                android:id="@+id/tv_product_label"
+                android:id="@+id/tv_product_barcode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
+                android:drawableStart="@android:drawable/ic_menu_sort_by_size"
+                android:drawablePadding="8dp"
                 android:textSize="14sp"
-                tools:text="Libellé du produit" />
+                android:gravity="center_vertical"
+                tools:text="123456789012" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Badge quantité -->
+            <TextView
+                android:id="@+id/tv_product_quantity"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:background="@color/primary"
+                android:textColor="@android:color/white"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:layout_marginTop="8dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Stock: 42" />
 
-                <TextView
-                    android:id="@+id/tv_product_barcode"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableStart="@android:drawable/ic_menu_sort_by_size"
-                    android:drawablePadding="4dp"
-                    android:textSize="12sp"
-                    android:gravity="center_vertical"
-                    tools:text="123456789012" />
-
-                <TextView
-                    android:id="@+id/tv_product_quantity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/primary"
-                    android:textColor="@android:color/white"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="Stock: 42" />
-            </LinearLayout>
         </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
