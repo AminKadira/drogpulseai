@@ -34,6 +34,14 @@ public class Product implements Serializable {
     @SerializedName("user_id")
     private int user_id;
 
+    // Nouveaux champs pour la synchronisation
+    @SerializedName("last_updated")
+    private long lastUpdated;
+
+    @SerializedName("is_dirty")
+    private boolean isDirty;
+
+
     public Product(){}
 
     // Constructeur pour création
@@ -96,4 +104,10 @@ public class Product implements Serializable {
     public String toString() {
         return reference + " - " + name;
     }
+
+    public long getLastUpdated() { return lastUpdated; }
+    public void setLastUpdated(long lastUpdated) { this.lastUpdated = lastUpdated; }
+
+    public boolean isDirty() { return isDirty; }
+    public void setDirty(boolean dirty) { isDirty = dirty; }
 }

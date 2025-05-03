@@ -52,6 +52,7 @@ dependencies {
     // ZXing pour le scan de code-barres
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.1")
+    implementation(libs.room.common.jvm)
 
     // Tests
     testImplementation("junit:junit:4.13.2")
@@ -59,4 +60,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     //Notification
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.5.1")
+    implementation("androidx.work:work-runtime:2.7.1")
 }

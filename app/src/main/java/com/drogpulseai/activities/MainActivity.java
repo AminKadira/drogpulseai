@@ -1,5 +1,6 @@
 package com.drogpulseai.activities;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -24,6 +25,7 @@ import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
+import com.drogpulseai.sync.SyncManager;
 import com.drogpulseai.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialiser le SyncManager
+        SyncManager.getInstance((Application) getApplicationContext());
 
         // Initialisation des utilitaires
         apiService = ApiClient.getApiService();
@@ -205,4 +210,5 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         // Rafraîchir les contacts à chaque retour à l'activité
         loadContacts();
     }
+
 }

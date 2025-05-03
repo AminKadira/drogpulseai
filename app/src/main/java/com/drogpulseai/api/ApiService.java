@@ -3,6 +3,7 @@ package com.drogpulseai.api;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.Product;
 import com.drogpulseai.models.User;
+import com.drogpulseai.utils.NetworkResult;
 
 import java.util.List;
 import java.util.Map;
@@ -96,16 +97,16 @@ public interface ApiService {
     Call<Map<String, Object>> deleteContact(@Query("id") int contactId);
 
 
-    // ====== GESTION DES PRODUITS ======
+    // ====== PRODUCTS ======
 
     /**
-     * Récupérer tous les produits d'un utilisateur
+     * Get all products for a user
      */
     @GET("products/list.php")
     Call<List<Product>> getProducts(@Query("user_id") int userId);
 
     /**
-     * Rechercher des produits
+     * Search products
      */
     @GET("products/search.php")
     Call<List<Product>> searchProducts(
@@ -114,47 +115,47 @@ public interface ApiService {
     );
 
     /**
-     * Obtenir les détails d'un produit
+     * Get product details
      */
     @GET("products/details.php")
     Call<Product> getProductDetails(@Query("id") int productId);
 
     /**
-     * Créer un nouveau produit
+     * Create product
      */
     @POST("products/create.php")
-    Call<Map<String, Object>> createProduct(@Body Product product);
+    Call<NetworkResult<Product>> createProduct(@Body Product product);
 
     /**
-     * Créer un nouveau produit avec Map
+     * Create product with raw map
      */
     @POST("products/create.php")
-    Call<Map<String, Object>> createProductRaw(@Body Map<String, Object> product);
+    Call<NetworkResult<Product>> createProductRaw(@Body Map<String, Object> product);
 
     /**
-     * Mettre à jour un produit existant
+     * Update product
      */
     @PUT("products/update.php")
-    Call<Map<String, Object>> updateProduct(@Body Product product);
+    Call<NetworkResult<Product>> updateProduct(@Body Product product);
 
     /**
-     * Mettre à jour un produit existant avec Map
+     * Update product with raw map
      */
     @PUT("products/update.php")
-    Call<Map<String, Object>> updateProduct(@Body Map<String, Object> product);
+    Call<NetworkResult<Product>> updateProductRaw(@Body Map<String, Object> product);
 
     /**
-     * Supprimer un produit
+     * Delete product
      */
     @DELETE("products/delete.php")
-    Call<Map<String, Object>> deleteProduct(@Query("id") int productId);
+    Call<NetworkResult<Void>> deleteProduct(@Query("id") int productId);
 
     /**
-     * Upload d'une photo de produit
+     * Upload product photo
      */
     @Multipart
     @POST("products/upload_photo.php")
-    Call<Map<String, Object>> uploadProductPhoto(
+    Call<NetworkResult<String>> uploadProductPhoto(
             @Part MultipartBody.Part photo,
             @Part("user_id") RequestBody userId
     );

@@ -3,9 +3,6 @@ package com.drogpulseai.activities.products;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -15,115 +12,92 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.bumptech.glide.Glide;
 import com.drogpulseai.R;
-import com.drogpulseai.api.ApiClient;
-import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Product;
-import com.drogpulseai.models.User;
-import com.drogpulseai.utils.FileUtils;
-import com.drogpulseai.utils.SessionManager;
+import com.drogpulseai.utils.DialogUtils;
+import com.drogpulseai.utils.ImageHelper;
+import com.drogpulseai.utils.BarcodeHelper;
+import com.drogpulseai.utils.FormValidator;
+import com.drogpulseai.utils.ValidationMap;
+import com.drogpulseai.utils.NetworkUtils;
+import com.drogpulseai.viewmodels.ProductFormViewModel;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.HttpException;
-import retrofit2.Response;
-
-public class ProductFormActivity extends AppCompatActivity {
+/**
+ * Activity for creating and editing products
+ * Optimized version with ViewModel architecture and improved separation of concerns
+ */
+public class ProductFormActivity extends AppCompatActivity implements
+        ImageHelper.ImageSelectionCallback,
+        BarcodeHelper.BarcodeCallback {
 
     private static final String TAG = "ProductFormActivity";
 
-    // Mode de l'activité
-    private static final String MODE_CREATE = "create";
-    private static final String MODE_EDIT = "edit";
-    private static final int PICK_IMAGE_REQUEST = 1;
-    private static final int TAKE_PHOTO_REQUEST = 2;
-
-    // UI Components
-    private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity, etPrice;
-    private Button btnSave, btnDelete, btnAddPhoto;
-    private ImageButton btnScanBarcode;
+    // Views
     private ImageView ivProductPhoto;
+    private Button btnAddPhoto, btnSave, btnDelete;
+    private ImageButton btnScanBarcode;
+    private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity, etPrice;
     private ProgressBar progressBar;
 
-    // Utilities
-    private ApiService apiService;
-    private SessionManager sessionManager;
+    // ViewModel
+    private ProductFormViewModel viewModel;
 
-    // Données
-    private String mode;
-    private int productId;
-    private User currentUser;
-    private Product currentProduct;
-    private String photoUrl = "";
-    private Uri selectedImageUri = null;
-    private String currentPhotoPath;
+    // Helper classes
+    private ImageHelper imageHelper;
+    private BarcodeHelper barcodeHelper;
+    private FormValidator validator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_form);
 
-        // Récupérer le mode et les données
-        mode = getIntent().getStringExtra("mode");
-        productId = getIntent().getIntExtra("product_id", -1);
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(ProductFormViewModel.class);
 
-        // Configurer la barre d'action
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(MODE_CREATE.equals(mode) ?
-                    R.string.create_product : R.string.edit_product);
-        }
+        // Initialize helper classes
+        imageHelper = new ImageHelper(this, this);
+        barcodeHelper = new BarcodeHelper(this, this);
+        validator = new FormValidator(this);
 
-        // Initialisation des utilitaires
-        apiService = ApiClient.getApiService();
-        sessionManager = new SessionManager(this);
-
-        // Récupérer l'utilisateur courant
-        currentUser = sessionManager.getUser();
-
-        // Initialisation des vues
+        // Initialize views
         initializeViews();
 
-        // Configuration des listeners
-        setupListeners();
-
-        // Configuration initiale selon le mode
-        if (MODE_CREATE.equals(mode)) {
-            setupForCreateMode();
-        } else if (MODE_EDIT.equals(mode) && productId != -1) {
-            loadProductDetails(productId);
-        } else {
-            Toast.makeText(this, "Mode invalide", Toast.LENGTH_SHORT).show();
-            finish();
+        // Configure toolbar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        // Get intent extras
+        String mode = getIntent().getStringExtra("mode");
+        int productId = getIntent().getIntExtra("product_id", -1);
+
+        // Initialize mode in ViewModel
+        viewModel.initializeMode(mode, productId);
+
+        // Set up UI based on mode
+        setupUI();
+
+        // Set up observers
+        setupObservers();
     }
 
     /**
-     * Initialisation des vues
+     * Initialize views
      */
     private void initializeViews() {
+        ivProductPhoto = findViewById(R.id.iv_product_photo);
+        btnAddPhoto = findViewById(R.id.btn_add_photo);
+        btnSave = findViewById(R.id.btn_save);
+        btnDelete = findViewById(R.id.btn_delete);
+        btnScanBarcode = findViewById(R.id.btn_scan_barcode);
         etReference = findViewById(R.id.et_reference);
         etLabel = findViewById(R.id.et_label);
         etName = findViewById(R.id.et_name);
@@ -131,596 +105,237 @@ public class ProductFormActivity extends AppCompatActivity {
         etBarcode = findViewById(R.id.et_barcode);
         etQuantity = findViewById(R.id.et_quantity);
         etPrice = findViewById(R.id.et_price);
-        ivProductPhoto = findViewById(R.id.iv_product_photo);
-        btnAddPhoto = findViewById(R.id.btn_add_photo);
-        btnScanBarcode = findViewById(R.id.btn_scan_barcode);
-        btnSave = findViewById(R.id.btn_save);
-        btnDelete = findViewById(R.id.btn_delete);
         progressBar = findViewById(R.id.progress_bar);
     }
 
     /**
-     * Configuration des écouteurs d'événements
+     * Set up the UI components and listeners
      */
-    private void setupListeners() {
-        // Bouton d'ajout de photo - Afficher le dialogue de choix
-        btnAddPhoto.setOnClickListener(v -> showImageSourceDialog());
+    private void setupUI() {
+        // Set activity title based on mode
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(viewModel.isCreateMode() ?
+                    R.string.create_product : R.string.edit_product);
+        }
 
-        // Bouton de scan de code-barres
-        btnScanBarcode.setOnClickListener(v -> scanBarcode());
+        // Hide delete button in create mode
+        if (viewModel.isCreateMode()) {
+            btnDelete.setVisibility(View.GONE);
+        }
 
-        // Bouton de sauvegarde
-        btnSave.setOnClickListener(v -> saveProduct());
-
-        // Bouton de suppression
+        // Set up button click listeners
+        btnAddPhoto.setOnClickListener(v -> imageHelper.showImageSourceDialog());
+        btnScanBarcode.setOnClickListener(v -> barcodeHelper.scanBarcode());
+        btnSave.setOnClickListener(v -> validateAndSaveProduct());
         btnDelete.setOnClickListener(v -> confirmDeleteProduct());
+
+        // Load product details if in edit mode
+        if (!viewModel.isCreateMode()) {
+            viewModel.loadProductDetails();
+        }
     }
 
     /**
-     * Initialiser le scanner de code-barres
+     * Set up LiveData observers
      */
-    private void scanBarcode() {
-        IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
-        integrator.setPrompt("Scannez un code-barres");
-        integrator.setCameraId(0);  // Utiliser la caméra arrière par défaut
-        integrator.setBeepEnabled(true);
-        integrator.setBarcodeImageEnabled(true);
-        integrator.initiateScan();
-    }
+    private void setupObservers() {
+        // Observe loading state
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            setFormEnabled(!isLoading);
+        });
 
-    /**
-     * Affiche un dialogue pour choisir entre la caméra et la galerie
-     */
-    private void showImageSourceDialog() {
-        String[] options = {"Prendre une photo", "Choisir depuis la galerie"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Ajouter une photo");
-        builder.setItems(options, (dialog, which) -> {
-            if (which == 0) {
-                // Prendre une photo avec la caméra
-                dispatchTakePictureIntent();
-            } else {
-                // Sélectionner une image depuis la galerie
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        // Observe product data
+        viewModel.getProduct().observe(this, product -> {
+            if (product != null) {
+                populateForm(product);
             }
         });
-        builder.show();
-    }
 
-    /**
-     * Démarre l'intent pour prendre une photo avec la caméra
-     */
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // S'assurer qu'il y a une activité de caméra pour gérer l'intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Créer le fichier où la photo sera enregistrée
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Erreur lors de la création du fichier
-                Toast.makeText(this, "Erreur lors de la création du fichier image", Toast.LENGTH_SHORT).show();
-            }
-
-            // Continuer seulement si le fichier a été créé avec succès
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.drogpulseai.fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, TAKE_PHOTO_REQUEST);
-            }
-        } else {
-            Toast.makeText(this, "Aucune application de caméra disponible", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Crée un fichier image pour stocker la photo prise avec la caméra
-     */
-    private File createImageFile() throws IOException {
-        // Créer un nom de fichier unique basé sur l'horodatage
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* préfixe */
-                ".jpg",         /* suffixe */
-                storageDir      /* répertoire */
-        );
-
-        // Sauvegarder le chemin complet pour utilisation avec ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
-    /**
-     * Configuration pour le mode création
-     */
-    private void setupForCreateMode() {
-        btnDelete.setVisibility(View.GONE);
-        etQuantity.setText("0"); // Valeur par défaut
-        etPrice.setText("0.00"); // Valeur par défaut
-    }
-
-    /**
-     * Gestion du résultat de la sélection d'image, de la prise de photo ou du scan de code-barres
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Vérifier si c'est un résultat de scan de code-barres
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (scanResult != null) {
-            if (scanResult.getContents() != null) {
-                // Scanner a réussi, mettre à jour le champ de code-barres
-                String barcode = scanResult.getContents();
-                etBarcode.setText(barcode);
-                Toast.makeText(this, "Code-barres scanné : " + barcode, Toast.LENGTH_LONG).show();
-                Log.d(TAG, "Code-barres scanné : " + barcode);
-            } else {
-                // L'utilisateur a annulé le scan
-                Toast.makeText(this, "Scan annulé", Toast.LENGTH_SHORT).show();
-            }
-            return;
-        }
-
-        // Gestion des autres résultats (image/photo)
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
-                // Image sélectionnée depuis la galerie
-                selectedImageUri = data.getData();
-
-                // Afficher l'image sélectionnée
-                displaySelectedImage(selectedImageUri);
-
-                // Uploader l'image
-                uploadProductPhoto();
-
-            } else if (requestCode == TAKE_PHOTO_REQUEST) {
-                // Photo prise avec la caméra
-                File f = new File(currentPhotoPath);
-                selectedImageUri = Uri.fromFile(f);
-
-                // Ajouter la photo à la galerie
-                galleryAddPic();
-
-                // Afficher l'image capturée
-                displaySelectedImage(selectedImageUri);
-
-                // Uploader l'image
-                uploadProductPhoto();
-            }
-        }
-    }
-
-    /**
-     * Affiche l'image sélectionnée dans l'ImageView
-     */
-    private void displaySelectedImage(Uri imageUri) {
-        // Afficher l'image sélectionnée
-        Glide.with(this)
-                .load(imageUri)
-                .centerCrop()
-                .into(ivProductPhoto);
-
-        // Mettre à jour le texte du bouton
-        btnAddPhoto.setText(R.string.change_photo);
-    }
-
-    /**
-     * Ajoute la photo prise à la galerie pour qu'elle soit visible dans les applications média
-     */
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(currentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-
-    /**
-     * Upload de la photo du produit
-     */
-    private void uploadProductPhoto() {
-        if (selectedImageUri == null) {
-            return;
-        }
-
-        progressBar.setVisibility(View.VISIBLE);
-
-        // Obtenir le fichier réel
-        File file = FileUtils.getFileFromUri(this, selectedImageUri);
-
-        if (file == null) {
-            Toast.makeText(this, "Impossible de traiter l'image", Toast.LENGTH_SHORT).show();
-            progressBar.setVisibility(View.GONE);
-            return;
-        }
-
-        // Créer les RequestBody
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
-        MultipartBody.Part photoPart = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-        RequestBody userId = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(currentUser.getId()));
-
-        // Appel API
-        apiService.uploadProductPhoto(photoPart, userId).enqueue(new Callback<Map<String, Object>>() {
-            @Override
-            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                progressBar.setVisibility(View.GONE);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    Map<String, Object> result = response.body();
-                    boolean success = (boolean) result.get("success");
-
-                    if (success && result.containsKey("photo_url")) {
-                        photoUrl = (String) result.get("photo_url");
-                        Toast.makeText(ProductFormActivity.this, "Photo téléchargée", Toast.LENGTH_SHORT).show();
-                    } else {
-                        String message = (String) result.get("message");
-                        Toast.makeText(ProductFormActivity.this, message, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(ProductFormActivity.this, "Erreur lors du téléchargement", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+        // Observe photo URL
+        viewModel.getPhotoUrl().observe(this, url -> {
+            if (url != null && !url.isEmpty()) {
+                imageHelper.displayImage(url, ivProductPhoto);
+                btnAddPhoto.setText(R.string.change_photo);
             }
         });
-    }
 
-    /**
-     * Chargement des détails d'un produit existant
-     */
-    private void loadProductDetails(int productId) {
-        progressBar.setVisibility(View.VISIBLE);
-
-        apiService.getProductDetails(productId).enqueue(new Callback<Product>() {
-            @Override
-            public void onResponse(Call<Product> call, Response<Product> response) {
-                progressBar.setVisibility(View.GONE);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    currentProduct = response.body();
-
-                    // Remplir les champs avec les données du produit
-                    etReference.setText(currentProduct.getReference());
-                    etLabel.setText(currentProduct.getLabel());
-                    etName.setText(currentProduct.getName());
-                    etDescription.setText(currentProduct.getDescription());
-                    etBarcode.setText(currentProduct.getBarcode());
-                    etQuantity.setText(String.valueOf(currentProduct.getQuantity()));
-                    etPrice.setText(String.format(Locale.getDefault(), "%.2f", currentProduct.getPrice()));
-
-                    // Charger la photo si disponible
-                    if (currentProduct.getPhotoUrl() != null && !currentProduct.getPhotoUrl().isEmpty()) {
-                        photoUrl = currentProduct.getPhotoUrl();
-
-                        String imageUrl = currentProduct.getPhotoUrl();
-                        if (!imageUrl.startsWith("http")) {
-                            imageUrl = ApiClient.getBaseUrl().endsWith("/")
-                                    ? ApiClient.getBaseUrl() + photoUrl
-                                    : ApiClient.getBaseUrl() + "/" + photoUrl;
-                        }
-
-                        Glide.with(ProductFormActivity.this)
-                                .load(imageUrl)
-                                .centerCrop()
-                                .into(ivProductPhoto);
-                        btnAddPhoto.setText(R.string.change_photo);
-                    }
-                } else {
-                    Toast.makeText(ProductFormActivity.this,
-                            "Erreur lors du chargement des détails du produit",
-                            Toast.LENGTH_LONG).show();
-                    finish();
-                }
+        // Observe error messages
+        viewModel.getErrorMessage().observe(this, message -> {
+            if (message != null && !message.isEmpty()) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
+        });
 
-            @Override
-            public void onFailure(Call<Product> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(ProductFormActivity.this,
-                        "Erreur réseau : " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
+        // Observe success events
+        viewModel.getOperationSuccess().observe(this, success -> {
+            if (success) {
                 finish();
             }
         });
     }
 
     /**
-     * Sauvegarde du produit (création ou mise à jour)
+     * Populate form fields with product data
      */
-    private void saveProduct() {
-        // Récupération des données saisies
+    private void populateForm(Product product) {
+        etReference.setText(product.getReference());
+        etLabel.setText(product.getLabel());
+        etName.setText(product.getName());
+        etDescription.setText(product.getDescription());
+        etBarcode.setText(product.getBarcode());
+        etQuantity.setText(String.valueOf(product.getQuantity()));
+        etPrice.setText(String.format("%.2f", product.getPrice()));
+    }
+
+    /**
+     * Enable/disable all form fields
+     */
+    private void setFormEnabled(boolean enabled) {
+        etReference.setEnabled(enabled);
+        etLabel.setEnabled(enabled);
+        etName.setEnabled(enabled);
+        etDescription.setEnabled(enabled);
+        etBarcode.setEnabled(enabled);
+        etQuantity.setEnabled(enabled);
+        etPrice.setEnabled(enabled);
+        btnSave.setEnabled(enabled);
+        btnDelete.setEnabled(enabled);
+        btnAddPhoto.setEnabled(enabled);
+        btnScanBarcode.setEnabled(enabled);
+    }
+
+    /**
+     * Validate form and save product
+     */
+    private void validateAndSaveProduct() {
+        // Créer la map de validation
+        ValidationMap validationMap = new ValidationMap();
+        validationMap.add(etReference, validator.required("Référence requise"));
+        validationMap.add(etLabel, validator.required("Libellé requis"));
+        validationMap.add(etName, validator.required("Nom requis"));
+        validationMap.add(etQuantity, validator.integer("Quantité invalide"));
+        validationMap.add(etPrice, validator.decimal("Prix invalide"));
+
+        // Valider le formulaire
+        if (!validator.validate(validationMap)) {
+            return;
+        }
+
+        // Créer l'objet produit à partir des données du formulaire
+        Product product = getProductFromForm();
+
+        // Vérifier la connectivité réseau
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            // Connexion internet disponible - sauvegarder via l'API
+            viewModel.saveProduct(product);
+        } else {
+            // Pas de connexion internet - sauvegarder localement
+            viewModel.saveProductLocally(product);
+
+            // Informer l'utilisateur
+            Toast.makeText(this, "Produit sauvegardé localement. Synchronisation automatique dès que la connexion sera rétablie.",
+                    Toast.LENGTH_LONG).show();
+
+            // Terminer l'activité
+            finish();
+        }
+    }
+
+    /**
+     * Create product object from form data
+     */
+    private Product getProductFromForm() {
         String reference = etReference.getText().toString().trim();
         String label = etLabel.getText().toString().trim();
         String name = etName.getText().toString().trim();
         String description = etDescription.getText().toString().trim();
         String barcode = etBarcode.getText().toString().trim();
-        String quantityStr = etQuantity.getText().toString().trim();
-        String priceStr = etPrice.getText().toString().trim();
 
-        // Validation des champs requis
-        if (reference.isEmpty()) {
-            etReference.setError("Veuillez saisir la référence");
-            etReference.requestFocus();
-            return;
-        }
-
-        if (label.isEmpty()) {
-            etLabel.setError("Veuillez saisir le libellé");
-            etLabel.requestFocus();
-            return;
-        }
-
-        if (name.isEmpty()) {
-            etName.setError("Veuillez saisir le nom");
-            etName.requestFocus();
-            return;
-        }
-
-        // Convertir la quantité
         int quantity = 0;
-        if (!quantityStr.isEmpty()) {
-            try {
-                quantity = Integer.parseInt(quantityStr);
-            } catch (NumberFormatException e) {
-                etQuantity.setError("Quantité invalide");
-                etQuantity.requestFocus();
-                return;
-            }
-        }
+        try {
+            quantity = Integer.parseInt(etQuantity.getText().toString().trim());
+        } catch (NumberFormatException ignored) {}
 
-        // Convertir le prix
         double price = 0.0;
-        if (!priceStr.isEmpty()) {
-            try {
-                price = Double.parseDouble(priceStr);
-            } catch (NumberFormatException e) {
-                etPrice.setError("Prix invalide");
-                etPrice.requestFocus();
-                return;
-            }
+        try {
+            price = Double.parseDouble(etPrice.getText().toString().trim());
+        } catch (NumberFormatException ignored) {}
+
+        // Create product object
+        Product product = new Product();
+
+        // If editing, set existing ID
+        if (!viewModel.isCreateMode() && viewModel.getProduct().getValue() != null) {
+            product.setId(viewModel.getProduct().getValue().getId());
         }
 
-        // Afficher la progression
-        progressBar.setVisibility(View.VISIBLE);
-        btnSave.setEnabled(false);
+        product.setReference(reference);
+        product.setLabel(label);
+        product.setName(name);
+        product.setDescription(description);
+        product.setBarcode(barcode);
+        product.setQuantity(quantity);
+        product.setPrice(price);
+        product.setPhotoUrl(viewModel.getPhotoUrl().getValue());
+        product.setUserId(viewModel.getCurrentUserId());
 
-        if (MODE_CREATE.equals(mode)) {
-            // Création d'un nouveau produit
-            Map<String, Object> productMap = new HashMap<>();
-            productMap.put("reference", reference);
-            productMap.put("label", label);
-            productMap.put("name", name);
-            productMap.put("description", description);
-            productMap.put("photo_url", photoUrl);
-            productMap.put("barcode", barcode);
-            productMap.put("quantity", quantity);
-            productMap.put("price", price);
-            productMap.put("userId", currentUser.getId());
-
-            apiService.createProductRaw(productMap).enqueue(new Callback<Map<String, Object>>() {
-                @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                    // Masquer l'indicateur de progression
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-
-                    if (response.isSuccessful() && response.body() != null) {
-                        Map<String, Object> result = response.body();
-
-                        boolean success = (boolean) result.get("success");
-
-                        if (success) {
-                            // Récupérer le produit créé dans la réponse
-                            Map<String, Object> productData = (Map<String, Object>) result.get("product");
-
-                            // Afficher un message de succès
-                            Toast.makeText(ProductFormActivity.this, "Produit créé avec succès", Toast.LENGTH_SHORT).show();
-
-                            // Vous pouvez ici retourner à l'activité précédente ou effectuer d'autres actions
-                            finish();
-                        } else {
-                            // En cas d'erreur côté serveur
-                            String message = (String) result.get("message");
-                            Toast.makeText(ProductFormActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // En cas d'erreur HTTP
-                        try {
-                            // Essayer de parser l'erreur du serveur
-                            if (response.errorBody() != null) {
-                                String errorJson = response.errorBody().string();
-                                JSONObject errorObject = new JSONObject(errorJson);
-                                String errorMessage = errorObject.getString("message");
-                                Toast.makeText(ProductFormActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(ProductFormActivity.this,
-                                        "Erreur " + response.code() + ": " + response.message(),
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(ProductFormActivity.this,
-                                    "Erreur lors de la création du produit (" + response.code() + ")",
-                                    Toast.LENGTH_LONG).show();
-
-                            // Log l'erreur pour débogage
-                            Log.e("API", "Erreur: " + e.getMessage());
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                    // Masquer l'indicateur de progression
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-
-                    // Log détaillé de l'erreur
-                    Log.e("API", "URL: " + call.request().url());
-                    Log.e("API", "Méthode: " + call.request().method());
-                    Log.e("API", "Erreur: " + t.getMessage());
-                    Log.e("API", "Classe d'erreur: " + t.getClass().getName());
-
-                    // Afficher des informations utiles en fonction du type d'erreur
-                    if (t instanceof IOException) {
-                        // Problème de réseau
-                        Toast.makeText(ProductFormActivity.this,
-                                "Erreur de connexion réseau. Vérifiez votre connexion Internet.",
-                                Toast.LENGTH_LONG).show();
-                    } else if (t instanceof HttpException) {
-                        // Erreur HTTP
-                        HttpException httpError = (HttpException) t;
-                        Response<?> response = httpError.response();
-
-                        try {
-                            String errorBody = response.errorBody().string();
-                            Log.e("API", "Corps de l'erreur: " + errorBody);
-                            Toast.makeText(ProductFormActivity.this,
-                                    "Erreur serveur: " + response.code() + " - " + errorBody,
-                                    Toast.LENGTH_LONG).show();
-                        } catch (IOException e) {
-                            Toast.makeText(ProductFormActivity.this,
-                                    "Erreur serveur: " + response.code(),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // Autre type d'erreur
-                        Toast.makeText(ProductFormActivity.this,
-                                "Erreur: " + t.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-        } else {
-            // Mise à jour du produit existant
-            Map<String, Object> productMap = new HashMap<>();
-            productMap.put("id", currentProduct.getId());
-            productMap.put("reference", reference);
-            productMap.put("label", label);
-            productMap.put("name", name);
-            productMap.put("description", description);
-            productMap.put("photo_url", photoUrl);
-            productMap.put("barcode", barcode);
-            productMap.put("quantity", quantity);
-            productMap.put("price", price);
-            productMap.put("userId", currentUser.getId());
-
-            apiService.updateProduct((HashMap<String, Object>) productMap).enqueue(new Callback<Map<String, Object>>() {
-                @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-
-                    if (response.isSuccessful() && response.body() != null) {
-                        Map<String, Object> result = response.body();
-                        boolean success = (boolean) result.get("success");
-
-                        if (success) {
-                            Toast.makeText(ProductFormActivity.this, "Produit mis à jour avec succès", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            String message = (String) result.get("message");
-                            Toast.makeText(ProductFormActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(ProductFormActivity.this, "Erreur lors de la mise à jour du produit", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-                    Log.e("API", "Erreur complète: " + t.toString());
-                    Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
-                    Log.e("API", "Message: " + t.getMessage());
-                    Log.e("API", "URL: " + call.request().url());
-
-                    // Enregistrer la requête pour débogage
-                    Request request = call.request();
-                    try {
-                        Log.e("API", "Headers: " + request.headers().toString());
-                        if (request.body() != null) {
-                            Log.e("API", "Body class: " + request.body().getClass().getName());
-                        }
-                    } catch (Exception e) {
-                        Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
-                    }
-
-                    Toast.makeText(ProductFormActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-        }
+        return product;
     }
 
     /**
-     * Confirmation avant la suppression d'un produit
+     * Confirm product deletion
      */
     private void confirmDeleteProduct() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Supprimer le produit");
-        builder.setMessage("Êtes-vous sûr de vouloir supprimer ce produit ?");
-        builder.setPositiveButton("Oui", (dialog, which) -> deleteProduct());
-        builder.setNegativeButton("Non", null);
-        builder.show();
+        DialogUtils.showConfirmationDialog(
+                this,
+                getString(R.string.delete_product),
+                "Êtes-vous sûr de vouloir supprimer ce produit ?",
+                () -> viewModel.deleteProduct()
+        );
     }
 
-    /**
-     * Suppression du produit
-     */
-    private void deleteProduct() {
-        progressBar.setVisibility(View.VISIBLE);
-        btnDelete.setEnabled(false);
+    // ImageHelper callback
+    @Override
+    public void onImageSelected(Uri imageUri) {
+        viewModel.uploadProductPhoto(imageUri, this);
+    }
 
-        apiService.deleteProduct(currentProduct.getId()).enqueue(new Callback<Map<String, Object>>() {
-            @Override
-            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                progressBar.setVisibility(View.GONE);
-                btnDelete.setEnabled(true);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    Map<String, Object> result = response.body();
-                    boolean success = (boolean) result.get("success");
-
-                    if (success) {
-                        Toast.makeText(ProductFormActivity.this, "Produit supprimé avec succès", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        String message = (String) result.get("message");
-                        Toast.makeText(ProductFormActivity.this, message, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(ProductFormActivity.this, "Erreur lors de la suppression du produit", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                btnDelete.setEnabled(true);
-                Toast.makeText(ProductFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+    // BarcodeHelper callback
+    @Override
+    public void onBarcodeScanned(String barcode) {
+        etBarcode.setText(barcode);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check if result is from barcode scanner
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (scanResult != null) {
+            barcodeHelper.handleScanResult(scanResult);
+            return;
+        }
+
+        // Otherwise handle as image result
+        if (resultCode == RESULT_OK) {
+            imageHelper.handleActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        imageHelper.cleanup();
     }
 }
