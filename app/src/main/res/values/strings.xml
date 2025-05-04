@@ -100,4 +100,16 @@
     <string name="no_camera_app">Aucune application de caméra disponible</string>
     <string name="price_format">%.2f €</string>
     <string name="product_price_stock">Prix: %1$s | Stock: %2$d</string>
+
+    <!-- Chaînes pour les fonctionnalités de caméra -->
+    <string name="take_photo">Prendre une photo</string>
+    <string name="camera_permission_required">L\'accès à la caméra est nécessaire</string>
+    <string name="camera_permission_rationale">L\'accès à la caméra est nécessaire pour cette fonctionnalité. Veuillez autoriser l\'accès à la caméra.</string>
+    <string name="camera_permission_denied">L\'accès à la caméra est nécessaire pour utiliser cette fonctionnalité</string>
+    <string name="camera_permission_settings">L\'accès à la caméra est nécessaire. Veuillez l\'activer dans les paramètres de l\'application.</string>
+    <string name="open_settings">Paramètres</string>
+    <string name="cancel">Annuler</string>
+    <string name="ok">OK</string>
+
+    <string name="add_photo_no_connection">Connexion requise pour ajouter une photo</string>
 </resources>

@@ -110,13 +110,15 @@ public class FileUtils {
      * @return The processed image file
      */
     public static File compressAndResizeImage(Context context, Uri imageUri, int maxWidth, int maxHeight) {
+        Log.d("FileUtils", "Starting compression for URI: " + imageUri);
         try {
             // Get input stream
             InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
             if (inputStream == null) {
+                Log.e("FileUtils", "Failed to open input stream");
                 return null;
             }
-
+            Log.d("FileUtils", "Input stream opened successfully");
             // Get original bitmap dimensions
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
@@ -164,7 +166,7 @@ public class FileUtils {
 
             return outputFile;
         } catch (IOException e) {
-            Log.e(TAG, "Error compressing image", e);
+            Log.e("FileUtils", "Error compressing image: " + e.getMessage(), e);
             return null;
         }
     }

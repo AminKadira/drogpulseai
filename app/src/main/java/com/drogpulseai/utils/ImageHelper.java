@@ -53,6 +53,7 @@ public class ImageHelper {
      * Show dialog for selecting image source (camera or gallery)
      */
     public void showImageSourceDialog() {
+
         String[] options = {"Prendre une photo", "Choisir depuis la galerie"};
 
         new AlertDialog.Builder(activity)

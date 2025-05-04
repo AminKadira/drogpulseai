@@ -1,35 +1,30 @@
 package com.drogpulseai.activities.contacts;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.drogpulseai.R;
-import com.drogpulseai.api.ApiClient;
-import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
-import com.drogpulseai.models.User;
+import com.drogpulseai.utils.DialogUtils;
+import com.drogpulseai.utils.FormValidator;
 import com.drogpulseai.utils.LocationUtils;
-import com.drogpulseai.utils.SessionManager;
-
-import java.util.Map;
-
-import okhttp3.Request;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.drogpulseai.utils.NetworkUtils;
+import com.drogpulseai.utils.ValidationMap;
+import com.drogpulseai.viewmodels.ContactFormViewModel;
 
 /**
- * Activité pour la création et la modification de contacts
+ * Activité pour la création et la modification de contacts, avec support hors-ligne
  */
 public class ContactFormActivity extends AppCompatActivity implements LocationUtils.LocationCallback {
 
@@ -41,17 +36,16 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
     private EditText etNom, etPrenom, etTelephone, etEmail, etNotes;
     private Button btnSave, btnDelete;
     private ProgressBar progressBar;
+    private TextView tvLocationInfo;
 
     // Utilities
-    private ApiService apiService;
-    private SessionManager sessionManager;
     private LocationUtils locationUtils;
+    private FormValidator validator;
+
+    // ViewModel
+    private ContactFormViewModel viewModel;
 
     // Données
-    private String mode;
-    private int contactId;
-    private User currentUser;
-    private Contact currentContact;
     private double latitude = 0.0;
     private double longitude = 0.0;
 
@@ -61,23 +55,16 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         setContentView(R.layout.activity_contact_form);
 
         // Récupérer le mode et les données
-        mode = getIntent().getStringExtra("mode");
-        contactId = getIntent().getIntExtra("contact_id", -1);
+        String mode = getIntent().getStringExtra("mode");
+        int contactId = getIntent().getIntExtra("contact_id", -1);
 
-        // Configurer la barre d'action
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(MODE_CREATE.equals(mode) ?
-                    R.string.create_contact : R.string.edit_contact);
-        }
+        // Initialiser le ViewModel
+        viewModel = new ViewModelProvider(this).get(ContactFormViewModel.class);
+        viewModel.initializeMode(mode, contactId);
 
-        // Initialisation des utilitaires
-        apiService = ApiClient.getApiService();
-        sessionManager = new SessionManager(this);
+        // Initialiser les utilitaires
         locationUtils = new LocationUtils(this, this);
-
-        // Récupérer l'utilisateur courant
-        currentUser = sessionManager.getUser();
+        validator = new FormValidator(this);
 
         // Initialisation des vues
         initializeViews();
@@ -85,18 +72,25 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Configuration des listeners
         setupListeners();
 
-        // Configuration initiale selon le mode
-        if (MODE_CREATE.equals(mode)) {
-            setupForCreateMode();
-        } else if (MODE_EDIT.equals(mode) && contactId != -1) {
-            loadContactDetails(contactId);
+        // Configuration de la barre d'action
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(viewModel.isCreateMode() ?
+                    R.string.create_contact : R.string.edit_contact);
+        }
+
+        // Configuration selon le mode
+        if (viewModel.isCreateMode()) {
+            btnDelete.setVisibility(View.GONE);
         } else {
-            Toast.makeText(this, "Mode invalide", Toast.LENGTH_SHORT).show();
-            finish();
+            viewModel.loadContactDetails();
         }
 
         // Démarrer la détection de localisation
         locationUtils.getCurrentLocation();
+
+        // Observer les changements de données
+        setupObservers();
     }
 
     /**
@@ -111,6 +105,7 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         btnSave = findViewById(R.id.btn_save);
         btnDelete = findViewById(R.id.btn_delete);
         progressBar = findViewById(R.id.progress_bar);
+        tvLocationInfo = findViewById(R.id.tv_location_info);
     }
 
     /**
@@ -118,89 +113,92 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
      */
     private void setupListeners() {
         // Bouton de sauvegarde
-        btnSave.setOnClickListener(v -> saveContact());
+        btnSave.setOnClickListener(v -> validateAndSaveContact());
 
         // Bouton de suppression
         btnDelete.setOnClickListener(v -> confirmDeleteContact());
     }
 
     /**
-     * Configuration pour le mode création
+     * Configuration des observateurs LiveData
      */
-    private void setupForCreateMode() {
-        btnDelete.setVisibility(View.GONE);
-    }
+    private void setupObservers() {
+        // Observer le chargement
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            setFormEnabled(!isLoading);
+        });
 
-    /**
-     * Chargement des détails d'un contact existant
-     */
-    private void loadContactDetails(int contactId) {
-        progressBar.setVisibility(View.VISIBLE);
-
-        apiService.getContactDetails(contactId).enqueue(new Callback<Contact>() {
-            @Override
-            public void onResponse(Call<Contact> call, Response<Contact> response) {
-                progressBar.setVisibility(View.GONE);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    currentContact = response.body();
-
-                    // Remplir les champs avec les données du contact
-                    etNom.setText(currentContact.getNom());
-                    etPrenom.setText(currentContact.getPrenom());
-                    etTelephone.setText(currentContact.getTelephone());
-                    etEmail.setText(currentContact.getEmail());
-                    etNotes.setText(currentContact.getNotes());
-
-                    // Stocker les coordonnées
-                    latitude = currentContact.getLatitude();
-                    longitude = currentContact.getLongitude();
-                } else {
-                    Toast.makeText(ContactFormActivity.this,
-                            "Erreur lors du chargement des détails du contact",
-                            Toast.LENGTH_LONG).show();
-                    finish();
-                }
+        // Observer les données du contact
+        viewModel.getContact().observe(this, contact -> {
+            if (contact != null) {
+                populateForm(contact);
             }
+        });
 
-            @Override
-            public void onFailure(Call<Contact> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(ContactFormActivity.this,
-                        "Erreur réseau : " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
+        // Observer les messages d'erreur
+        viewModel.getErrorMessage().observe(this, message -> {
+            if (message != null && !message.isEmpty()) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // Observer le succès des opérations
+        viewModel.getOperationSuccess().observe(this, success -> {
+            if (success) {
                 finish();
             }
         });
     }
 
     /**
-     * Sauvegarde du contact (création ou mise à jour)
+     * Remplir le formulaire avec les données du contact
      */
-    private void saveContact() {
-        // Récupération des données saisies
-        String nom = etNom.getText().toString().trim();
-        String prenom = etPrenom.getText().toString().trim();
-        String telephone = etTelephone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String notes = etNotes.getText().toString().trim();
+    private void populateForm(Contact contact) {
+        etNom.setText(contact.getNom());
+        etPrenom.setText(contact.getPrenom());
+        etTelephone.setText(contact.getTelephone());
+        etEmail.setText(contact.getEmail());
+        etNotes.setText(contact.getNotes());
 
-        // Validation des champs requis
-        if (nom.isEmpty()) {
-            etNom.setError("Veuillez saisir le nom");
-            etNom.requestFocus();
-            return;
+        // Stocker les coordonnées
+        latitude = contact.getLatitude();
+        longitude = contact.getLongitude();
+
+        // Mettre à jour l'info de localisation
+        tvLocationInfo.setText(R.string.location_retrieved);
+    }
+
+    /**
+     * Activer/désactiver tous les champs du formulaire
+     */
+    private void setFormEnabled(boolean enabled) {
+        etNom.setEnabled(enabled);
+        etPrenom.setEnabled(enabled);
+        etTelephone.setEnabled(enabled);
+        etEmail.setEnabled(enabled);
+        etNotes.setEnabled(enabled);
+        btnSave.setEnabled(enabled);
+        btnDelete.setEnabled(enabled);
+    }
+
+    /**
+     * Valider le formulaire et sauvegarder le contact
+     */
+    private void validateAndSaveContact() {
+        // Créer la map de validation
+        ValidationMap validationMap = new ValidationMap();
+        validationMap.add(etNom, validator.required("Nom requis"));
+        validationMap.add(etPrenom, validator.required("Prénom requis"));
+        validationMap.add(etTelephone, validator.required("Téléphone requis"));
+
+        // Valider l'email si présent
+        if (!etEmail.getText().toString().trim().isEmpty()) {
+            validationMap.add(etEmail, validator.email("Email invalide"));
         }
 
-        if (prenom.isEmpty()) {
-            etPrenom.setError("Veuillez saisir le prénom");
-            etPrenom.requestFocus();
-            return;
-        }
-
-        if (telephone.isEmpty()) {
-            etTelephone.setError("Veuillez saisir le téléphone");
-            etTelephone.requestFocus();
+        // Valider le formulaire
+        if (!validator.validate(validationMap)) {
             return;
         }
 
@@ -211,156 +209,51 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
             return;
         }
 
-        // Afficher la progression
-        progressBar.setVisibility(View.VISIBLE);
-        btnSave.setEnabled(false);
+        // Créer l'objet contact à partir des données du formulaire
+        Contact contact = getContactFromForm();
 
-        if (MODE_CREATE.equals(mode)) {
-            // Création d'un nouveau contact
-            Contact newContact = new Contact(nom, prenom, telephone, email, notes, latitude, longitude, currentUser.getId());
+        // Sauvegarder le contact
+        viewModel.saveContact(contact);
 
-            apiService.createContact(newContact).enqueue(new Callback<Map<String, Object>>() {
-                @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-
-                    if (response.isSuccessful() && response.body() != null) {
-                        Map<String, Object> result = response.body();
-
-                        boolean success = (boolean) result.get("success");
-
-                        if (success) {
-                            Toast.makeText(ContactFormActivity.this, "Contact créé avec succès", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            String message = (String) result.get("message");
-                            Toast.makeText(ContactFormActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(ContactFormActivity.this, "Erreur lors de la création du contact", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-                    Log.e("API", "Erreur complète: " + t.toString());
-                    Log.e("API", "Cause: " + (t.getCause() != null ? t.getCause().toString() : "Inconnue"));
-                    Log.e("API", "Message: " + t.getMessage());
-                    Log.e("API", "URL: " + call.request().url());
-
-                    // Enregistrer la requête pour débogage
-                    Request request = call.request();
-                    try {
-                        Log.e("API", "Headers: " + request.headers().toString());
-                        if (request.body() != null) {
-                            Log.e("API", "Body class: " + request.body().getClass().getName());
-                        }
-                    } catch (Exception e) {
-                        Log.e("API", "Erreur lors de l'analyse de la requête: " + e.getMessage());
-                    }
-                    Toast.makeText(ContactFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-
-                }
-            });
-        } else {
-            // Mise à jour du contact existant
-            currentContact.setNom(nom);
-            currentContact.setPrenom(prenom);
-            currentContact.setTelephone(telephone);
-            currentContact.setEmail(email);
-            currentContact.setNotes(notes);
-            currentContact.setLatitude(latitude);
-            currentContact.setLongitude(longitude);
-
-            apiService.updateContact(currentContact).enqueue(new Callback<Map<String, Object>>() {
-                @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-
-                    if (response.isSuccessful() && response.body() != null) {
-                        Map<String, Object> result = response.body();
-
-                        boolean success = (boolean) result.get("success");
-
-                        if (success) {
-                            Toast.makeText(ContactFormActivity.this, "Contact mis à jour avec succès", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            String message = (String) result.get("message");
-                            Toast.makeText(ContactFormActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(ContactFormActivity.this, "Erreur lors de la mise à jour du contact", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    btnSave.setEnabled(true);
-                    Toast.makeText(ContactFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    System.out.println("Erreur réseau : " + t.getMessage());
-
-                }
-            });
+        // Informer l'utilisateur si mode hors ligne
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this,
+                    "Contact sauvegardé localement. Synchronisation automatique dès que la connexion sera rétablie.",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
     /**
-     * Confirmation avant la suppression d'un contact
+     * Créer un objet Contact à partir des données du formulaire
      */
-    private void confirmDeleteContact() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Supprimer le contact");
-        builder.setMessage("Êtes-vous sûr de vouloir supprimer ce contact ?");
-        builder.setPositiveButton("Oui", (dialog, which) -> deleteContact());
-        builder.setNegativeButton("Non", null);
-        builder.show();
+    private Contact getContactFromForm() {
+        String nom = etNom.getText().toString().trim();
+        String prenom = etPrenom.getText().toString().trim();
+        String telephone = etTelephone.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String notes = etNotes.getText().toString().trim();
+
+        // Créer l'objet contact
+        Contact contact = new Contact(nom, prenom, telephone, email, notes, latitude, longitude, viewModel.getCurrentUserId());
+
+        // Si en mode édition, définir l'ID existant
+        if (!viewModel.isCreateMode() && viewModel.getContact().getValue() != null) {
+            contact.setId(viewModel.getContact().getValue().getId());
+        }
+
+        return contact;
     }
 
     /**
-     * Suppression du contact
+     * Confirmer la suppression d'un contact
      */
-    private void deleteContact() {
-        progressBar.setVisibility(View.VISIBLE);
-        btnDelete.setEnabled(false);
-
-        apiService.deleteContact(currentContact.getId()).enqueue(new Callback<Map<String, Object>>() {
-            @Override
-            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                progressBar.setVisibility(View.GONE);
-                btnDelete.setEnabled(true);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    Map<String, Object> result = response.body();
-
-                    boolean success = (boolean) result.get("success");
-
-                    if (success) {
-                        Toast.makeText(ContactFormActivity.this, "Contact supprimé avec succès", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        String message = (String) result.get("message");
-                        Toast.makeText(ContactFormActivity.this, message, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(ContactFormActivity.this, "Erreur lors de la suppression du contact", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                btnDelete.setEnabled(true);
-                Toast.makeText(ContactFormActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-                System.out.println("Erreur réseau : " + t.getMessage());
-
-            }
-        });
+    private void confirmDeleteContact() {
+        DialogUtils.showConfirmationDialog(
+                this,
+                getString(R.string.delete_contact),
+                "Êtes-vous sûr de vouloir supprimer ce contact ?",
+                () -> viewModel.deleteContact()
+        );
     }
 
     @Override
@@ -376,16 +269,18 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
     public void onLocationReceived(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+        tvLocationInfo.setText(R.string.location_retrieved);
     }
 
     @Override
     public void onLocationError(String message) {
         // Si c'est en mode édition, on garde les coordonnées existantes
-        if (MODE_EDIT.equals(mode) && currentContact != null) {
+        if (!viewModel.isCreateMode() && viewModel.getContact().getValue() != null) {
             return;
         }
 
         Toast.makeText(this, "Erreur de localisation : " + message, Toast.LENGTH_LONG).show();
+        tvLocationInfo.setText(R.string.location_error);
     }
 
     @Override

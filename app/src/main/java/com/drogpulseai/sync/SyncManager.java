@@ -18,6 +18,7 @@ import androidx.work.WorkManager;
 
 import com.drogpulseai.utils.NetworkUtils;
 import com.drogpulseai.workers.ProductSyncWorker;
+import com.drogpulseai.workers.ContactSyncWorker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -35,6 +36,7 @@ public class SyncManager {
     // Nom des préférences partagées
     private static final String PREF_NAME = "sync_manager";
     private static final String KEY_PENDING_PRODUCTS = "pending_products";
+    private static final String KEY_PENDING_CONTACTS = "pending_contacts";
 
     // Instance singleton
     private static SyncManager instance;
@@ -157,6 +159,7 @@ public class SyncManager {
         }
     }
 
+
     /**
      * Planifier une synchronisation immédiate
      */
@@ -199,6 +202,119 @@ public class SyncManager {
                 );
 
         Log.d(TAG, "Synchronisation planifiée pour " + productIds.size() + " produits");
+    }
+
+
+    /**
+     * Ajouter un contact à la liste des contacts en attente de synchronisation
+     */
+    public void addContactForSync(int contactId) {
+        Set<Integer> pendingContacts = getPendingContacts();
+        pendingContacts.add(contactId);
+        savePendingContacts(pendingContacts);
+
+        // Si une connexion est disponible, démarrer la synchronisation immédiatement
+        if (NetworkUtils.isNetworkAvailable(application)) {
+            scheduleContactSyncNow();
+        }
+    }
+
+    /**
+     * Retirer un contact de la liste des contacts en attente de synchronisation
+     */
+    public void removeContactFromSync(int contactId) {
+        Set<Integer> pendingContacts = getPendingContacts();
+        pendingContacts.remove(contactId);
+        savePendingContacts(pendingContacts);
+    }
+
+    /**
+     * Vérifier s'il y a des contacts en attente de synchronisation
+     */
+    public boolean hasPendingContacts() {
+        return !getPendingContacts().isEmpty();
+    }
+
+    /**
+     * Obtenir le nombre de contacts en attente de synchronisation
+     */
+    public int getPendingContactCount() {
+        return getPendingContacts().size();
+    }
+
+    /**
+     * Obtenir la liste des contacts en attente de synchronisation
+     */
+    public Set<Integer> getPendingContacts() {
+        String json = preferences.getString(KEY_PENDING_CONTACTS, null);
+
+        if (json == null) {
+            return new HashSet<>();
+        }
+
+        try {
+            Type type = new TypeToken<Set<Integer>>(){}.getType();
+            return gson.fromJson(json, type);
+        } catch (Exception e) {
+            Log.e(TAG, "Erreur lors de la récupération des contacts en attente", e);
+            return new HashSet<>();
+        }
+    }
+
+    /**
+     * Sauvegarder la liste des contacts en attente de synchronisation
+     */
+    private void savePendingContacts(Set<Integer> pendingContacts) {
+        try {
+            String json = gson.toJson(pendingContacts);
+            preferences.edit().putString(KEY_PENDING_CONTACTS, json).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Erreur lors de la sauvegarde des contacts en attente", e);
+        }
+    }
+
+    /**
+     * Planifier une synchronisation immédiate des contacts
+     */
+    public void scheduleContactSyncNow() {
+        if (!hasPendingContacts()) {
+            return;
+        }
+
+        Set<Integer> contactIds = getPendingContacts();
+
+        // Convertir l'ensemble en tableau
+        int[] contactIdsArray = new int[contactIds.size()];
+        int i = 0;
+        for (Integer id : contactIds) {
+            contactIdsArray[i++] = id;
+        }
+
+        // Créer les données d'entrée pour le Worker
+        Data inputData = new Data.Builder()
+                .putIntArray("contact_ids", contactIdsArray)
+                .build();
+
+        // Définir les contraintes du Worker
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        // Créer la requête de travail
+        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(ContactSyncWorker.class)
+                .setConstraints(constraints)
+                .setInputData(inputData)
+                .build();
+
+        // Planifier le travail unique, en remplaçant tout travail existant
+        WorkManager.getInstance(application)
+                .enqueueUniqueWork(
+                        "contact_sync_work",
+                        ExistingWorkPolicy.REPLACE,
+                        syncRequest
+                );
+
+        Log.d(TAG, "Synchronisation des contacts planifiée pour " + contactIds.size() + " contacts");
     }
 
     /**

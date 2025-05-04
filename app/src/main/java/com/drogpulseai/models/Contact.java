@@ -31,6 +31,15 @@ public class Contact implements Serializable {
     @SerializedName("user_id")
     private int userId;
 
+    // Nouveaux champs pour la synchronisation
+    @SerializedName("last_updated")
+    private long lastUpdated;
+
+    @SerializedName("is_dirty")
+    private boolean isDirty;
+
+    public Contact() {
+    }
 
     public Contact(String nom, String prenom, String telephone, String email,
                    String notes, double latitude, double longitude, int userId) {
@@ -42,9 +51,11 @@ public class Contact implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.userId = userId;
+        this.lastUpdated = System.currentTimeMillis();
+        this.isDirty = false;
     }
 
-    // Getters et Setters
+    // Getters et Setters existants
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -58,7 +69,6 @@ public class Contact implements Serializable {
     public void setTelephone(String telephone) { this.telephone = telephone; }
 
     public String getEmail() { return email; }
-
     public void setEmail(String email) { this.email = email; }
 
     public String getNotes() { return notes; }
@@ -72,6 +82,13 @@ public class Contact implements Serializable {
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
+
+    // Nouveaux getters et setters pour la synchronisation
+    public long getLastUpdated() { return lastUpdated; }
+    public void setLastUpdated(long lastUpdated) { this.lastUpdated = lastUpdated; }
+
+    public boolean isDirty() { return isDirty; }
+    public void setDirty(boolean dirty) { isDirty = dirty; }
 
     // Pour l'affichage en debug
     @Override

@@ -3,6 +3,9 @@ package com.drogpulseai.utils;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.drogpulseai.activities.appuser.LoginActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +54,7 @@ public class Config {
 
     public static String getApiBaseUrl() {
         // URL par défaut si la configuration n'est pas initialisée
-        String defaultUrl = "https://localhost/drogpulseai_Api/api/";
+        String defaultUrl="";
 
         if (!initialized || properties == null) {
             Log.w(TAG, "Configuration non initialisée, utilisation de l'URL par défaut");

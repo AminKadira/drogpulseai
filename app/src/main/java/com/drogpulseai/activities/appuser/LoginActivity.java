@@ -54,6 +54,11 @@ public class LoginActivity extends AppCompatActivity {
         apiService = ApiClient.getApiService();
         sessionManager = new SessionManager(this);
 
+        Toast.makeText(LoginActivity.this, "Welcome to DrogpulseAi "+ApiClient.getBaseUrl().substring(8,15), Toast.LENGTH_SHORT).show();
+
+        TextView tv1 = (TextView)findViewById(R.id.tv_app_subtitle);
+        tv1.setText(tv1.getText()+" -"+ApiClient.getBaseUrl().substring(8,15));
+
         // Vérifier si l'utilisateur est déjà connecté
         if (sessionManager.isLoggedIn()) {
             navigateToMainActivity();
@@ -157,11 +162,15 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 Toast.makeText(LoginActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
+<<<<<<< HEAD
                 if (NetworkUtils.isNetworkAvailable(this)) {
 
                 }
+=======
+>>>>>>> V1.2
             }
         });
+
     }
 
     /**
