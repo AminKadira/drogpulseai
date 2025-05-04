@@ -110,4 +110,6 @@
     <string name="open_settings">Paramètres</string>
     <string name="cancel">Annuler</string>
     <string name="ok">OK</string>
+
+    <string name="add_photo_no_connection">Connexion requise pour ajouter une photo</string>
 </resources>

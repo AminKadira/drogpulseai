@@ -29,6 +29,8 @@ import com.drogpulseai.sync.SyncManager;
 import com.drogpulseai.utils.CameraPermissionHelper;
 import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.SessionManager;
+import com.drogpulseai.utils.NetworkUtils;
+import com.drogpulseai.repository.ContactRepository;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -154,34 +156,83 @@ public class MainActivity extends AppCompatActivity implements
             progressBar.setVisibility(View.VISIBLE);
         }
 
-        apiService.getContacts(currentUser.getId()).enqueue(new Callback<List<Contact>>() {
-            @Override
-            public void onResponse(Call<List<Contact>> call, Response<List<Contact>> response) {
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+        // Vérifier s'il y a une connexion Internet
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            // Mode en ligne - charger depuis l'API
+            apiService.getContacts(currentUser.getId()).enqueue(new Callback<List<Contact>>() {
+                @Override
+                public void onResponse(Call<List<Contact>> call, Response<List<Contact>> response) {
+                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
 
-                if (response.isSuccessful() && response.body() != null) {
-                    contacts.clear();
-                    contacts.addAll(response.body());
-                    adapter.notifyDataSetChanged();
+                    if (response.isSuccessful() && response.body() != null) {
+                        // Mettre à jour la liste des contacts
+                        contacts.clear();
+                        contacts.addAll(response.body());
+                        adapter.notifyDataSetChanged();
 
-                    // Afficher un message si aucun contact
-                    if (contacts.isEmpty()) {
-                        Toast.makeText(MainActivity.this, "Aucun contact trouvé", Toast.LENGTH_SHORT).show();
+                        // Mettre à jour le cache local
+                        ContactRepository repository = new ContactRepository(MainActivity.this);
+                        for (Contact contact : contacts) {
+                            repository.insertOrUpdateContact(contact);
+                        }
+
+                        // Afficher un message si aucun contact
+                        if (contacts.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Aucun contact trouvé", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Erreur lors du chargement des contacts", Toast.LENGTH_LONG).show();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "Erreur lors du chargement des contacts", Toast.LENGTH_LONG).show();
                 }
-            }
 
-            @Override
-            public void onFailure(Call<List<Contact>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
-                Toast.makeText(MainActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
-                System.out.println("Erreur réseau : " + t.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(Call<List<Contact>> call, Throwable t) {
+                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+                    Toast.makeText(MainActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
+
+                    // En cas d'erreur réseau, charger depuis le cache local
+                    loadContactsFromLocalCache();
+                }
+            });
+        } else {
+            // Mode hors ligne - charger depuis le cache local
+            loadContactsFromLocalCache();
+        }
+    }
+
+    /**
+     * Charger les contacts depuis le cache local
+     */
+    private void loadContactsFromLocalCache() {
+        ContactRepository repository = new ContactRepository(this);
+        List<Contact> cachedContacts = repository.getContactsForUser(currentUser.getId());
+
+        contacts.clear();
+        contacts.addAll(cachedContacts);
+        adapter.notifyDataSetChanged();
+
+        progressBar.setVisibility(View.GONE);
+        swipeRefreshLayout.setRefreshing(false);
+
+        // Afficher un message si aucun contact en cache
+        if (contacts.isEmpty()) {
+            Toast.makeText(this, "Aucun contact dans le cache", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Contacts chargés depuis le cache local", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Ajouter aussi dans onCreate ou onResume
+    private void checkPendingSynchronizations() {
+        SyncManager syncManager = SyncManager.getInstance((Application) getApplicationContext());
+
+        // Si des contacts sont en attente de synchronisation et une connexion est disponible
+        if (syncManager.hasPendingContacts() && NetworkUtils.isNetworkAvailable(this)) {
+            syncManager.scheduleContactSyncNow();
+            Toast.makeText(this, "Synchronisation des contacts en cours...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -332,5 +383,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onResume();
         // Rafraîchir les contacts à chaque retour à l'activité
         loadContacts();
+        // Vérifier les synchronisations en attente
+        checkPendingSynchronizations();
     }
 }

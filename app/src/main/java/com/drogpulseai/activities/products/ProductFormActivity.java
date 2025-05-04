@@ -1,5 +1,6 @@
 package com.drogpulseai.activities.products;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -124,7 +125,29 @@ public class ProductFormActivity extends AppCompatActivity implements
         }
 
         // Set up button click listeners
-        btnAddPhoto.setOnClickListener(v -> imageHelper.showImageSourceDialog());
+        // btnAddPhoto.setOnClickListener(v -> imageHelper.showImageSourceDialog());
+        // Modifier le listener du bouton dans la méthode setupUI()
+        btnAddPhoto.setOnClickListener(v -> {
+            // Vérifier la connexion internet avant de montrer le dialogue de sélection d'image
+            if (NetworkUtils.isNetworkAvailable(this)) {
+                // Connexion disponible, afficher le dialogue de sélection d'image
+                imageHelper.showImageSourceDialog();
+            } else {
+                // Pas de connexion, afficher un message d'erreur
+                Toast.makeText(this,
+                        "Connexion internet requise pour ajouter une photo",
+                        Toast.LENGTH_LONG).show();
+
+                // Vous pourriez également afficher un dialogue plus détaillé
+                new AlertDialog.Builder(this)
+                        .setTitle("Connexion requise")
+                        .setMessage("Une connexion internet est nécessaire pour télécharger des photos. " +
+                                "Veuillez vous connecter à Internet et réessayer.")
+                        .setPositiveButton("OK", null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        });
         btnScanBarcode.setOnClickListener(v -> barcodeHelper.scanBarcode());
         btnSave.setOnClickListener(v -> validateAndSaveProduct());
         btnDelete.setOnClickListener(v -> confirmDeleteProduct());
