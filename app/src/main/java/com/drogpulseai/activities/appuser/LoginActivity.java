@@ -17,6 +17,7 @@ import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.Config;
+import com.drogpulseai.utils.NetworkUtils;
 import com.drogpulseai.utils.SessionManager;
 import com.google.gson.Gson;
 
@@ -156,7 +157,9 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 Toast.makeText(LoginActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
+                if (NetworkUtils.isNetworkAvailable(this)) {
 
+                }
             }
         });
     }

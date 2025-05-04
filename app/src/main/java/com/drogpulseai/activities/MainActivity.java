@@ -26,6 +26,7 @@ import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
 import com.drogpulseai.sync.SyncManager;
+import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -60,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //run configuration
+        Config.init(this);
 
         // Initialiser le SyncManager
         SyncManager.getInstance((Application) getApplicationContext());

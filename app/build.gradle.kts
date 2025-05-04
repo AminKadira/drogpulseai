@@ -53,6 +53,8 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.1")
     implementation(libs.room.common.jvm)
+    implementation(libs.room.runtime.android)
+    implementation(libs.engage.core)
 
     // Tests
     testImplementation("junit:junit:4.13.2")
