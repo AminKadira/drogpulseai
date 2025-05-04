@@ -305,6 +305,7 @@ public class ProductFormActivity extends AppCompatActivity implements
     @Override
     public void onBarcodeScanned(String barcode) {
         etBarcode.setText(barcode);
+        etReference.setText(barcode);
     }
 
     @Override

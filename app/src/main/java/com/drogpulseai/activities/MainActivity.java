@@ -26,6 +26,8 @@ import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
 import com.drogpulseai.sync.SyncManager;
+import com.drogpulseai.utils.CameraPermissionHelper;
+import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.SessionManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -39,7 +41,9 @@ import retrofit2.Response;
 /**
  * Activité principale avec la liste des contacts
  */
-public class MainActivity extends AppCompatActivity implements ContactAdapter.OnContactClickListener {
+public class MainActivity extends AppCompatActivity implements
+        ContactAdapter.OnContactClickListener,
+        CameraPermissionHelper.PermissionCallback {
 
     // UI Components
     private RecyclerView recyclerView;
@@ -51,10 +55,19 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
     // Utilities
     private ApiService apiService;
     private SessionManager sessionManager;
+    private CameraPermissionHelper cameraPermissionHelper;
 
     // Données
     private List<Contact> contacts;
     private User currentUser;
+
+    // Constantes pour les actions nécessitant la caméra
+    private static final int ACTION_NONE = 0;
+    private static final int ACTION_SCAN_BARCODE = 1;
+    private static final int ACTION_TAKE_PHOTO = 2;
+
+    // Action en attente de permission
+    private int pendingCameraAction = ACTION_NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +76,12 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
 
         // Initialiser le SyncManager
         SyncManager.getInstance((Application) getApplicationContext());
+
+        // Initialiser la configuration
+        Config.init(this);
+
+        // Initialiser le helper de permission caméra
+        cameraPermissionHelper = new CameraPermissionHelper(this, this);
 
         // Initialisation des utilitaires
         apiService = ApiClient.getApiService();
@@ -125,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
             intent.putExtra("mode", "create");
             startActivity(intent);
         });
-
     }
 
     /**
@@ -162,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
                 swipeRefreshLayout.setRefreshing(false);
                 Toast.makeText(MainActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
-
             }
         });
     }
@@ -173,6 +190,104 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         intent.putExtra("mode", "edit");
         intent.putExtra("contact_id", contact.getId());
         startActivity(intent);
+    }
+
+    /**
+     * Lancer le scanner de code-barres (après vérification de la permission)
+     */
+    private void scanBarcode() {
+        pendingCameraAction = ACTION_SCAN_BARCODE;
+
+        if (cameraPermissionHelper.checkAndRequestPermission()) {
+            // La permission est déjà accordée, lancer le scanner immédiatement
+            startBarcodeScanner();
+        }
+        // Sinon, onPermissionGranted sera appelé si l'utilisateur accorde la permission
+    }
+
+    /**
+     * Lancer l'appareil photo pour prendre une photo (après vérification de la permission)
+     */
+    private void takePhoto() {
+        pendingCameraAction = ACTION_TAKE_PHOTO;
+
+        if (cameraPermissionHelper.checkAndRequestPermission()) {
+            // La permission est déjà accordée, lancer l'appareil photo immédiatement
+            startCamera();
+        }
+        // Sinon, onPermissionGranted sera appelé si l'utilisateur accorde la permission
+    }
+
+    /**
+     * Lancer l'activité de scan de code-barres
+     */
+    private void startBarcodeScanner() {
+        Toast.makeText(this, "Lancement du scanner de code-barres", Toast.LENGTH_SHORT).show();
+
+        // Ici vous pouvez lancer votre activité de scan de code-barres
+        // Exemple : ProductScanActivity
+
+        // Intent intent = new Intent(this, ProductScanActivity.class);
+        // startActivity(intent);
+    }
+
+    /**
+     * Lancer l'activité de prise de photo
+     */
+    private void startCamera() {
+        Toast.makeText(this, "Lancement de l'appareil photo", Toast.LENGTH_SHORT).show();
+
+        // Ici vous pouvez lancer votre activité de prise de photo
+        // ou utiliser l'intent de la caméra système
+
+        // Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+        //     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        // }
+    }
+
+    /**
+     * Callback appelé lorsque la permission caméra est accordée
+     */
+    @Override
+    public void onPermissionGranted() {
+        // Exécuter l'action en attente
+        switch (pendingCameraAction) {
+            case ACTION_SCAN_BARCODE:
+                startBarcodeScanner();
+                break;
+            case ACTION_TAKE_PHOTO:
+                startCamera();
+                break;
+        }
+
+        // Réinitialiser l'action en attente
+        pendingCameraAction = ACTION_NONE;
+    }
+
+    /**
+     * Callback appelé lorsque la permission caméra est refusée
+     */
+    @Override
+    public void onPermissionDenied() {
+        Toast.makeText(this,
+                "Cette fonctionnalité nécessite l'accès à la caméra",
+                Toast.LENGTH_LONG).show();
+
+        // Réinitialiser l'action en attente
+        pendingCameraAction = ACTION_NONE;
+    }
+
+    /**
+     * Gérer le résultat de la demande de permission
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Déléguer le traitement au helper
+        cameraPermissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -193,6 +308,14 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
             // Naviguer vers l'écran de gestion des produits
             startActivity(new Intent(MainActivity.this, ProductListActivity.class));
             return true;
+        } else if (id == R.id.action_scan) {
+            // Lancer le scanner de code-barres (avec vérification de permission)
+            scanBarcode();
+            return true;
+        } else if (id == R.id.action_camera) {
+            // Lancer l'appareil photo (avec vérification de permission)
+            takePhoto();
+            return true;
         } else if (id == R.id.action_logout) {
             // Déconnexion
             sessionManager.logout();
@@ -210,5 +333,4 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         // Rafraîchir les contacts à chaque retour à l'activité
         loadContacts();
     }
-
 }

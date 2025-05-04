@@ -84,8 +84,12 @@ public class Product implements Serializable {
 
     public String getPhotoUrl() { return photoUrl; }
     public void setPhotoUrl(String photoUrl) {
-        if(photoUrl.isEmpty()){ this.photoUrl= "C:/Desktop/picTestjpeg.jpg";}
-        else{this.photoUrl = photoUrl;}
+        // Add null checking here
+        if (photoUrl == null || photoUrl.isEmpty()) {
+            this.photoUrl = "C:/Desktop/picTestjpeg.jpg";
+        } else {
+            this.photoUrl = photoUrl;
+        }
     }
 
     public String getBarcode() { return barcode; }
