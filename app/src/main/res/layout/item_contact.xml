@@ -22,7 +22,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/primaryText"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="John Doe" />
@@ -36,7 +36,7 @@
             android:drawableStart="@android:drawable/ic_menu_call"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_contact_name"
             tools:text="+33 6 12 34 56 78" />
@@ -50,10 +50,23 @@
             android:drawableStart="@android:drawable/ic_dialog_email"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_contact_phone"
             tools:text="john.doe@example.com" />
+
+        <!-- Bouton Panier -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_carts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Panier"
+            android:textSize="12sp"
+            app:icon="@android:drawable/ic_menu_agenda"
+            app:iconSize="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

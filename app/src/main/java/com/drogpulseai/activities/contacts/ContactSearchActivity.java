@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.carts.ContactCartsActivity;
 import com.drogpulseai.adapters.ContactAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
@@ -162,12 +163,21 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
 
     @Override
     public void onContactClick(Contact contact) {
+        // Code existant pour gérer le clic sur un contact
         Intent intent = new Intent(ContactSearchActivity.this, ContactFormActivity.class);
         intent.putExtra("mode", "edit");
         intent.putExtra("contact_id", contact.getId());
         startActivity(intent);
     }
 
+    @Override
+    public void onViewCartsClick(Contact contact) {
+        // Implémentation pour gérer le clic sur le bouton Panier
+        Intent intent = new Intent(ContactSearchActivity.this, ContactCartsActivity.class);
+        intent.putExtra("contact_id", contact.getId());
+        intent.putExtra("contact_name", contact.getFullName());
+        startActivity(intent);
+    }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

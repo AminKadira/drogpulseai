@@ -79,21 +79,27 @@
             android:label="@string/app_name" />
 
         <activity
-            android:name=".activities.ContactSelectionActivity"
+            android:name=".activities.carts.ContactSelectionActivity"
             android:exported="false"
             android:label="Sélection de contact" />
 
         <activity
-            android:name=".activities.CartActivity"
+            android:name=".activities.carts.CartActivity"
             android:exported="false"
             android:label="Panier"
-            android:parentActivityName=".activities.ContactSelectionActivity" />
+            android:parentActivityName=".activities.carts.ContactSelectionActivity" />
 
         <activity
-            android:name=".activities.CartDetailsActivity"
+            android:name=".activities.carts.CartDetailsActivity"
             android:exported="false"
-            android:parentActivityName=".activities.CartsListActivity" />
+            android:parentActivityName=".activities.carts.CartsListActivity" />
         <!-- Configuration du FileProvider pour la prise de photos -->
+
+        <activity
+            android:name=".activities.carts.ContactCartsActivity"
+            android:exported="false"
+            android:parentActivityName=".activities.MainActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.drogpulseai.fileprovider"

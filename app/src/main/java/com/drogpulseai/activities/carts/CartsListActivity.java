@@ -1,4 +1,4 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.carts;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +19,6 @@ import com.drogpulseai.R;
 import com.drogpulseai.adapters.CartAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
-import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.NetworkResult;
 import com.drogpulseai.utils.SessionManager;

@@ -1,4 +1,4 @@
-package com.drogpulseai.activities;
+package com.drogpulseai.activities.carts;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,29 +26,28 @@ import com.drogpulseai.R;
 import com.drogpulseai.adapters.CartProductAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
-import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.Product;
 import com.drogpulseai.models.ProductCartItem;
 import com.drogpulseai.models.User;
-import com.drogpulseai.utils.NetworkResult;
 import com.drogpulseai.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 import android.app.ProgressDialog;
-import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class CartActivity extends AppCompatActivity implements CartProductAdapter.OnProductSelectionChangeListener {
 
     private static final String TAG = "CartActivity";
+    // Variable pour stocker l'ID du panier créé
+    private int createdCartId = -1;
 
     // UI Components
     private TextView tvContactInfo;
@@ -354,67 +353,125 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
         List<Map<String, Object>> items = new ArrayList<>();
 
         for (ProductCartItem item : selectedItems) {
+            // Vérifier que le produit et son prix sont valides
+            Product product = item.getProduct();
+            if (product == null) {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Erreur: produit invalide", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double price = product.getPrice();
+            if (price <= 0) {
+                // Utiliser un prix par défaut si non disponible
+                price = 0.01;
+                Log.w(TAG, "Prix manquant pour le produit " + product.getId() + ", utilisation de la valeur par défaut");
+            }
+
             Map<String, Object> itemData = new HashMap<>();
-            itemData.put("product_id", item.getProduct().getId());
+            itemData.put("product_id", product.getId());
             itemData.put("quantity", item.getQuantity());
-            itemData.put("price", item.getProduct().getPrice());
+            itemData.put("price", price);
             items.add(itemData);
         }
 
         cartData.put("items", items);
 
-        // Appel à l'API pour créer le panier
-        apiService.createCart(cartData).enqueue(new Callback<NetworkResult<Cart>>() {
+        // Log pour déboguer - Voir la structure exacte des données envoyées
+        Log.d(TAG, "Données du panier: " + cartData.toString());
+
+        apiService.createCart(cartData).enqueue(new Callback<Map<String, Object>>() {
             @Override
-            public void onResponse(Call<NetworkResult<Cart>> call, Response<NetworkResult<Cart>> response) {
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                 progressDialog.dismiss();
 
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Récupérer le panier créé
-                    Cart cart = response.body().getData();
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        // Débogage - afficher la réponse complète
+                        Log.d(TAG, "Réponse complète: " + response.body().toString());
 
-                    // Afficher un message de succès
-                    String message = String.format(
-                            "Panier #%d créé avec succès!\n" +
-                                    "Contact: %s\n" +
-                                    "Produits: %d (total de %d articles)\n" +
-                                    "Montant total: %.2f €",
-                            cart.getId(),
-                            cart.getContactFullName(),
-                            cart.getItems().size(),
-                            cart.getTotalQuantity(),
-                            cart.getTotalAmount()
-                    );
+                        // Récupérer les champs importants
+                        boolean success = (boolean) response.body().get("success");
+                        String message = (String) response.body().get("message");
 
-                    showSuccessDialog("Panier créé", message);
+                        if (success) {
+                            // Récupérer les données du panier
+                            Map<String, Object> data = (Map<String, Object>) response.body().get("cart");
 
-                    // Vider la sélection après création réussie
-                    adapter.clearSelection();
+                            if (data != null) {
+                                // Extraire l'ID du panier - déboguer chaque étape
+                                Log.d(TAG, "Données du panier: " + data);
+
+                                // L'ID peut être sous forme de Double ou d'Integer selon la désérialisation
+                                Object rawId = data.get("id");
+                                Log.d(TAG, "ID brut: " + (rawId != null ? rawId.toString() : "null") +
+                                        ", Type: " + (rawId != null ? rawId.getClass().getName() : "unknown"));
+
+                                int cartId;
+                                if (rawId instanceof Double) {
+                                    cartId = ((Double) rawId).intValue();
+                                } else if (rawId instanceof Integer) {
+                                    cartId = (Integer) rawId;
+                                } else if (rawId instanceof String) {
+                                    cartId = Integer.parseInt((String) rawId);
+                                } else {
+                                    cartId = -1; // Valeur par défaut en cas d'erreur
+                                }
+
+                                Log.d(TAG, "ID du panier extrait: " + cartId);
+
+                                // Construire un message de succès
+                                String successMessage = String.format(
+                                        "Panier #%d créé avec succès!\n", cartId);
+
+                                // Ajouter d'autres informations si disponibles
+                                if (data.containsKey("contact_nom") && data.containsKey("contact_prenom")) {
+                                    String contactName = data.get("contact_prenom") + " " + data.get("contact_nom");
+                                    successMessage += "Contact: " + contactName + "\n";
+                                }
+
+                                // Afficher le dialogue avec l'option de voir les détails
+                                showSuccessDialogWithDetails("Panier créé", successMessage, cartId);
+                            } else {
+                                // Aucune donnée de panier dans la réponse
+                                showSuccessDialog("Panier créé", "Le panier a été créé avec succès mais aucun détail n'est disponible.");
+                            }
+                        } else {
+                            // La création a échoué
+                            Toast.makeText(CartActivity.this, message, Toast.LENGTH_LONG).show();
+                        }
+
+                        // Vider la sélection
+                        adapter.clearSelection();
+
+                    } catch (Exception e) {
+                        // Capturer toute exception lors du traitement de la réponse
+                        Log.e(TAG, "Erreur lors du traitement de la réponse", e);
+                        Toast.makeText(CartActivity.this,
+                                "Erreur lors du traitement de la réponse: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
                 } else {
-                    // Gérer les erreurs
+                    // Gérer les erreurs de réponse
                     String errorMessage = "Erreur lors de la création du panier";
-
-                    if (response.body() != null) {
-                        errorMessage = response.body().getMessage();
-                    } else if (response.errorBody() != null) {
+                    if (response.errorBody() != null) {
                         try {
-                            String errorBody = response.errorBody().string();
-                            JSONObject jsonError = new JSONObject(errorBody);
-                            errorMessage = jsonError.optString("message", errorMessage);
+                            errorMessage += ": " + response.errorBody().string();
                         } catch (Exception e) {
-                            Log.e(TAG, "Erreur lors du parsing de l'erreur", e);
+                            Log.e(TAG, "Erreur lors de la lecture du corps d'erreur", e);
                         }
                     }
-
                     Toast.makeText(CartActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<NetworkResult<Cart>> call, Throwable t) {
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                 progressDialog.dismiss();
                 Log.e(TAG, "Erreur réseau lors de la création du panier", t);
-                Toast.makeText(CartActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(CartActivity.this,
+                        "Erreur réseau: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -423,13 +480,28 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
      * Affiche un dialogue de succès avec option de voir les détails du panier
      */
     private void showSuccessDialog(String title, String message) {
+
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (dialog, which) -> finish())
-                .setNeutralButton("Voir mes paniers", (dialog, which) -> {
-                    // Lancer l'activité de liste des paniers
-                    Intent intent = new Intent(CartActivity.this, CartsListActivity.class);
+                .setCancelable(false)
+                .show();
+    }
+
+    // Méthode pour afficher le dialogue avec l'option de voir les détails
+    private void showSuccessDialogWithDetails(String title, String message, int cartId) {
+        Log.d(TAG, "Affichage du dialogue de succès avec ID: " + cartId);
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> finish())
+                .setNeutralButton("Voir les détails", (dialog, which) -> {
+                    // Lancer CartDetailsActivity avec l'ID du panier créé
+                    Intent intent = new Intent(CartActivity.this, CartDetailsActivity.class);
+                    intent.putExtra("cart_id", cartId);
+                    Log.d(TAG, "Lancement de CartDetailsActivity avec cart_id=" + cartId);
                     startActivity(intent);
                     finish();
                 })

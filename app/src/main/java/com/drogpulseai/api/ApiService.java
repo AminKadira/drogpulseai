@@ -166,13 +166,15 @@ public interface ApiService {
      * Créer un nouveau panier
      */
     @POST("carts/create.php")
-    Call<NetworkResult<Cart>> createCart(@Body Map<String, Object> cartData);
-
+    Call<Map<String, Object>> createCart(@Body Map<String, Object> cartData);
     /**
      * Récupérer un panier par son ID
      */
     @GET("carts/get.php")
-    Call<NetworkResult<Cart>> getCart(@Query("id") int cartId);
+    Call<NetworkResult<Map<String, Object>>> getCart(@Query("id") int cartId);
+
+    @GET("carts/get.php")
+    Call<Object> getCartRaw(@Query("id") int cartId);
 
     /**
      * Lister les paniers d'un utilisateur
@@ -188,7 +190,7 @@ public interface ApiService {
      * Lister les paniers d'un contact
      */
     @GET("carts/list_by_contact.php")
-    Call<NetworkResult<Map<String, Object>>> getContactCarts(
+    Call<Object> getContactCartsRaw(
             @Query("contact_id") int contactId,
             @Query("page") int page,
             @Query("limit") int limit

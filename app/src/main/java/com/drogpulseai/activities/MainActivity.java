@@ -17,9 +17,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
+import com.drogpulseai.activities.carts.ContactCartsActivity;
+import com.drogpulseai.activities.carts.ContactSelectionActivity;
 import com.drogpulseai.activities.contacts.ContactFormActivity;
 import com.drogpulseai.activities.contacts.ContactSearchActivity;
 import com.drogpulseai.activities.products.ProductListActivity;
+
+
 import com.drogpulseai.adapters.ContactAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
@@ -43,9 +47,7 @@ import retrofit2.Response;
 /**
  * Activité principale avec la liste des contacts
  */
-public class MainActivity extends AppCompatActivity implements
-        ContactAdapter.OnContactClickListener,
-        CameraPermissionHelper.PermissionCallback {
+public class MainActivity extends AppCompatActivity implements ContactAdapter.OnContactClickListener, CameraPermissionHelper.PermissionCallback {
 
     // UI Components
     private RecyclerView recyclerView;
@@ -246,6 +248,16 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
+
+
+    @Override
+    public void onViewCartsClick(Contact contact) {
+        // Lancer l'activité de liste des paniers du contact
+        Intent intent = new Intent(MainActivity.this, ContactCartsActivity.class);
+        intent.putExtra("contact_id", contact.getId());
+        intent.putExtra("contact_name", contact.getFullName());
+        startActivity(intent);
+    }
     /**
      * Lancer le scanner de code-barres (après vérification de la permission)
      */
