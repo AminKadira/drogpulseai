@@ -26,10 +26,7 @@ import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
 import com.drogpulseai.sync.SyncManager;
-<<<<<<< HEAD
-=======
 import com.drogpulseai.utils.CameraPermissionHelper;
->>>>>>> V1.2
 import com.drogpulseai.utils.Config;
 import com.drogpulseai.utils.SessionManager;
 import com.drogpulseai.utils.NetworkUtils;
@@ -350,6 +347,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        menu.add(Menu.NONE, R.id.action_create_cart, Menu.NONE, R.string.create_cart);
         return true;
     }
 
@@ -379,6 +377,10 @@ public class MainActivity extends AppCompatActivity implements
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
             return true;
+        } else if (id == R.id.action_create_cart) {
+        // Naviguer vers l'écran de sélection de contact pour créer un panier
+        startActivity(new Intent(MainActivity.this, ContactSelectionActivity.class));
+        return true;
         }
 
         return super.onOptionsItemSelected(item);

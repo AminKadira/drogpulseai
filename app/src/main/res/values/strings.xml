@@ -112,4 +112,31 @@
     <string name="ok">OK</string>
 
     <string name="add_photo_no_connection">Connexion requise pour ajouter une photo</string>
+
+
+    <!-- Ajout des nouvelles chaînes de caractères -->
+    <string name="select_contact">Sélectionnez un contact</string>
+    <string name="create_cart">Créer un panier</string>
+    <string name="cart">Panier</string>
+    <string name="contact_info">Contact: %1$s (ID: %2$d)</string>
+    <string name="products_list">Liste des produits</string>
+    <string name="no_products_available">Aucun produit disponible</string>
+
+
+    <string name="select_all">Tout sélectionner</string>
+    <string name="clear_selection">Effacer</string>
+    <string name="add_to_cart">Ajouter au panier</string>
+    <string name="selected_count">Sélectionné(s): %d</string>
+    <string name="cart_created">Panier créé pour %1$s avec %2$d produit(s)</string>
+    <string name="select_at_least_one">Veuillez sélectionner au moins un produit</string>
+
+    <string name="clear_search">Effacer la recherche</string>
+    <string name="no_results_found">Aucun produit trouvé</string>
+
+    <string name="quantity">Quantité</string>
+    <string name="decrease">Diminuer</string>
+    <string name="increase">Augmenter</string>
+    <string name="selection_count">Sélectionné(s): %1$d (%2$d articles)</string>
+    <string name="cart_summary">Panier créé pour %1$s avec %2$d produit(s) / %3$d article(s)\nTotal: %4$.2f €</string>
+    <string name="item_summary">%1$d. %2$s (Réf: %3$s) - %4$d x %5$.2f € = %6$.2f €</string>
 </resources>

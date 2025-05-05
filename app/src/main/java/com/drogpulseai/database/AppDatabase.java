@@ -1,8 +1,7 @@
 package com.drogpulseai.database;
 
-<<<<<<< HEAD
-public class AppDatabase {
-=======
+import androidx.room.Database;
+
 import android.content.Context;
 
 import androidx.room.Database;
@@ -32,5 +31,4 @@ public abstract class AppDatabase extends RoomDatabase {
         }
         return instance;
     }
->>>>>>> V1.2
 }

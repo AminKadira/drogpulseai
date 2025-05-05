@@ -60,6 +60,12 @@ public class HomeActivity extends AppCompatActivity {
         cardProducts.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ProductListActivity.class));
         });
+
+        // Carte Créer un panier
+        MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
+        cardCreateCart.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, ContactSelectionActivity.class));
+        });
     }
 
     @Override

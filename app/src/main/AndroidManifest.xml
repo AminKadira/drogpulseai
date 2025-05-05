@@ -78,6 +78,21 @@
             android:exported="false"
             android:label="@string/app_name" />
 
+        <activity
+            android:name=".activities.ContactSelectionActivity"
+            android:exported="false"
+            android:label="Sélection de contact" />
+
+        <activity
+            android:name=".activities.CartActivity"
+            android:exported="false"
+            android:label="Panier"
+            android:parentActivityName=".activities.ContactSelectionActivity" />
+
+        <activity
+            android:name=".activities.CartDetailsActivity"
+            android:exported="false"
+            android:parentActivityName=".activities.CartsListActivity" />
         <!-- Configuration du FileProvider pour la prise de photos -->
         <provider
             android:name="androidx.core.content.FileProvider"

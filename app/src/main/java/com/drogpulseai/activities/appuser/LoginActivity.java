@@ -162,12 +162,10 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 Toast.makeText(LoginActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
-<<<<<<< HEAD
-                if (NetworkUtils.isNetworkAvailable(this)) {
+//                if (NetworkUtils.isNetworkAvailable(this)) {
+//
+//                }
 
-                }
-=======
->>>>>>> V1.2
             }
         });
 

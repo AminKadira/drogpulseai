@@ -1,5 +1,6 @@
 package com.drogpulseai.api;
 
+import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.Product;
 import com.drogpulseai.models.User;
@@ -158,5 +159,46 @@ public interface ApiService {
     Call<NetworkResult<String>> uploadProductPhoto(
             @Part MultipartBody.Part photo,
             @Part("user_id") RequestBody userId
+    );
+
+
+    /**
+     * Créer un nouveau panier
+     */
+    @POST("carts/create.php")
+    Call<NetworkResult<Cart>> createCart(@Body Map<String, Object> cartData);
+
+    /**
+     * Récupérer un panier par son ID
+     */
+    @GET("carts/get.php")
+    Call<NetworkResult<Cart>> getCart(@Query("id") int cartId);
+
+    /**
+     * Lister les paniers d'un utilisateur
+     */
+    @GET("carts/list.php")
+    Call<NetworkResult<Map<String, Object>>> getUserCarts(
+            @Query("user_id") int userId,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    /**
+     * Lister les paniers d'un contact
+     */
+    @GET("carts/list_by_contact.php")
+    Call<NetworkResult<Map<String, Object>>> getContactCarts(
+            @Query("contact_id") int contactId,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    /**
+     * Mettre à jour le statut d'un panier
+     */
+    @POST("carts/update_status.php")
+    Call<NetworkResult<Map<String, Object>>> updateCartStatus(
+            @Body Map<String, Object> statusData
     );
 }

@@ -27,6 +27,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_create_cart"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/create_cart"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_logout"
         android:title="@string/logout"
         app:showAsAction="never" />
