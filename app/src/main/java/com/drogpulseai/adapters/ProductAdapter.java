@@ -19,6 +19,7 @@ import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.models.Product;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Adaptateur pour afficher les produits dans un RecyclerView
@@ -66,13 +67,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         // Afficher le code-barres s'il est disponible
         if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
             holder.tvBarcode.setVisibility(View.VISIBLE);
-            holder.tvBarcode.setText(product.getBarcode());
+            holder.tvBarcode.setText(context.getString(R.string.barcode_format, product.getBarcode()));
         } else {
             holder.tvBarcode.setVisibility(View.GONE);
         }
 
         // Afficher la quantité
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
+
+        // Afficher le prix
+        if (product.getPrice() > 0) {
+            holder.tvPrice.setVisibility(View.VISIBLE);
+            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f €", product.getPrice()));
+        } else {
+            holder.tvPrice.setVisibility(View.GONE);
+        }
 
         // Charger l'image avec une gestion améliorée
         loadProductImage(holder.ivThumbnail, product);
@@ -139,7 +148,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
      * ViewHolder pour les éléments de produit
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvReference, tvName, tvBarcode, tvQuantity;
+        TextView tvReference, tvName, tvBarcode, tvQuantity, tvPrice;
         ImageView ivThumbnail;
 
         public ViewHolder(@NonNull View itemView) {
@@ -148,6 +157,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             tvName = itemView.findViewById(R.id.tv_product_name);
             tvBarcode = itemView.findViewById(R.id.tv_product_barcode);
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
+            tvPrice = itemView.findViewById(R.id.tv_product_price);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);
         }
     }

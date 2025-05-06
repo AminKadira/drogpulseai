@@ -108,6 +108,11 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         progressBar = findViewById(R.id.progress_bar);
         fabAddProduct = findViewById(R.id.fab_add_product);
         tvEmptyList = findViewById(R.id.tv_empty_list);
+        if (tvEmptyList == null) {
+            Log.e(TAG, "tvEmptyList est null - l'élément n'a pas été trouvé dans le layout");
+            // Créer une solution de secours pour éviter le crash
+            tvEmptyList = new TextView(this);
+        }
     }
 
     /**
@@ -149,35 +154,49 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         if (!swipeRefreshLayout.isRefreshing()) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        tvEmptyList.setVisibility(View.GONE);
+
+        // Ajout d'une vérification pour éviter le crash
+        if (tvEmptyList != null) {
+            tvEmptyList.setVisibility(View.GONE);
+        } else {
+            Log.e(TAG, "tvEmptyList est null - référence manquante dans le layout");
+        }
 
         Log.d(TAG, "Chargement des produits pour l'utilisateur ID: " + currentUser.getId());
 
         apiService.getProducts(currentUser.getId()).enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (isFinishing()) {
+                    return; // Éviter les opérations sur une activité détruite
+                }
+
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
 
                 if (response.isSuccessful() && response.body() != null) {
                     products.clear();
                     products.addAll(response.body());
-                    adapter.notifyDataSetChanged();
 
-                    // Log pour débogage
-                    Log.d(TAG, "Produits chargés: " + products.size());
+                    // Log pour vérifier si les prix sont présents
                     for (Product product : products) {
                         Log.d(TAG, "Produit: " + product.getId() + " - " + product.getName()
-                                + " - URL: " + product.getPhotoUrl());
+                                + " - Prix: " + product.getPrice());
                     }
 
-                    // Afficher un message si aucun produit
+                    adapter.notifyDataSetChanged();
+
+                    // Afficher un message si aucun produit, avec vérification
                     if (products.isEmpty()) {
-                        tvEmptyList.setText(R.string.no_products_found);
-                        tvEmptyList.setVisibility(View.VISIBLE);
+                        if (tvEmptyList != null) {
+                            tvEmptyList.setText(R.string.no_products_found);
+                            tvEmptyList.setVisibility(View.VISIBLE);
+                        }
                         Log.d(TAG, "Aucun produit trouvé");
                     } else {
-                        tvEmptyList.setVisibility(View.GONE);
+                        if (tvEmptyList != null) {
+                            tvEmptyList.setVisibility(View.GONE);
+                        }
                     }
                 } else {
                     Log.e(TAG, "Erreur lors du chargement des produits: "
@@ -189,6 +208,10 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
+                if (isFinishing()) {
+                    return; // Éviter les opérations sur une activité détruite
+                }
+
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
                 Log.e(TAG, "Échec du chargement des produits: " + t.getMessage(), t);
@@ -196,7 +219,6 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
             }
         });
     }
-
     @Override
     public void onProductClick(Product product) {
         Log.d(TAG, "Clic sur le produit ID: " + product.getId());

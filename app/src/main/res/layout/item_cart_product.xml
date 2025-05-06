@@ -20,8 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Image du produit -->
         <ImageView
@@ -35,7 +34,6 @@
             android:padding="1dp"
             app:layout_constraintStart_toEndOf="@id/checkbox_select_product"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             tools:src="@android:drawable/ic_menu_gallery" />
 
         <!-- Informations du produit -->
@@ -46,7 +44,7 @@
             android:orientation="vertical"
             android:layout_marginStart="12dp"
             app:layout_constraintStart_toEndOf="@id/iv_product_thumbnail"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/input_layouts_container"
             app:layout_constraintTop_toTopOf="parent">
 
             <!-- Référence du produit -->
@@ -69,11 +67,11 @@
                 android:layout_marginTop="4dp"
                 tools:text="Nom du produit" />
 
-            <!-- Quantité et Prix -->
+            <!-- Conteneur vertical pour Quantité et Prix -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_marginTop="8dp">
 
                 <!-- Quantité en stock -->
@@ -87,6 +85,7 @@
                     android:paddingVertical="4dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
+                    android:layout_marginBottom="4dp"
                     tools:text="Stock: 42" />
 
                 <!-- Prix -->
@@ -98,69 +97,69 @@
                     android:textColor="@android:color/black"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
-                    android:layout_marginStart="8dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     tools:text="Prix: 19.99 €" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Champ Quantité (nouveau) -->
+        <!-- Conteneur pour les champs de saisie à droite -->
         <LinearLayout
-            android:id="@+id/quantity_input_layout"
-            android:layout_width="wrap_content"
+            android:id="@+id/input_layouts_container"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp"
+            android:orientation="vertical"
             android:visibility="gone"
-            app:layout_constraintStart_toStartOf="@id/product_info_layout"
-            app:layout_constraintTop_toBottomOf="@id/product_info_layout">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Champ Quantité -->
+            <LinearLayout
+                android:id="@+id/quantity_input_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Quantité:"
-                android:textSize="14sp"
-                android:layout_marginEnd="8dp" />
+                android:orientation="vertical"
+                android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/et_quantity_value"
-                android:layout_width="60dp"
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Quantité :"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_quantity_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:inputType="number"
+                    android:textAlignment="textStart"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- Champ Prix de vente -->
+            <LinearLayout
+                android:id="@+id/sale_price_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1"
-                android:inputType="number"
-                android:textAlignment="center"
-                android:textSize="16sp" />
-        </LinearLayout>
+                android:orientation="vertical">
 
-        <!-- Champ Prix de vente (nouveau) -->
-        <LinearLayout
-            android:id="@+id/sale_price_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="16dp"
-            android:visibility="gone"
-            app:layout_constraintStart_toEndOf="@id/quantity_input_layout"
-            app:layout_constraintTop_toBottomOf="@id/product_info_layout">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Prix vente :"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Prix vente:"
-                android:textSize="14sp"
-                android:layout_marginEnd="8dp" />
-
-            <EditText
-                android:id="@+id/et_sale_price"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:textAlignment="center"
-                android:textSize="16sp" />
+                <EditText
+                    android:id="@+id/et_sale_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:textAlignment="textStart"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

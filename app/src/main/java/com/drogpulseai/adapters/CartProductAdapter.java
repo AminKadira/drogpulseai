@@ -83,28 +83,27 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
         // Afficher le prix s'il est disponible
-        if (product.getPrice() > 0) {
+        double productPrice = product.getPrice();
+        if (productPrice > 0) {
             holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(context.getString(R.string.price_format, product.getPrice()));
+            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f €", productPrice));
         } else {
-            holder.tvPrice.setVisibility(View.GONE);
+            holder.tvPrice.setVisibility(View.VISIBLE); // Afficher quand même
+            holder.tvPrice.setText("Prix: N/D");
         }
 
         // Gérer l'état de sélection
         boolean isSelected = selectedProducts.contains(productId);
         holder.checkBox.setChecked(isSelected);
 
-        // Afficher ou masquer les champs de saisie selon l'état de sélection
-        holder.quantityInputLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-        holder.salePriceLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        // Gestion de la visibilité du conteneur parent
+        holder.inputLayoutsContainer.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
-        // Mettre à jour les valeurs des champs
+        // Mettre à jour les valeurs des champs si sélectionné
         if (isSelected) {
             int quantity = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
             holder.etQuantityValue.setText(String.valueOf(quantity));
 
-            // Préremplir le prix de vente avec le prix du produit
-            // Si le prix de vente a déjà été défini, le récupérer
             double salePrice = productPrices.getOrDefault(productId, product.getPrice());
             holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
         }
@@ -126,7 +125,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         holder.itemView.setOnClickListener(selectionClickListener);
         holder.checkBox.setOnClickListener(selectionClickListener);
 
-        // Ajouter des TextWatcher pour les champs de saisie
+        // Ajouter des TextWatcher pour suivre les changements dans les champs de saisie
+        setupEditTextListeners(holder, productId);
+    }
+
+    // Méthode pour configurer les listeners sur les champs de saisie
+    private void setupEditTextListeners(ViewHolder holder, int productId) {
+        // Pour la quantité
         holder.etQuantityValue.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -141,19 +146,20 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
                         int quantity = Integer.parseInt(s.toString());
                         if (quantity > 0 && quantity <= MAX_QUANTITY) {
                             productQuantities.put(productId, quantity);
+
+                            // Notifier le listener du changement de quantité
+                            if (listener != null) {
+                                listener.onSelectionChanged(selectedProducts.size(), getTotalItemCount());
+                            }
                         }
                     } catch (NumberFormatException e) {
                         // Ignorer
-                    }
-
-                    // Notifier le listener du changement de quantité
-                    if (listener != null) {
-                        listener.onSelectionChanged(selectedProducts.size(), getTotalItemCount());
                     }
                 }
             }
         });
 
+        // Pour le prix de vente
         holder.etSalePrice.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -165,7 +171,8 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             public void afterTextChanged(Editable s) {
                 if (s.length() > 0) {
                     try {
-                        double price = Double.parseDouble(s.toString());
+                        String priceStr = s.toString().replace(",", ".");
+                        double price = Double.parseDouble(priceStr);
                         if (price > 0) {
                             productPrices.put(productId, price);
                         }
@@ -249,6 +256,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         TextView tvReference, tvName, tvQuantity, tvPrice;
         ImageView ivThumbnail;
         CheckBox checkBox;
+        LinearLayout inputLayoutsContainer; // Nouveau conteneur parent
         LinearLayout quantityInputLayout, salePriceLayout;
         EditText etQuantityValue, etSalePrice;
 
@@ -261,14 +269,16 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);
             checkBox = itemView.findViewById(R.id.checkbox_select_product);
 
-            // Nouveaux éléments
+            // Nouveau conteneur parent
+            inputLayoutsContainer = itemView.findViewById(R.id.input_layouts_container);
+
+            // Sous-éléments
             quantityInputLayout = itemView.findViewById(R.id.quantity_input_layout);
             salePriceLayout = itemView.findViewById(R.id.sale_price_layout);
             etQuantityValue = itemView.findViewById(R.id.et_quantity_value);
             etSalePrice = itemView.findViewById(R.id.et_sale_price);
         }
     }
-
     /**
      * Récupérer la liste des produits sélectionnés avec leurs quantités
      */

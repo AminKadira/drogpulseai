@@ -91,8 +91,6 @@
     <string name="search_products">Rechercher des produits</string>
     <string name="search_products_hint">Référence, nom, libellé ou code-barres</string>
     <string name="welcome_message">Bienvenue,</string>
-
-    <!-- Gestion des produits -->
     <string name="product_price">Prix</string>
     <string name="barcode_scanned">Code-barres scanné</string>
     <string name="scan_cancelled">Scan annulé</string>
@@ -100,6 +98,7 @@
     <string name="no_camera_app">Aucune application de caméra disponible</string>
     <string name="price_format">%.2f €</string>
     <string name="product_price_stock">Prix: %1$s | Stock: %2$d</string>
+    <string name="barcode_format">Code-barres: %s</string>
 
     <!-- Chaînes pour les fonctionnalités de caméra -->
     <string name="take_photo">Prendre une photo</string>
@@ -110,7 +109,6 @@
     <string name="open_settings">Paramètres</string>
     <string name="cancel">Annuler</string>
     <string name="ok">OK</string>
-
     <string name="add_photo_no_connection">Connexion requise pour ajouter une photo</string>
 
 
