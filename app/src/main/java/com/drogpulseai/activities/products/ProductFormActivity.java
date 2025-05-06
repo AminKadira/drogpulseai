@@ -1,5 +1,6 @@
 package com.drogpulseai.activities.products;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -201,6 +202,7 @@ public class ProductFormActivity extends AppCompatActivity implements
     /**
      * Populate form fields with product data
      */
+    @SuppressLint("DefaultLocale")
     private void populateForm(Product product) {
         etReference.setText(product.getReference());
         etLabel.setText(product.getLabel());

@@ -1,11 +1,14 @@
 package com.drogpulseai.adapters;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,6 +45,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     private final LayoutInflater inflater;
     private final Context context;
     private final Map<Integer, Integer> productQuantities = new HashMap<>(); // Map des quantités (ID produit -> quantité)
+    private final Map<Integer, Double> productPrices = new HashMap<>(); // Map des prix de vente (ID produit -> prix)
     private final Set<Integer> selectedProducts = new HashSet<>(); // Ensemble des IDs de produits sélectionnés
     private final OnProductSelectionChangeListener listener;
     private String currentSearchQuery = ""; // Requête de recherche actuelle
@@ -89,12 +94,20 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         boolean isSelected = selectedProducts.contains(productId);
         holder.checkBox.setChecked(isSelected);
 
-        // Afficher ou masquer le contrôle de quantité selon l'état de sélection
-        holder.quantityControlLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        // Afficher ou masquer les champs de saisie selon l'état de sélection
+        holder.quantityInputLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        holder.salePriceLayout.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
-        // Mettre à jour la valeur de quantité
-        int quantity = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
-        holder.tvQuantityValue.setText(String.valueOf(quantity));
+        // Mettre à jour les valeurs des champs
+        if (isSelected) {
+            int quantity = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
+            holder.etQuantityValue.setText(String.valueOf(quantity));
+
+            // Préremplir le prix de vente avec le prix du produit
+            // Si le prix de vente a déjà été défini, le récupérer
+            double salePrice = productPrices.getOrDefault(productId, product.getPrice());
+            holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
+        }
 
         // Charger l'image avec Glide
         loadProductImage(holder.ivThumbnail, product);
@@ -113,40 +126,56 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         holder.itemView.setOnClickListener(selectionClickListener);
         holder.checkBox.setOnClickListener(selectionClickListener);
 
-        // Configurer les boutons de quantité
-        holder.btnDecrease.setOnClickListener(v -> {
-            if (!selectedProducts.contains(productId)) return;
+        // Ajouter des TextWatcher pour les champs de saisie
+        holder.etQuantityValue.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            int currentQty = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
-            if (currentQty > MIN_QUANTITY) {
-                currentQty--;
-                productQuantities.put(productId, currentQty);
-                holder.tvQuantityValue.setText(String.valueOf(currentQty));
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-                // Notifier le listener du changement de quantité
-                if (listener != null) {
-                    listener.onSelectionChanged(selectedProducts.size(), getTotalItemCount());
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    try {
+                        int quantity = Integer.parseInt(s.toString());
+                        if (quantity > 0 && quantity <= MAX_QUANTITY) {
+                            productQuantities.put(productId, quantity);
+                        }
+                    } catch (NumberFormatException e) {
+                        // Ignorer
+                    }
+
+                    // Notifier le listener du changement de quantité
+                    if (listener != null) {
+                        listener.onSelectionChanged(selectedProducts.size(), getTotalItemCount());
+                    }
                 }
             }
         });
 
-        holder.btnIncrease.setOnClickListener(v -> {
-            if (!selectedProducts.contains(productId)) return;
+        holder.etSalePrice.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            int currentQty = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
-            if (currentQty < MAX_QUANTITY) {
-                currentQty++;
-                productQuantities.put(productId, currentQty);
-                holder.tvQuantityValue.setText(String.valueOf(currentQty));
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-                // Notifier le listener du changement de quantité
-                if (listener != null) {
-                    listener.onSelectionChanged(selectedProducts.size(), getTotalItemCount());
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    try {
+                        double price = Double.parseDouble(s.toString());
+                        if (price > 0) {
+                            productPrices.put(productId, price);
+                        }
+                    } catch (NumberFormatException e) {
+                        // Ignorer
+                    }
                 }
             }
         });
     }
-
     private void toggleSelection(int productId) {
         if (selectedProducts.contains(productId)) {
             // Déselectionner le produit
@@ -217,11 +246,11 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvReference, tvName, tvQuantity, tvPrice, tvQuantityValue;
+        TextView tvReference, tvName, tvQuantity, tvPrice;
         ImageView ivThumbnail;
         CheckBox checkBox;
-        LinearLayout quantityControlLayout;
-        ImageButton btnDecrease, btnIncrease;
+        LinearLayout quantityInputLayout, salePriceLayout;
+        EditText etQuantityValue, etSalePrice;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -231,10 +260,12 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             tvPrice = itemView.findViewById(R.id.tv_product_price);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);
             checkBox = itemView.findViewById(R.id.checkbox_select_product);
-            quantityControlLayout = itemView.findViewById(R.id.quantity_control_layout);
-            tvQuantityValue = itemView.findViewById(R.id.tv_quantity_value);
-            btnDecrease = itemView.findViewById(R.id.btn_decrease);
-            btnIncrease = itemView.findViewById(R.id.btn_increase);
+
+            // Nouveaux éléments
+            quantityInputLayout = itemView.findViewById(R.id.quantity_input_layout);
+            salePriceLayout = itemView.findViewById(R.id.sale_price_layout);
+            etQuantityValue = itemView.findViewById(R.id.et_quantity_value);
+            etSalePrice = itemView.findViewById(R.id.et_sale_price);
         }
     }
 
@@ -248,7 +279,22 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             int productId = product.getId();
             if (selectedProducts.contains(productId)) {
                 int quantity = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
-                items.add(new ProductCartItem(product, quantity));
+                double price = productPrices.getOrDefault(productId, product.getPrice());
+
+                // Créer une copie du produit avec le prix modifié
+                Product productCopy = new Product();
+                productCopy.setId(product.getId());
+                productCopy.setReference(product.getReference());
+                productCopy.setLabel(product.getLabel());
+                productCopy.setName(product.getName());
+                productCopy.setDescription(product.getDescription());
+                productCopy.setPhotoUrl(product.getPhotoUrl());
+                productCopy.setBarcode(product.getBarcode());
+                productCopy.setQuantity(product.getQuantity());
+                productCopy.setUserId(product.getUserId());
+                productCopy.setPrice(price); // Utiliser le prix de vente personnalisé
+
+                items.add(new ProductCartItem(productCopy, quantity));
             }
         }
 

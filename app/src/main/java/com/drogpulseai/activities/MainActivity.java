@@ -248,8 +248,6 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         startActivity(intent);
     }
 
-
-
     @Override
     public void onViewCartsClick(Contact contact) {
         // Lancer l'activité de liste des paniers du contact
