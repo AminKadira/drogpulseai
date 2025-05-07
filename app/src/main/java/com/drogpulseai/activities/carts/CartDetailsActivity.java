@@ -57,6 +57,7 @@ public class CartDetailsActivity extends AppCompatActivity {
     // Données
     private int cartId;
     private Cart cart;
+    private String cancellationReason = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -326,17 +327,40 @@ public class CartDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Affiche une boîte de dialogue de confirmation adaptée pour l'annulation ou confirmation de panier
+     * Inclut une sélection de motif pour l'annulation
+     */
     private void showConfirmationDialog(String action) {
-        String message = action.equals("confirmer") ?
-                "Êtes-vous sûr de vouloir confirmer ce panier ?" :
-                "Êtes-vous sûr de vouloir annuler ce panier ?";
+        if (action.equals("confirmer")) {
+            // Dialogue simple pour la confirmation
+            new AlertDialog.Builder(this)
+                    .setTitle("Confirmation")
+                    .setMessage("Êtes-vous sûr de vouloir confirmer ce panier ?")
+                    .setPositiveButton("Oui", (dialog, which) -> updateCartStatus(action))
+                    .setNegativeButton("Non", null)
+                    .show();
+        } else {
+            // Pour l'annulation, afficher les options de motif
+            final String[] cancellationReasons = {"Annulation client", "Erreur de saisie", "Autre"};
+            final int[] selectedReason = {0};  // Par défaut, premier élément
 
-        new AlertDialog.Builder(this)
-                .setTitle("Confirmation")
-                .setMessage(message)
-                .setPositiveButton("Oui", (dialog, which) -> updateCartStatus(action))
-                .setNegativeButton("Non", null)
-                .show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle("Annulation de panier")
+                    .setSingleChoiceItems(cancellationReasons, selectedReason[0], (dialog, which) -> {
+                        selectedReason[0] = which;
+                    })
+                    .setPositiveButton("Confirmer", (dialog, which) -> {
+                        cancellationReason = cancellationReasons[selectedReason[0]];
+                        Log.d("TAG", "Motif d'annulation sélectionné : " + cancellationReason);
+                        updateCartStatus(action);
+                    })
+                    .setNegativeButton("Annuler", null);
+
+                    // Important : ne pas appeler .setMessage() si tu utilises setSingleChoiceItems()
+                    // car ça masque la liste
+                    builder.create().show();
+        }
     }
 
     private void updateCartStatus(String action) {
@@ -345,6 +369,7 @@ public class CartDetailsActivity extends AppCompatActivity {
         Map<String, Object> statusData = new HashMap<>();
         statusData.put("cart_id", cartId);
         statusData.put("status", newStatus);
+        statusData.put("notes", cancellationReason);
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -357,6 +382,13 @@ public class CartDetailsActivity extends AppCompatActivity {
                     // Mettre à jour le statut dans l'objet panier
                     cart.setStatus(newStatus);
 
+                    // Si disponible, stocker aussi le motif d'annulation dans l'objet panier
+                    if (action.equals("annuler") && !cancellationReason.isEmpty()) {
+                        // Ajouter cette information à l'objet cart si tu as un champ approprié
+                        // Par exemple:
+                        cart.setNotes(cancellationReason);
+                    }
+
                     // Mettre à jour l'affichage
                     updateStatusDisplay();
                     updateButtons();
@@ -367,6 +399,9 @@ public class CartDetailsActivity extends AppCompatActivity {
                             "Panier annulé avec succès";
 
                     Toast.makeText(CartDetailsActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                    // Réinitialiser le motif d'annulation
+                    cancellationReason = "";
                 } else {
                     // Gérer les erreurs
                     String errorMessage = "Erreur lors de la mise à jour du statut";
@@ -384,6 +419,9 @@ public class CartDetailsActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 Log.e(TAG, "Erreur réseau", t);
                 Toast.makeText(CartDetailsActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+
+                // Réinitialiser le motif d'annulation
+                cancellationReason = "";
             }
         });
     }
