@@ -306,14 +306,18 @@ public class CartDetailsActivity extends AppCompatActivity {
             case "pending":
                 tvStatus.setText("En attente");
                 tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                tvStatus.setBackgroundColor(R.drawable.bg_status_pending);
+
                 break;
             case "confirmed":
                 tvStatus.setText("Confirmé");
                 tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
+                tvStatus.setBackgroundColor(R.drawable.bg_status_confirmed);
                 break;
             case "cancelled":
                 tvStatus.setText("Annulé");
                 tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                tvStatus.setBackgroundColor(R.drawable.bg_status_cancelled);
                 break;
             default:
                 tvStatus.setText(cart.getStatus());

@@ -1,6 +1,7 @@
 package com.drogpulseai.activities.carts;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -405,7 +406,8 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
     }
 
     /**
-     * Process API response for cart data with improved error handling
+     * Process API response for cart data with improved error handling and type safety
+     * Specific fix for the exact API response structure
      */
     private void processCartsResponse(Response<Map<String, Object>> response) {
         try {
@@ -417,84 +419,139 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
 
             // Update UI safely
             runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
+                try {
+                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error updating UI elements", e);
+                }
             });
 
             // Process response
             if (response != null && response.isSuccessful() && response.body() != null) {
                 try {
-                    // Parse response
-                    Map<String, Object> result = (Map<String, Object>) response.body();
+                    // Parse response with thorough null and type checking
+                    Map<String, Object> result = response.body();
 
-                    // Check for success status
-                    if (result != null && result.containsKey("success") && (boolean) result.get("success")) {
-                        // Get data section
-                        Object dataObj = result.get("data");
-                        if (dataObj == null) {
-                            showErrorState("Response data is null");
-                            return;
+                    // Log debugging info without the entire response to avoid log overflow
+                    Log.d(TAG, "API Response structure: success=" + result.containsKey("success") +
+                            ", data=" + result.containsKey("data") +
+                            ", contains pagination=" + (result.containsKey("data") && ((Map<?,?>)result.get("data")).containsKey("pagination")));
+
+                    // Check for success status - handle different response formats
+                    boolean isSuccess = false;
+
+                    // Try to get success flag - could be Boolean or String
+                    if (result.containsKey("success")) {
+                        Object successObj = result.get("success");
+                        if (successObj instanceof Boolean) {
+                            isSuccess = (Boolean) successObj;
+                        } else if (successObj instanceof String) {
+                            isSuccess = Boolean.parseBoolean((String) successObj);
+                        } else if (successObj instanceof Number) {
+                            isSuccess = ((Number) successObj).intValue() == 1;
+                        }
+                    }
+
+                    if (isSuccess) {
+                        // Based on the actual API response structure: {success=true, data={carts=[...], pagination={...}}}
+                        List<Map<String, Object>> cartsList = new ArrayList<>();
+
+                        // Get data object
+                        if (result.containsKey("data")) {
+                            Object dataObj = result.get("data");
+                            if (dataObj instanceof Map) {
+                                try {
+                                    Map<String, Object> data = (Map<String, Object>) dataObj;
+
+                                    // Get carts array from data
+                                    if (data.containsKey("carts")) {
+                                        Object cartsObj = data.get("carts");
+                                        if (cartsObj instanceof List) {
+                                            List<?> rawList = (List<?>) cartsObj;
+
+                                            for (Object item : rawList) {
+                                                try {
+                                                    if (item instanceof Map) {
+                                                        @SuppressWarnings("unchecked")
+                                                        Map<String, Object> cartMap = (Map<String, Object>) item;
+                                                        cartsList.add(normalizeCartData(cartMap));
+                                                    }
+                                                } catch (Exception e) {
+                                                    Log.e(TAG, "Error processing cart item", e);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error processing data object", e);
+                                }
+                            }
                         }
 
-                        Map<String, Object> data = (Map<String, Object>) dataObj;
+                        // Log info about extracted carts
+                        Log.d(TAG, "Extracted " + cartsList.size() + " carts from response");
 
-                        // Get carts list
-                        Object cartsObj = data.get("carts");
-                        if (cartsObj == null) {
-                            showErrorState("Carts list is null");
+                        if (cartsList.isEmpty()) {
+                            // No carts found or extraction failed
+                            Log.w(TAG, "No carts found in response");
+                            showNoCartsFound();
                             return;
                         }
-
-                        List<Map<String, Object>> cartsList = (List<Map<String, Object>>) cartsObj;
 
                         // Filter carts based on our criteria
                         final List<Map<String, Object>> filteredCarts = filterCarts(cartsList);
+                        Log.d(TAG, "After filtering: " + filteredCarts.size() + " carts remain");
 
                         // Update UI on main thread
                         runOnUiThread(() -> {
-                            // Update adapter data
-                            carts.clear();
-                            if (filteredCarts != null) {
-                                carts.addAll(filteredCarts);
-                            }
-
-                            // Notify adapter only if it exists
-                            if (adapter != null) {
-                                adapter.notifyDataSetChanged();
-                            }
-
-                            // Show empty view if no carts
-                            if (carts.isEmpty()) {
-                                tvNoData.setVisibility(View.VISIBLE);
-                                recyclerView.setVisibility(View.GONE);
-                            } else {
-                                tvNoData.setVisibility(View.GONE);
-                                recyclerView.setVisibility(View.VISIBLE);
-                            }
-
-                            // Update title with count
-                            if (getSupportActionBar() != null) {
-                                try {
-                                    getSupportActionBar().setSubtitle(
-                                            getString(R.string.total_carts, carts.size())
-                                    );
-                                } catch (Exception e) {
-                                    Log.e(TAG, "Error setting subtitle", e);
+                            try {
+                                // Update adapter data safely
+                                if (carts != null) {
+                                    carts.clear();
+                                    carts.addAll(filteredCarts);
                                 }
+
+                                // Notify adapter safely
+                                if (adapter != null) {
+                                    adapter.notifyDataSetChanged();
+                                }
+
+                                // Show empty view if no carts
+                                if (filteredCarts.isEmpty()) {
+                                    if (tvNoData != null) tvNoData.setVisibility(View.VISIBLE);
+                                    if (recyclerView != null) recyclerView.setVisibility(View.GONE);
+                                } else {
+                                    if (tvNoData != null) tvNoData.setVisibility(View.GONE);
+                                    if (recyclerView != null) recyclerView.setVisibility(View.VISIBLE);
+                                }
+
+                                // Update title with count
+                                if (getSupportActionBar() != null) {
+                                    try {
+                                        getSupportActionBar().setSubtitle(
+                                                getString(R.string.total_carts, filteredCarts.size())
+                                        );
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Error setting subtitle", e);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error updating UI after successful API response", e);
                             }
                         });
                     } else {
                         // API returned an error
-                        String message = result != null && result.containsKey("message") ?
-                                (String) result.get("message") : "Unknown error";
-                        showErrorState(message);
+                        String message = result.containsKey("message") ?
+                                result.get("message").toString() : "Erreur inconnue";
+                        showErrorState("Erreur: " + message);
                     }
                 } catch (ClassCastException e) {
                     Log.e(TAG, "Error parsing response: Class cast exception", e);
-                    showErrorState("Format de réponse incorrect: " + e.getMessage());
+                    showErrorState("Format de réponse incorrect: " + e.getClass().getSimpleName());
                 } catch (Exception e) {
-                    Log.e(TAG, "Error parsing response: General exception", e);
-                    showErrorState("Erreur lors du traitement des données: " + e.getMessage());
+                    Log.e(TAG, "Error parsing response: " + e.getClass().getSimpleName(), e);
+                    showErrorState("Erreur lors du traitement des données: " + e.getClass().getSimpleName());
                 }
             } else {
                 // HTTP error
@@ -511,10 +568,196 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
             }
         } catch (Exception e) {
             Log.e(TAG, "Unhandled exception in processCartsResponse", e);
-            showErrorState("Erreur inattendue: " + e.getMessage());
+            showErrorState("Erreur inattendue: " + e.getClass().getSimpleName());
         }
     }
 
+    /**
+     * Helper method to show no carts found message
+     */
+    private void showNoCartsFound() {
+        runOnUiThread(() -> {
+            try {
+                if (progressBar != null) progressBar.setVisibility(View.GONE);
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+
+                if (carts != null) carts.clear();
+                if (adapter != null) adapter.notifyDataSetChanged();
+
+                if (tvNoData != null) {
+                    tvNoData.setText(R.string.no_carts_found);
+                    tvNoData.setVisibility(View.VISIBLE);
+                }
+
+                if (recyclerView != null) recyclerView.setVisibility(View.GONE);
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing no carts found", e);
+            }
+        });
+    }
+
+    /**
+     * Normalize cart data to ensure consistent types for all fields
+     */
+    private Map<String, Object> normalizeCartData(Map<String, Object> cart) {
+        // Create new map to avoid modifying the original
+        Map<String, Object> normalizedCart = new HashMap<>(cart);
+
+        // Ensure consistent types for critical fields
+        // Convert ID to Double
+        if (normalizedCart.containsKey("id")) {
+            Object idObj = normalizedCart.get("id");
+            Double doubleId = convertToDouble(idObj);
+            normalizedCart.put("id", doubleId);
+        } else {
+            normalizedCart.put("id", 0.0);
+        }
+
+        // Ensure status is a string
+        if (normalizedCart.containsKey("status")) {
+            Object statusObj = normalizedCart.get("status");
+            if (statusObj == null) {
+                normalizedCart.put("status", "unknown");
+            } else {
+                normalizedCart.put("status", statusObj.toString());
+            }
+        } else {
+            normalizedCart.put("status", "unknown");
+        }
+
+        // Convert numeric fields
+        convertToDouble(normalizedCart, "contact_id");
+        convertToDouble(normalizedCart, "user_id");
+        convertToDouble(normalizedCart, "items_count");
+
+        // Handle total_quantity which can be string or number
+        if (normalizedCart.containsKey("total_quantity")) {
+            Object qtyObj = normalizedCart.get("total_quantity");
+            if (qtyObj instanceof String) {
+                try {
+                    normalizedCart.put("total_quantity", Double.parseDouble((String) qtyObj));
+                } catch (NumberFormatException e) {
+                    normalizedCart.put("total_quantity", 0.0);
+                }
+            } else if (!(qtyObj instanceof Number)) {
+                normalizedCart.put("total_quantity", 0.0);
+            }
+        }
+
+        // Handle total_amount which can be string or number
+        if (normalizedCart.containsKey("total_amount")) {
+            Object amountObj = normalizedCart.get("total_amount");
+            if (amountObj instanceof String) {
+                try {
+                    normalizedCart.put("total_amount", Double.parseDouble((String) amountObj));
+                } catch (NumberFormatException e) {
+                    normalizedCart.put("total_amount", 0.0);
+                }
+            } else if (!(amountObj instanceof Number)) {
+                normalizedCart.put("total_amount", 0.0);
+            }
+        }
+
+        // Ensure contact name is present
+        if (!normalizedCart.containsKey("contact_name") || normalizedCart.get("contact_name") == null) {
+            normalizedCart.put("contact_name", "Client inconnu");
+        }
+
+        return normalizedCart;
+    }
+
+    /**
+     * Convert a value to Double
+     */
+    private Double convertToDouble(Object value) {
+        if (value == null) {
+            return 0.0;
+        }
+
+        if (value instanceof Double) {
+            return (Double) value;
+        }
+
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+
+        if (value instanceof String) {
+            try {
+                return Double.parseDouble((String) value);
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+
+        return 0.0;
+    }
+
+    /**
+     * Ensure a field in a map is a Double
+     */
+    private void convertToDouble(Map<String, Object> map, String field) {
+        if (map.containsKey(field)) {
+            Object value = map.get(field);
+            map.put(field, convertToDouble(value));
+        } else {
+            map.put(field, 0.0);
+        }
+    }
+
+    /**
+     * Helper method to safely extract carts list from various response formats
+     */
+    private List<Map<String, Object>> extractCartsList(Object cartsObj) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        if (!(cartsObj instanceof List)) {
+            return result;
+        }
+
+        List<?> rawList = (List<?>) cartsObj;
+        for (Object item : rawList) {
+            if (item instanceof Map) {
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> cartMap = (Map<String, Object>) item;
+
+                    // Ensure required fields exist to prevent crashes later
+                    if (!cartMap.containsKey("id")) {
+                        Log.w(TAG, "Cart missing ID field, adding default");
+                        cartMap.put("id", 0.0); // Default ID if missing
+                    }
+
+                    if (!cartMap.containsKey("status")) {
+                        Log.w(TAG, "Cart missing status field, adding default");
+                        cartMap.put("status", "unknown"); // Default status if missing
+                    }
+
+                    // Handle integer values that might be returned as different types
+                    if (cartMap.containsKey("id") && !(cartMap.get("id") instanceof Double)) {
+                        Object rawId = cartMap.get("id");
+                        double doubleId;
+                        if (rawId instanceof Integer) {
+                            doubleId = ((Integer) rawId).doubleValue();
+                        } else if (rawId instanceof String) {
+                            doubleId = Double.parseDouble((String) rawId);
+                        } else if (rawId instanceof Number) {
+                            doubleId = ((Number) rawId).doubleValue();
+                        } else {
+                            doubleId = 0.0;
+                        }
+                        cartMap.put("id", doubleId);
+                    }
+
+                    result.add(cartMap);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error converting cart item", e);
+                }
+            }
+        }
+
+        return result;
+    }
     /**
      * Helper method to show error state on UI thread
      */
@@ -759,9 +1002,9 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
         Toast.makeText(this, "Panier #" + cartId + " sélectionné", Toast.LENGTH_SHORT).show();
 
         // TODO: Navigate to cart details activity
-        // Intent intent = new Intent(this, CartDetailsActivity.class);
-        // intent.putExtra("cart_id", cartId);
-        // startActivity(intent);
+         Intent intent = new Intent(this, CartDetailsActivity.class);
+         intent.putExtra("cart_id", cartId);
+         startActivity(intent);
     }
 
     @Override

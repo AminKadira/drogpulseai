@@ -67,7 +67,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
         // Afficher le statut
         holder.tvStatus.setText(getStatusLabel(status));
-        holder.tvStatus.setTextColor(getStatusColor(status));
+        holder.tvStatus.setBackgroundColor(getStatusColor(status));
 
         // Afficher les détails
         holder.tvDetails.setText(String.format(Locale.getDefault(),
