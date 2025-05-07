@@ -86,7 +86,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         double productPrice = product.getPrice();
         if (productPrice > 0) {
             holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f €", productPrice));
+            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", productPrice));
         } else {
             holder.tvPrice.setVisibility(View.VISIBLE); // Afficher quand même
             holder.tvPrice.setText("Prix: N/D");

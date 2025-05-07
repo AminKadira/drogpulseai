@@ -96,7 +96,7 @@
     <string name="scan_cancelled">Scan annulé</string>
     <string name="scan_barcode_prompt">Scannez un code-barres</string>
     <string name="no_camera_app">Aucune application de caméra disponible</string>
-    <string name="price_format">%.2f €</string>
+    <string name="price_format">%.2f MAD</string>
     <string name="product_price_stock">Prix: %1$s | Stock: %2$d</string>
     <string name="barcode_format">Code-barres: %s</string>
 
@@ -135,6 +135,6 @@
     <string name="decrease">Diminuer</string>
     <string name="increase">Augmenter</string>
     <string name="selection_count">Sélectionné(s): %1$d (%2$d articles)</string>
-    <string name="cart_summary">Panier créé pour %1$s avec %2$d produit(s) / %3$d article(s)\nTotal: %4$.2f €</string>
-    <string name="item_summary">%1$d. %2$s (Réf: %3$s) - %4$d x %5$.2f € = %6$.2f €</string>
+    <string name="cart_summary">Panier créé pour %1$s avec %2$d produit(s) / %3$d article(s)\nTotal: %4$.2f MAD</string>
+    <string name="item_summary">%1$d. %2$s (Réf: %3$s) - %4$d x %5$.2f MAD = %6$.2f MAD</string>
 </resources>

@@ -274,7 +274,7 @@ public class CartDetailsActivity extends AppCompatActivity {
 
         // Total
         tvTotal.setText(String.format(Locale.getDefault(),
-                "%d produit(s), %d article(s), %.2f €",
+                "%d produit(s), %d article(s), %.2f MAD",
                 cart.getItems().size(),
                 cart.getTotalQuantity(),
                 cart.getTotalAmount()));

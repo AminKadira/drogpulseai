@@ -71,7 +71,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
         // Afficher les détails
         holder.tvDetails.setText(String.format(Locale.getDefault(),
-                "%d produit(s), %d article(s), %.2f €",
+                "%d produit(s), %d article(s), %.2f MAD",
                 itemsCount, totalQuantity, totalAmount));
 
         // Configurer le clic

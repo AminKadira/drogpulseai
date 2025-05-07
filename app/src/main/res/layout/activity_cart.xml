@@ -91,6 +91,14 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:contentDescription="Effacer la recherche"
                 android:visibility="gone" />
+            <ImageButton
+                android:id="@+id/btn_scan_barcode"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_camera"
+                android:contentDescription="Scanner un code-barres" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -130,7 +138,8 @@
                 style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ajouter au panier"
+                app:icon="@android:drawable/ic_input_add"
+                android:text="panier"
                 android:enabled="false" />
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>

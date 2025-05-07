@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,8 @@ import com.drogpulseai.models.Product;
 import com.drogpulseai.models.ProductCartItem;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.SessionManager;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -232,6 +235,23 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
             adapter.filter("");
             btnClearSearch.setVisibility(View.GONE);
         });
+
+        // Ajouter un écouteur pour le bouton de recherche
+        ImageView ivSearchIcon = findViewById(R.id.iv_search_icon);
+        if (ivSearchIcon != null) {
+            ivSearchIcon.setOnClickListener(v -> {
+                // Lancer le scanner de code-barres
+                initiateBarcodeScanner();
+            });
+        }
+
+        // Vous pouvez également ajouter un bouton dédié au scan si vous préférez
+        ImageButton btnScan = findViewById(R.id.btn_scan_barcode);
+        if (btnScan != null) {
+            btnScan.setOnClickListener(v -> {
+                initiateBarcodeScanner();
+            });
+        }
     }
 
     private void loadProducts() {
@@ -523,6 +543,60 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
         Log.d(TAG, "Sélection changée: " + count + " produits, " + totalItems + " articles");
         tvSelectionCount.setText("Sélectionné(s): " + count + " (" + totalItems + " articles)");
         btnAddToCart.setEnabled(count > 0);
+    }
+
+    // Dans la classe CartActivity, ajoutez cette méthode pour lancer le scanner
+    private void initiateBarcodeScanner() {
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+        integrator.setPrompt("Scannez un code-barres");
+        integrator.setCameraId(0);  // Caméra arrière
+        integrator.setBeepEnabled(true);
+        integrator.setBarcodeImageEnabled(true);
+        integrator.initiateScan();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() != null) {
+                // Code-barres scanné avec succès
+                String scannedBarcode = result.getContents();
+                Log.d(TAG, "Code-barres scanné: " + scannedBarcode);
+
+                // Afficher le code-barres dans le champ de recherche
+                EditText etSearchProducts = findViewById(R.id.et_search_products);
+                if (etSearchProducts != null) {
+                    etSearchProducts.setText(scannedBarcode);
+
+                    // Déclencher la recherche automatiquement
+                    filter(scannedBarcode);
+
+                    // Afficher la boîte de dialogue de suppression
+                    ImageButton btnClearSearch = findViewById(R.id.btn_clear_search);
+                    if (btnClearSearch != null) {
+                        btnClearSearch.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                // Afficher un toast pour confirmer
+                Toast.makeText(this, "Code-barres scanné: " + scannedBarcode, Toast.LENGTH_SHORT).show();
+            } else {
+                // Scan annulé
+                Toast.makeText(this, "Scan annulé", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // Passer à l'implémentation parent pour d'autres résultats d'activité
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    // Méthode pour filtrer les produits en fonction du code-barres
+    private void filter(String query) {
+        if (adapter != null) {
+            adapter.filter(query);
+        }
     }
 
     @Override

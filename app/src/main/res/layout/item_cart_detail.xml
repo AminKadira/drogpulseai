@@ -54,7 +54,7 @@
             android:layout_weight="1.5"
             android:textSize="14sp"
             android:gravity="end"
-            tools:text="9.99 €" />
+            tools:text="9.99 MAD" />
 
         <TextView
             android:id="@+id/tv_total_price"
@@ -64,6 +64,6 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:gravity="end"
-            tools:text="19.98 €" />
+            tools:text="19.98 MAD" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

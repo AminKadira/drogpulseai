@@ -55,12 +55,12 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
 
         // Prix unitaire
         holder.tvUnitPrice.setText(String.format(Locale.getDefault(),
-                "%.2f €",
+                "%.2f MAD",
                 item.getPrice()));
 
         // Prix total
         holder.tvTotalPrice.setText(String.format(Locale.getDefault(),
-                "%.2f €",
+                "%.2f MAD",
                 item.getTotalPrice()));
     }
 

@@ -40,10 +40,10 @@
                 android:id="@+id/tv_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@android:color/darker_gray"
+                android:background="@android:color/holo_blue_light"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/background_light"
                 android:textSize="12sp"
                 tools:text="En attente" />
 
@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:textSize="14sp"
-                tools:text="3 produits, 5 articles, 49.99 €" />
+                tools:text="3 produits, 5 articles, 49.99 MAD" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

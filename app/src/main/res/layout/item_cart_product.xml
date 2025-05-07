@@ -99,7 +99,7 @@
                     android:paddingVertical="4dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="Prix: 19.99 €" />
+                    tools:text="Prix: 19.99 MAD" />
             </LinearLayout>
         </LinearLayout>
 
