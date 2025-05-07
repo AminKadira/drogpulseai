@@ -13,7 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.activities.carts.ContactSelectionActivity;
+import com.drogpulseai.activities.expenses.ExpenseFormActivity;
+import com.drogpulseai.activities.expenses.ExpenseListActivity;
 import com.drogpulseai.activities.products.ProductListActivity;
+
+
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.CameraPermissionHelper;
 import com.drogpulseai.utils.SessionManager;
@@ -83,6 +87,12 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
         cardCreateCart.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ContactSelectionActivity.class));
+        });
+
+        // Carte Frais
+        MaterialCardView cardExpenses = findViewById(R.id.card_expenses);
+        cardExpenses.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, ExpenseListActivity.class));
         });
     }
 
@@ -197,7 +207,6 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Déléguer le traitement au helper
         cameraPermissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.home_menu, menu);
@@ -224,6 +233,10 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         } else if (id == R.id.action_camera) {
             // Lancer l'appareil photo (avec vérification de permission)
             takePhoto();
+            return true;
+        }else if (id == R.id.action_expenses) {
+            // Naviguer vers l'écran des frais
+            startActivity(new Intent(this, ExpenseListActivity.class));
             return true;
         }
 

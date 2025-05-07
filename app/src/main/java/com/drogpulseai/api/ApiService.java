@@ -2,6 +2,7 @@ package com.drogpulseai.api;
 
 import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.Contact;
+import com.drogpulseai.models.Expense;
 import com.drogpulseai.models.Product;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.NetworkResult;
@@ -202,5 +203,46 @@ public interface ApiService {
     @POST("carts/update_status.php")
     Call<NetworkResult<Map<String, Object>>> updateCartStatus(
             @Body Map<String, Object> statusData
+    );
+
+
+    /**
+     * Récupérer tous les frais d'un utilisateur
+     */
+    @GET("expenses/list.php")
+    Call<List<Expense>> getExpenses(@Query("user_id") int userId);
+
+    /**
+     * Obtenir les détails d'un frais
+     */
+    @GET("expenses/details.php")
+    Call<Expense> getExpenseDetails(@Query("id") int expenseId);
+
+    /**
+     * Créer un nouveau frais
+     */
+    @POST("expenses/create.php")
+    Call<NetworkResult<Expense>> createExpense(@Body Expense expense);
+
+    /**
+     * Mettre à jour un frais existant
+     */
+    @PUT("expenses/update.php")
+    Call<NetworkResult<Expense>> updateExpense(@Body Expense expense);
+
+    /**
+     * Supprimer un frais
+     */
+    @DELETE("expenses/delete.php")
+    Call<NetworkResult<Void>> deleteExpense(@Query("id") int expenseId);
+
+    /**
+     * Uploader une photo de justificatif
+     */
+    @Multipart
+    @POST("expenses/upload_receipt.php")
+    Call<NetworkResult<String>> uploadReceiptPhoto(
+            @Part MultipartBody.Part photo,
+            @Part("user_id") RequestBody userId
     );
 }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/cardview_dark_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Icône du type de frais -->
+        <FrameLayout
+            android:id="@+id/icon_container"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@color/primary"
+            android:layout_gravity="center_vertical"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/iv_expense_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/expense_type"
+                app:tint="@android:color/white"
+                tools:src="@android:drawable/ic_menu_directions" />
+        </FrameLayout>
+
+        <!-- Informations du frais -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Type de frais -->
+            <TextView
+                android:id="@+id/tv_expense_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/primaryText"
+                tools:text="Carburant" />
+
+            <!-- Date -->
+            <TextView
+                android:id="@+id/tv_expense_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
+                tools:text="15/05/2025" />
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/tv_expense_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                tools:text="Déplacement client Casablanca - Marrakech" />
+        </LinearLayout>
+
+        <!-- Montant -->
+        <TextView
+            android:id="@+id/tv_expense_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:background="@color/accent"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="120.50 MAD" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

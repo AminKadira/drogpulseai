@@ -137,4 +137,33 @@
     <string name="selection_count">Sélectionné(s): %1$d (%2$d articles)</string>
     <string name="cart_summary">Panier créé pour %1$s avec %2$d produit(s) / %3$d article(s)\nTotal: %4$.2f MAD</string>
     <string name="item_summary">%1$d. %2$s (Réf: %3$s) - %4$d x %5$.2f MAD = %6$.2f MAD</string>
+
+
+    <!-- Gestion des frais -->
+    <string name="expenses">Frais professionnels</string>
+    <string name="add_expense">Ajouter un frais</string>
+    <string name="edit_expense">Modifier le frais</string>
+    <string name="delete_expense">Supprimer le frais</string>
+    <string name="delete_expense_confirmation">Êtes-vous sûr de vouloir supprimer ce frais ?</string>
+    <string name="no_expenses_found">Aucun frais trouvé</string>
+    <string name="expense_created">Frais ajouté avec succès</string>
+    <string name="expense_updated">Frais mis à jour avec succès</string>
+    <string name="expense_deleted">Frais supprimé avec succès</string>
+    <string name="error_loading_expense">Erreur lors du chargement du frais</string>
+    <string name="error_upload_photo">Erreur lors du téléchargement de la photo</string>
+    <string name="expense_type">Type de frais</string>
+    <string name="expense_amount">Montant (MAD)</string>
+    <string name="expense_date">Date</string>
+    <string name="expense_description">Description</string>
+    <string name="receipt_photo">Photo du justificatif</string>
+    <string name="add_receipt_photo">Ajouter un justificatif</string>
+    <string name="change_receipt">Changer le justificatif</string>
+    <string name="invalid_amount">Montant invalide</string>
+    <string name="error_processing_image">Erreur lors du traitement de l\'image</string>
+
+    <!-- Pour la liste des frais par jour -->
+    <string name="daily_expenses">Frais journaliers</string>
+    <string name="day_expenses">Frais du %s</string>
+    <string name="total_expenses">Total: %.2f MAD</string>
+    <string name="select_month">Sélectionner un mois</string>
 </resources>
