@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
+import com.drogpulseai.activities.carts.CartManagementActivity;
 import com.drogpulseai.activities.carts.ContactSelectionActivity;
 import com.drogpulseai.activities.expenses.ExpenseFormActivity;
 import com.drogpulseai.activities.expenses.ExpenseListActivity;
@@ -86,7 +87,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Carte Créer un panier
         MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
         cardCreateCart.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, ContactSelectionActivity.class));
+            startActivity(new Intent(HomeActivity.this, CartManagementActivity.class));
         });
 
         // Carte Frais

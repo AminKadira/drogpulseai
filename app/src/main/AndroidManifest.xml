@@ -111,6 +111,25 @@
             android:name=".activities.expenses.ExpenseDailyListActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.carts.FilteredCartsActivity"
+            android:exported="false"
+            android:label="@string/my_carts"
+            android:parentActivityName=".activities.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity" />
+        </activity>
+        <activity
+            android:name=".activities.carts.CartManagementActivity"
+            android:exported="false"
+            android:label="@string/cart_management"
+            android:parentActivityName=".activities.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity" />
+        </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.drogpulseai.fileprovider"

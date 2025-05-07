@@ -166,4 +166,38 @@
     <string name="day_expenses">Frais du %s</string>
     <string name="total_expenses">Total: %.2f MAD</string>
     <string name="select_month">Sélectionner un mois</string>
+
+
+    <!-- Add these to your strings.xml file -->
+    <string name="all_carts">Tous les paniers</string>
+    <string name="my_carts">Mes paniers</string>
+    <string name="filter_carts">Filtrer les paniers</string>
+    <string name="status_filter">Statut</string>
+    <string name="date_filter">Période</string>
+    <string name="custom_date_range">Personnalisé</string>
+    <string name="start_date">Date début</string>
+    <string name="end_date">Date fin</string>
+    <string name="apply_filter">Appliquer</string>
+    <string name="reset_filter">Réinitialiser</string>
+    <string name="cart_status_pending">En attente</string>
+    <string name="cart_status_confirmed">Confirmé</string>
+    <string name="cart_status_cancelled">Annulé</string>
+    <string name="no_carts_found">Aucun panier trouvé</string>
+    <string name="loading_carts">Chargement des paniers…</string>
+    <string name="date_all">Toutes les dates</string>
+    <string name="date_today">Aujourd\'hui</string>
+    <string name="date_yesterday">Hier</string>
+    <string name="date_this_week">Cette semaine</string>
+    <string name="date_last_week">Semaine dernière</string>
+    <string name="date_this_month">Ce mois</string>
+    <string name="date_last_month">Mois dernier</string>
+    <string name="date_this_year">Cette année</string>
+    <string name="date_custom">Période personnalisée</string>
+    <string name="select_date">Sélectionner une date</string>
+    <string name="error_end_date_before_start">La date de fin doit être après la date de début</string>
+    <string name="total_carts">%1$d paniers trouvés</string>
+
+    <string name="cart_management">Gestion des paniers</string>
+
+
 </resources>

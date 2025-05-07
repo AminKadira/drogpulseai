@@ -245,4 +245,25 @@ public interface ApiService {
             @Part MultipartBody.Part photo,
             @Part("user_id") RequestBody userId
     );
+
+
+    /**
+     * Get filtered carts based on multiple criteria
+     * @param filters Map of filter criteria
+     */
+    @POST("carts/filter.php") // Adjust endpoint as needed
+    Call<Map<String, Object>> getFilteredCarts(@Body Map<String, Object> filters);
+
+    /**
+     * Get carts for a specific user with pagination
+     * @param userId User ID
+     * @param page Page number
+     * @param limit Items per page
+     */
+    @GET("carts/list.php")
+    Call<Map<String, Object>> getUserCartsFiltred(
+            @Query("user_id") int userId,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
 }
