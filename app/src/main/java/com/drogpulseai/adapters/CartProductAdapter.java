@@ -37,7 +37,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     private static final String TAG = "CartProductAdapter";
     private static final int DEFAULT_QUANTITY = 1;
     private static final int MIN_QUANTITY = 1;
-    private static final int MAX_QUANTITY = 99;
+    private static final int MAX_QUANTITY = 99999;
 
     private final List<Product> allProducts; // Liste de tous les produits
     private final List<Product> filteredProducts; // Liste filtrée pour la recherche

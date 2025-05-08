@@ -341,10 +341,13 @@ public class CartDetailsActivity extends AppCompatActivity {
                     .setNegativeButton("Non", null)
                     .show();
         } else {
-
-
             // Pour l'annulation, afficher les options de motif
-            final String[] cancellationReasons = {String.valueOf(R.string.annulation_cart_client),String.valueOf(R.string.annulation_cart_erreur),String.valueOf(R.string.annulation_cart_autre)};
+            final String[] cancellationReasons = {
+                    getString(R.string.annulation_cart_client),
+                    getString(R.string.annulation_cart_erreur),
+                    getString(R.string.annulation_cart_autre)
+            };
+
             final int[] selectedReason = {0};  // Par défaut, premier élément
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this)
@@ -354,75 +357,132 @@ public class CartDetailsActivity extends AppCompatActivity {
                     })
                     .setPositiveButton("Confirmer", (dialog, which) -> {
                         cancellationReason = cancellationReasons[selectedReason[0]];
-                        Log.d("TAG", "Motif d'annulation sélectionné : " + cancellationReason);
+                        Log.d(TAG, "Motif d'annulation sélectionné : " + cancellationReason);
                         updateCartStatus(action);
                     })
                     .setNegativeButton("Annuler", null);
 
-                    // Important : ne pas appeler .setMessage() si tu utilises setSingleChoiceItems()
-                    // car ça masque la liste
-                    builder.create().show();
+            // Important : ne pas appeler .setMessage() si tu utilises setSingleChoiceItems()
+            // car ça masque la liste
+            builder.create().show();
         }
     }
 
+    /**
+     * Update a cart's status with proper error handling for 500 errors
+     */
     private void updateCartStatus(String action) {
         String newStatus = action.equals("confirmer") ? "confirmed" : "cancelled";
 
         Map<String, Object> statusData = new HashMap<>();
         statusData.put("cart_id", cartId);
         statusData.put("status", newStatus);
-        statusData.put("notes", cancellationReason);
+
+        // Only include notes if there's actually a value
+        if (cancellationReason != null && !cancellationReason.isEmpty()) {
+            statusData.put("notes", cancellationReason);
+        }
 
         progressBar.setVisibility(View.VISIBLE);
+
+        // Convert to JSON for better logging
+        String requestJson = new Gson().toJson(statusData);
+        Log.d(TAG, "Sending update request JSON: " + requestJson);
 
         apiService.updateCartStatus(statusData).enqueue(new Callback<NetworkResult<Map<String, Object>>>() {
             @Override
             public void onResponse(Call<NetworkResult<Map<String, Object>>> call, Response<NetworkResult<Map<String, Object>>> response) {
                 progressBar.setVisibility(View.GONE);
 
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Mettre à jour le statut dans l'objet panier
-                    cart.setStatus(newStatus);
+                // Log the entire response information for debugging
+                Log.d(TAG, "Response: " + response.toString());
+                Log.d(TAG, "Status code: " + response.code() + ", Message: " + response.message());
 
-                    // Si disponible, stocker aussi le motif d'annulation dans l'objet panier
-                    if (action.equals("annuler") && !cancellationReason.isEmpty()) {
-                        // Ajouter cette information à l'objet cart si tu as un champ approprié
-                        // Par exemple:
-                        cart.setNotes(cancellationReason);
+                try {
+                    if (response.errorBody() != null) {
+                        String errorBodyStr = response.errorBody().string();
+                        Log.e(TAG, "Error body: " + errorBodyStr);
+
+                        // Try to parse JSON error if possible
+                        try {
+                            JSONObject errorJson = new JSONObject(errorBodyStr);
+                            String errorMessage = errorJson.optString("message", "Unknown error");
+                            Log.e(TAG, "Parsed error message: " + errorMessage);
+
+                            Toast.makeText(CartDetailsActivity.this,
+                                    "Erreur: " + errorMessage, Toast.LENGTH_LONG).show();
+                            return;
+                        } catch (Exception e) {
+                            // Not a valid JSON, just show the raw error
+                            Log.e(TAG, "Error parsing JSON error response", e);
+                        }
                     }
 
-                    // Mettre à jour l'affichage
-                    updateStatusDisplay();
-                    updateButtons();
+                    // Process successful responses
+                    if (response.isSuccessful() && response.body() != null) {
+                        NetworkResult<Map<String, Object>> result = response.body();
+                        Log.d(TAG, "Response body: " + new Gson().toJson(result));
 
-                    // Message de confirmation
-                    String message = action.equals("confirmer") ?
-                            "Panier confirmé avec succès" :
-                            "Panier annulé avec succès";
+                        if (result.isSuccess()) {
+                            // Update cart status locally
+                            cart.setStatus(newStatus);
+                            if (action.equals("annuler") && !cancellationReason.isEmpty()) {
+                                cart.setNotes(cancellationReason);
+                            }
 
-                    Toast.makeText(CartDetailsActivity.this, message, Toast.LENGTH_SHORT).show();
+                            // Update UI
+                            updateStatusDisplay();
+                            updateButtons();
 
-                    // Réinitialiser le motif d'annulation
+                            String message = action.equals("confirmer") ?
+                                    "Panier confirmé avec succès" :
+                                    "Panier annulé avec succès";
+
+                            Toast.makeText(CartDetailsActivity.this, message, Toast.LENGTH_SHORT).show();
+                        } else {
+                            // API logical error
+                            String errorMessage = result.getMessage() != null ?
+                                    result.getMessage() : "Erreur inconnue";
+
+                            Toast.makeText(CartDetailsActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        // HTTP error with no parseable body
+                        Toast.makeText(CartDetailsActivity.this,
+                                "Erreur HTTP " + response.code() + ": Impossible de mettre à jour le statut",
+                                Toast.LENGTH_LONG).show();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception processing response", e);
+                    Toast.makeText(CartDetailsActivity.this,
+                            "Erreur de traitement: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                } finally {
                     cancellationReason = "";
-                } else {
-                    // Gérer les erreurs
-                    String errorMessage = "Erreur lors de la mise à jour du statut";
-
-                    if (response.body() != null) {
-                        errorMessage = response.body().getMessage();
-                    }
-
-                    Toast.makeText(CartDetailsActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<NetworkResult<Map<String, Object>>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                Log.e(TAG, "Erreur réseau", t);
-                Toast.makeText(CartDetailsActivity.this, "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
 
-                // Réinitialiser le motif d'annulation
+                // Log the detailed failure
+                Log.e(TAG, "Network failure", t);
+
+                if (t instanceof java.net.SocketTimeoutException) {
+                    Toast.makeText(CartDetailsActivity.this,
+                            "Délai d'attente dépassé. Veuillez réessayer.",
+                            Toast.LENGTH_LONG).show();
+                } else if (t instanceof java.net.UnknownHostException) {
+                    Toast.makeText(CartDetailsActivity.this,
+                            "Serveur introuvable. Vérifiez votre connexion.",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(CartDetailsActivity.this,
+                            "Erreur réseau: " + t.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+
                 cancellationReason = "";
             }
         });

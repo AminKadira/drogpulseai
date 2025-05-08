@@ -275,7 +275,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                     // Créer quelques produits factices pour tester si le problème vient de l'API
                     if (loadedProducts.isEmpty()) {
                         Log.d(TAG, "Création de produits factices pour tester");
-                        loadedProducts = createDummyProducts();
+                       // loadedProducts = createDummyProducts();
                     }
 
                     products.clear();
@@ -307,9 +307,9 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                     Toast.makeText(CartActivity.this, "Erreur lors du chargement des produits", Toast.LENGTH_LONG).show();
 
                     // Charger des produits factices pour tester l'affichage
-                    List<Product> dummyProducts = createDummyProducts();
-                    adapter.updateProducts(dummyProducts);
-                    adapter.showAllProducts();
+//                    List<Product> dummyProducts = createDummyProducts();
+//                    adapter.updateProducts(dummyProducts);
+//                    adapter.showAllProducts();
                 }
             }
 
@@ -321,9 +321,9 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                 Toast.makeText(CartActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
 
                 // Charger des produits factices pour tester l'affichage
-                List<Product> dummyProducts = createDummyProducts();
-                adapter.updateProducts(dummyProducts);
-                adapter.showAllProducts();
+                //List<Product> dummyProducts = createDummyProducts();
+                //adapter.updateProducts(dummyProducts);
+                //adapter.showAllProducts();
             }
         });
     }
