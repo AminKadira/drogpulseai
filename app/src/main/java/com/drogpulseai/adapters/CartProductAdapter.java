@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -77,20 +76,39 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         Product product = filteredProducts.get(position);
         int productId = product.getId();
 
+        // Log de debug pour voir les valeurs
+        Log.d(TAG, "Produit: " + product.getName() +
+                " | Prix min: " + product.getPrixMinVente() +
+                " | Prix conseillé: " + product.getPrixVenteConseille());
+
         // Afficher les informations du produit
         holder.tvReference.setText(product.getReference());
         holder.tvName.setText(product.getName());
-        holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
-        // Afficher le prix s'il est disponible
-        double productPrice = product.getPrice();
-        if (productPrice > 0) {
-            holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", productPrice));
+        // Afficher la quantité en stock
+        holder.tvQuantity.setVisibility(View.VISIBLE);
+        holder.tvQuantity.setText(String.valueOf(product.getQuantity()));
+
+        // Afficher le prix minimum de vente
+        holder.tvPrixMin.setVisibility(View.VISIBLE);
+        if (product.getPrixMinVente() > 0) {
+            holder.tvPrixMin.setText(String.format(Locale.getDefault(), "%.0f", product.getPrixMinVente()));
         } else {
-            holder.tvPrice.setVisibility(View.VISIBLE); // Afficher quand même
-            holder.tvPrice.setText("Prix: N/D");
+            holder.tvPrixMin.setText("Min");
         }
+
+        // Afficher le prix de vente conseillé
+        holder.tvPrixConseille.setVisibility(View.VISIBLE);
+        if (product.getPrixVenteConseille() > 0) {
+            holder.tvPrixConseille.setText(String.format(Locale.getDefault(), "%.0f", product.getPrixVenteConseille()));
+        } else {
+            holder.tvPrixConseille.setText("Cons.");
+        }
+
+        // Afficher le prix normal
+        double productPrice = product.getPrice();
+        holder.tvPrice.setVisibility(View.VISIBLE);
+        holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", productPrice));
 
         // Gérer l'état de sélection
         boolean isSelected = selectedProducts.contains(productId);
@@ -104,7 +122,19 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             int quantity = productQuantities.getOrDefault(productId, DEFAULT_QUANTITY);
             holder.etQuantityValue.setText(String.valueOf(quantity));
 
-            double salePrice = productPrices.getOrDefault(productId, product.getPrice());
+            // Pour le prix de vente, privilégier le prix conseillé si disponible
+            double salePrice = 0;
+            if (product.getPrixVenteConseille() > 0) {
+                salePrice = product.getPrixVenteConseille();
+            } else if (productPrice > 0) {
+                salePrice = productPrice;
+            }
+
+            // Si un prix a déjà été saisi manuellement, l'utiliser
+            if (productPrices.containsKey(productId)) {
+                salePrice = productPrices.get(productId);
+            }
+
             holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
         }
 
@@ -175,6 +205,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
                         double price = Double.parseDouble(priceStr);
                         if (price > 0) {
                             productPrices.put(productId, price);
+
+                            // Si le prix saisi est inférieur au prix minimum, afficher un avertissement
+                            Product product = getProductById(productId);
+                            if (product != null && product.getPrixMinVente() > 0 && price < product.getPrixMinVente()) {
+                                // Vous pouvez ajouter ici un code pour afficher un avertissement visuel
+                                Log.w(TAG, "Prix saisi inférieur au prix minimum recommandé pour le produit " + productId);
+                            }
                         }
                     } catch (NumberFormatException e) {
                         // Ignorer
@@ -183,15 +220,41 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             }
         });
     }
+
+    private Product getProductById(int productId) {
+        for (Product product : allProducts) {
+            if (product.getId() == productId) {
+                return product;
+            }
+        }
+        return null;
+    }
+
     private void toggleSelection(int productId) {
         if (selectedProducts.contains(productId)) {
             // Déselectionner le produit
             selectedProducts.remove(productId);
             productQuantities.remove(productId);
+            productPrices.remove(productId);
         } else {
             // Sélectionner le produit
             selectedProducts.add(productId);
             productQuantities.put(productId, DEFAULT_QUANTITY);
+
+            // Initialiser le prix de vente avec le prix conseillé ou le prix normal
+            Product product = getProductById(productId);
+            if (product != null) {
+                double salePrice = 0;
+                if (product.getPrixVenteConseille() > 0) {
+                    salePrice = product.getPrixVenteConseille();
+                } else if (product.getPrice() > 0) {
+                    salePrice = product.getPrice();
+                }
+
+                if (salePrice > 0) {
+                    productPrices.put(productId, salePrice);
+                }
+            }
         }
     }
 
@@ -253,7 +316,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvReference, tvName, tvQuantity, tvPrice;
+        TextView tvReference, tvName, tvQuantity, tvPrice, tvPrixMin, tvPrixConseille;
         ImageView ivThumbnail;
         CheckBox checkBox;
         LinearLayout inputLayoutsContainer; // Nouveau conteneur parent
@@ -266,6 +329,8 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             tvName = itemView.findViewById(R.id.tv_product_name);
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
             tvPrice = itemView.findViewById(R.id.tv_product_price);
+            tvPrixMin = itemView.findViewById(R.id.tv_product_prix_min);
+            tvPrixConseille = itemView.findViewById(R.id.tv_product_prix_conseille);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);
             checkBox = itemView.findViewById(R.id.checkbox_select_product);
 
@@ -279,6 +344,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             etSalePrice = itemView.findViewById(R.id.et_sale_price);
         }
     }
+
     /**
      * Récupérer la liste des produits sélectionnés avec leurs quantités
      */
@@ -303,6 +369,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
                 productCopy.setQuantity(product.getQuantity());
                 productCopy.setUserId(product.getUserId());
                 productCopy.setPrice(price); // Utiliser le prix de vente personnalisé
+                productCopy.setPrixMinVente(product.getPrixMinVente());
+                productCopy.setPrixVenteConseille(product.getPrixVenteConseille());
+                productCopy.setCoutDeRevientUnitaire(product.getCoutDeRevientUnitaire());
+
+                // Définir les champs de suivi des modifications
+                productCopy.setLastUpdated(System.currentTimeMillis());
+                productCopy.setDirty(true);
 
                 items.add(new ProductCartItem(productCopy, quantity));
             }
@@ -317,6 +390,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     public void clearSelection() {
         selectedProducts.clear();
         productQuantities.clear();
+        productPrices.clear();
         notifyDataSetChanged();
 
         if (listener != null) {
@@ -335,6 +409,20 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             // Initialiser la quantité si elle n'est pas déjà définie
             if (!productQuantities.containsKey(productId)) {
                 productQuantities.put(productId, DEFAULT_QUANTITY);
+            }
+
+            // Initialiser le prix de vente avec le prix conseillé ou normal si non défini
+            if (!productPrices.containsKey(productId)) {
+                double salePrice = 0;
+                if (product.getPrixVenteConseille() > 0) {
+                    salePrice = product.getPrixVenteConseille();
+                } else if (product.getPrice() > 0) {
+                    salePrice = product.getPrice();
+                }
+
+                if (salePrice > 0) {
+                    productPrices.put(productId, salePrice);
+                }
             }
         }
 
@@ -384,7 +472,19 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
      */
     public void updateProducts(List<Product> newProducts) {
         allProducts.clear();
-        allProducts.addAll(newProducts);
+
+        // Ajouter des valeurs de test pour certains produits si nécessaire
+        for (Product product : newProducts) {
+            // Si les valeurs sont absentes, leur donner des valeurs de test
+            if (product.getPrixMinVente() <= 0) {
+                product.setPrixMinVente(product.getPrice() * 0.7); // 70% du prix normal comme exemple
+            }
+            if (product.getPrixVenteConseille() <= 0) {
+                product.setPrixVenteConseille(product.getPrice() * 1.2); // 120% du prix normal comme exemple
+            }
+
+            allProducts.add(product);
+        }
 
         // Mettre également à jour la liste filtrée
         filter(currentSearchQuery);

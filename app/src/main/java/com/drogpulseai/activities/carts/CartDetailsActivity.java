@@ -341,8 +341,10 @@ public class CartDetailsActivity extends AppCompatActivity {
                     .setNegativeButton("Non", null)
                     .show();
         } else {
+
+
             // Pour l'annulation, afficher les options de motif
-            final String[] cancellationReasons = {"Annulation client", "Erreur de saisie", "Autre"};
+            final String[] cancellationReasons = {String.valueOf(R.string.annulation_cart_client),String.valueOf(R.string.annulation_cart_erreur),String.valueOf(R.string.annulation_cart_autre)};
             final int[] selectedReason = {0};  // Par défaut, premier élément
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this)

@@ -198,6 +198,9 @@
     <string name="total_carts">%1$d paniers trouvés</string>
 
     <string name="cart_management">Gestion des paniers</string>
+    <string name="annulation_cart_client">Annulation client</string>
+    <string name="annulation_cart_erreur">Erreur de saisie</string>
+    <string name="annulation_cart_autre">Autres </string>
 
 
 </resources>

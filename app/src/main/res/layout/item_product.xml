@@ -90,7 +90,7 @@
                     android:paddingVertical="4dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="Prix: 19.99 MAD" />
+                    tools:text="19.99 MAD" />
             </LinearLayout>
 
             <!-- Code-barres -->
