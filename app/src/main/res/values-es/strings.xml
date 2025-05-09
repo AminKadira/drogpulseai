@@ -1,0 +1,162 @@
+<resources>
+
+    <!-- الرسائل -->
+    <string name="contact_created">تم إنشاء جهة الاتصال بنجاح</string>
+    <string name="contact_updated">تم تحديث جهة الاتصال بنجاح</string>
+    <string name="contact_deleted">تم حذف جهة الاتصال بنجاح</string>
+    <string name="error_creating_contact">خطأ أثناء إنشاء جهة الاتصال</string>
+    <string name="error_updating_contact">خطأ أثناء تحديث جهة الاتصال</string>
+    <string name="error_deleting_contact">خطأ أثناء حذف جهة الاتصال</string>
+    <string name="error_loading_contacts">خطأ أثناء تحميل جهات الاتصال</string>
+    <string name="error_server_connection">خطأ في الاتصال بالخادم</string>
+    <string name="error_network">خطأ في الشبكة</string>
+    <string name="location_retrieved">تم تحديد الموقع</string>
+    <string name="location_error">خطأ في تحديد الموقع</string>
+    <string name="login_success">تم تسجيل الدخول بنجاح</string>
+    <string name="register_success">تم إنشاء الحساب بنجاح</string>
+
+    <!-- التحقق -->
+    <string name="field_required">هذا الحقل مطلوب</string>
+    <string name="passwords_not_match">كلمتا المرور غير متطابقتين</string>
+    <string name="contact_details">تفاصيل جهة الاتصال</string>
+
+    <!-- تسجيل الدخول -->
+    <string name="login_subtitle">النبض الذكي لمتجرك</string>
+    <string name="register_title">إنشاء حساب</string>
+    <string name="register_subtitle">يرجى ملء المعلومات لإنشاء حسابك</string>
+    <string name="already_account_login">لديك حساب بالفعل؟ سجل الدخول</string>
+    <string name="save_contact">حفظ</string>
+
+    <!-- إدارة المنتجات -->
+    <string name="products">المنتجات</string>
+    <string name="product_management">إدارة المخزون</string>
+    <string name="add_product">إضافة منتج</string>
+    <string name="create_product">إنشاء منتج</string>
+    <string name="edit_product">تعديل المنتج</string>
+    <string name="delete_product">حذف المنتج</string>
+    <string name="product_reference">مرجع المنتج</string>
+    <string name="product_label">الاسم الوصفي</string>
+    <string name="product_name">اسم المنتج</string>
+    <string name="product_description">الوصف</string>
+    <string name="product_barcode">الرمز الشريطي</string>
+    <string name="product_quantity">الكمية:</string>
+    <string name="product_photo">صورة المنتج</string>
+    <string name="add_photo">إضافة صورة</string>
+    <string name="change_photo">تغيير الصورة</string>
+    <string name="scan_barcode">مسح الرمز الشريطي</string>
+    <string name="no_products_found">لم يتم العثور على منتجات</string>
+    <string name="product_created">تم إنشاء المنتج بنجاح</string>
+    <string name="product_updated">تم تحديث المنتج بنجاح</string>
+    <string name="product_deleted">تم حذف المنتج بنجاح</string>
+    <string name="stock_format">المخزون: %d</string>
+    <string name="search_products">البحث عن المنتجات</string>
+    <string name="search_products_hint">المرجع، الاسم، التسمية أو الرمز الشريطي</string>
+    <string name="welcome_message">مرحبًا،</string>
+    <string name="product_price">السعر</string>
+    <string name="barcode_scanned">تم مسح الرمز الشريطي</string>
+    <string name="scan_cancelled">تم إلغاء المسح</string>
+    <string name="scan_barcode_prompt">امسح الرمز الشريطي</string>
+    <string name="no_camera_app">لا يوجد تطبيق كاميرا متاح</string>
+    <string name="price_format">%.2f درهم</string>
+    <string name="product_price_stock">السعر: %1$s | المخزون: %2$d</string>
+    <string name="barcode_format">الرمز الشريطي: %s</string>
+
+    <!-- ميزات الكاميرا -->
+    <string name="take_photo">التقاط صورة</string>
+    <string name="camera_permission_required">مطلوب إذن الوصول إلى الكاميرا</string>
+    <string name="camera_permission_rationale">نحتاج إلى إذن الكاميرا لاستخدام هذه الميزة. يرجى السماح بالوصول.</string>
+    <string name="camera_permission_denied">لا يمكن استخدام هذه الميزة بدون إذن الكاميرا</string>
+    <string name="camera_permission_settings">يرجى تفعيل الكاميرا من إعدادات التطبيق</string>
+    <string name="open_settings">الإعدادات</string>
+    <string name="cancel">إلغاء</string>
+    <string name="ok">موافق</string>
+    <string name="add_photo_no_connection">يجب الاتصال بالإنترنت لإضافة صورة</string>
+
+    <!-- سلة التسوق -->
+    <string name="select_contact">اختر جهة اتصال</string>
+    <string name="create_cart">إنشاء سلة</string>
+    <string name="cart">سلة</string>
+    <string name="contact_info">جهة الاتصال: %1$s (المعرف: %2$d)</string>
+    <string name="products_list">قائمة المنتجات</string>
+    <string name="no_products_available">لا توجد منتجات متوفرة</string>
+
+    <string name="select_all">تحديد الكل</string>
+    <string name="clear_selection">إلغاء التحديد</string>
+    <string name="add_to_cart">أضف إلى السلة</string>
+    <string name="selected_count">المحدد: %d</string>
+    <string name="cart_created">تم إنشاء السلة لـ %1$s مع %2$d منتج</string>
+    <string name="select_at_least_one">يرجى تحديد منتج واحد على الأقل</string>
+
+    <string name="clear_search">مسح البحث</string>
+    <string name="no_results_found">لم يتم العثور على نتائج</string>
+
+    <string name="quantity">الكمية</string>
+    <string name="decrease">نقص</string>
+    <string name="increase">زيادة</string>
+    <string name="selection_count">المحدد: %1$d (%2$d عنصر)</string>
+    <string name="cart_summary">تم إنشاء سلة لـ %1$s بـ %2$d منتج / %3$d عنصر\nالمجموع: %4$.2f درهم</string>
+    <string name="item_summary">%1$d. %2$s (مرجع: %3$s) - %4$d x %5$.2f درهم = %6$.2f درهم</string>
+
+    <!-- إدارة المصاريف -->
+    <string name="expenses">المصاريف المهنية</string>
+    <string name="add_expense">إضافة مصروف</string>
+    <string name="edit_expense">تعديل المصروف</string>
+    <string name="delete_expense">حذف المصروف</string>
+    <string name="delete_expense_confirmation">هل أنت متأكد أنك تريد حذف هذا المصروف؟</string>
+    <string name="no_expenses_found">لا توجد مصاريف</string>
+    <string name="expense_created">تمت إضافة المصروف بنجاح</string>
+    <string name="expense_updated">تم تحديث المصروف بنجاح</string>
+    <string name="expense_deleted">تم حذف المصروف بنجاح</string>
+    <string name="error_loading_expense">خطأ في تحميل المصروف</string>
+    <string name="error_upload_photo">خطأ أثناء رفع الصورة</string>
+    <string name="expense_type">نوع المصروف</string>
+    <string name="expense_amount">المبلغ (درهم)</string>
+    <string name="expense_date">التاريخ</string>
+    <string name="expense_description">الوصف</string>
+    <string name="receipt_photo">صورة الإيصال</string>
+    <string name="add_receipt_photo">إضافة إيصال</string>
+    <string name="change_receipt">تغيير الإيصال</string>
+    <string name="invalid_amount">مبلغ غير صالح</string>
+    <string name="error_processing_image">خطأ في معالجة الصورة</string>
+
+    <!-- قائمة المصاريف اليومية -->
+    <string name="daily_expenses">المصاريف اليومية</string>
+    <string name="day_expenses">مصاريف %s</string>
+    <string name="total_expenses">المجموع: %.2f درهم</string>
+    <string name="select_month">اختر شهراً</string>
+
+    <!-- الفلاتر -->
+    <string name="all_carts">جميع السلات</string>
+    <string name="my_carts">سلاتي</string>
+    <string name="filter_carts">تصفية السلات</string>
+    <string name="status_filter">الحالة</string>
+    <string name="date_filter">الفترة</string>
+    <string name="custom_date_range">مخصص</string>
+    <string name="start_date">تاريخ البداية</string>
+    <string name="end_date">تاريخ الانتهاء</string>
+    <string name="apply_filter">تطبيق</string>
+    <string name="reset_filter">إعادة تعيين</string>
+    <string name="cart_status_pending">قيد الانتظار</string>
+    <string name="cart_status_confirmed">تم التأكيد</string>
+    <string name="cart_status_cancelled">ملغاة</string>
+    <string name="no_carts_found">لم يتم العثور على سلات</string>
+    <string name="loading_carts">جارٍ تحميل السلات…</string>
+    <string name="date_all">كل التواريخ</string>
+    <string name="date_today">اليوم</string>
+    <string name="date_yesterday">أمس</string>
+    <string name="date_this_week">هذا الأسبوع</string>
+    <string name="date_last_week">الأسبوع الماضي</string>
+    <string name="date_this_month">هذا الشهر</string>
+    <string name="date_last_month">الشهر الماضي</string>
+    <string name="date_this_year">هذه السنة</string>
+    <string name="date_custom">فترة مخصصة</string>
+    <string name="select_date">اختر تاريخاً</string>
+    <string name="error_end_date_before_start">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</string>
+    <string name="total_carts">عدد السلات: %1$d</string>
+
+    <string name="cart_management">إدارة السلات</string>
+    <string name="annulation_cart_client">إلغاء من طرف الزبون</string>
+    <string name="annulation_cart_erreur">خطأ في الإدخال</string>
+    <string name="annulation_cart_autre">أسباب أخرى</string>
+
+</resources>
