@@ -77,8 +77,13 @@ public class ExpenseFormActivity extends AppCompatActivity implements CameraPerm
 
     // Types de frais prédéfinis
     private final String[] expenseTypes = {
-            "Carburant", "Hôtel", "Restauration", "Autoroute", "Transport", "Fournitures", "Autre"
-    };
+            String.valueOf(R.string.expense_type_fuel),
+            String.valueOf(R.string.expense_type_hotel),
+            String.valueOf(R.string.expense_type_food),
+            String.valueOf(R.string.expense_type_highway),
+            String.valueOf(R.string.expense_type_transport),
+            String.valueOf(R.string.expense_type_supplies),
+            String.valueOf(R.string.expense_type_other),};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

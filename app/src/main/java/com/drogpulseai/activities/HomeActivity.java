@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,15 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.activities.carts.CartManagementActivity;
-import com.drogpulseai.activities.carts.ContactSelectionActivity;
-import com.drogpulseai.activities.expenses.ExpenseFormActivity;
 import com.drogpulseai.activities.expenses.ExpenseListActivity;
 import com.drogpulseai.activities.products.ProductListActivity;
-
-
+import com.drogpulseai.activities.settings.LanguageSettingsActivity;
+import com.drogpulseai.activities.settings.SettingsActivity;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.CameraPermissionHelper;
+import com.drogpulseai.utils.LanguageManager;
 import com.drogpulseai.utils.SessionManager;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 public class HomeActivity extends AppCompatActivity implements CameraPermissionHelper.PermissionCallback {
@@ -29,6 +30,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     private SessionManager sessionManager;
     private User currentUser;
     private CameraPermissionHelper cameraPermissionHelper;
+    private MaterialButton btnLanguage;
 
     // Constantes pour les actions nécessitant la caméra
     private static final int ACTION_NONE = 0;
@@ -64,11 +66,60 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         TextView tvUserName = findViewById(R.id.tv_user_name);
         tvUserName.setText(currentUser.getFullName());
 
+        // Configuration du bouton de langue
+        setupLanguageButton();
+
         // Configuration des cartes
         setupCards();
 
         // Vérifier les permissions de caméra au démarrage
         checkCameraPermission();
+    }
+
+    /**
+     * Configure le bouton de sélection de langue
+     */
+    private void setupLanguageButton() {
+        btnLanguage = findViewById(R.id.btn_language);
+
+        // Mettre à jour le texte du bouton avec la langue actuelle
+        updateLanguageButtonText();
+
+        // Configurer le listener de clic
+        btnLanguage.setOnClickListener(v -> {
+            // Ouvrir directement l'activité de sélection de langue
+            Intent intent = new Intent(HomeActivity.this, LanguageSettingsActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    /**
+     * Met à jour le texte du bouton avec la langue actuelle
+     */
+    private void updateLanguageButtonText() {
+        String currentLanguage = LanguageManager.getCurrentLanguage(this);
+        String languageName = "";
+
+        // Trouver le nom affichable de la langue actuelle
+        if ("auto".equals(currentLanguage)) {
+            // Option automatique (langue du téléphone)
+            languageName = getString(R.string.device_language);
+        } else {
+            // Langue spécifique
+            for (LanguageManager.LanguageItem language : LanguageManager.getAvailableLanguages()) {
+                if (language.getCode().equals(currentLanguage)) {
+                    languageName = language.getName();
+                    break;
+                }
+            }
+        }
+
+        // Mettre à jour le texte du bouton
+        if (!languageName.isEmpty()) {
+            btnLanguage.setText(languageName);
+        } else {
+            btnLanguage.setText(R.string.app_language);
+        }
     }
 
     private void setupCards() {
@@ -208,12 +259,17 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Déléguer le traitement au helper
         cameraPermissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.home_menu, menu);
         // Ajouter les options pour la caméra et le scan
         menu.add(Menu.NONE, R.id.action_scan, Menu.NONE, R.string.scan_barcode);
         menu.add(Menu.NONE, R.id.action_camera, Menu.NONE, R.string.take_photo);
+
+        // Ajouter les paramètres (en utilisant le menu XML au lieu de l'ID dynamique)
+        getMenuInflater().inflate(R.menu.settings_menu, menu);
+
         return true;
     }
 
@@ -235,12 +291,23 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
             // Lancer l'appareil photo (avec vérification de permission)
             takePhoto();
             return true;
-        }else if (id == R.id.action_expenses) {
+        } else if (id == R.id.action_expenses) {
             // Naviguer vers l'écran des frais
             startActivity(new Intent(this, ExpenseListActivity.class));
+            return true;
+        } else if (id == R.id.action_settings) {
+            // Naviguer vers l'écran des paramètres
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Mettre à jour le texte du bouton de langue au retour de l'activité de sélection
+        updateLanguageButtonText();
     }
 }

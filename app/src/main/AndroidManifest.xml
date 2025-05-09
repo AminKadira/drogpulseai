@@ -130,6 +130,16 @@
                 android:value=".activities.HomeActivity" />
         </activity>
 
+        <!-- Nouvelles activités pour les paramètres -->
+        <activity
+            android:name=".activities.settings.SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.settings.LanguageSettingsActivity"
+            android:exported="false" />
+
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.drogpulseai.fileprovider"

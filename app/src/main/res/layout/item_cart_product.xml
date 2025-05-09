@@ -55,7 +55,6 @@
                 android:textColor="@color/primaryText"
                 android:textSize="12sp"
                 tools:text="REF-12345" />
-
             <!-- Nom du produit -->
             <TextView
                 android:id="@+id/tv_product_name"
@@ -67,7 +66,7 @@
                 android:layout_marginTop="4dp"
                 tools:text="Nom du produit" />
 
-            <!-- Affichage en ligne pour Stock, Min et Conseillé -->
+            <!-- Affichage en ligne pour Stock, Conseillé -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -88,47 +87,50 @@
                     android:textStyle="bold"
                     android:layout_marginEnd="4dp"
                     tools:text="42" />
-
-                <!-- Prix minimum de vente -->
-                <TextView
-                    android:id="@+id/tv_product_prix_min"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#ffa3af"
-                    android:textColor="@android:color/black"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="4dp"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="4dp"
-                    tools:text="Min" />
-
                 <!-- Prix de vente conseillé -->
                 <TextView
                     android:id="@+id/tv_product_prix_conseille"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#6affd5"
+                    android:background="#C0FDC1"
                     android:textColor="@android:color/black"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="4dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="Conseillé" />
+                    tools:text="22.22" />
+                <!-- Affichage en ligne pour Prix vente, Min et Originale -->
+                <LinearLayout
+                    android:id="@+id/input_priceManager_layouts_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <!-- Prix minimum de vente -->
+                    <TextView
+                        android:id="@+id/tv_product_prix_min"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FF8880"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="4dp"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="4dp"
+                        tools:text="19.99" />
+                    <!-- Prix normal -->
+                    <TextView
+                        android:id="@+id/tv_product_price"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#F6C634"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="4dp"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="19.99" />
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- Prix normal -->
-            <TextView
-                android:id="@+id/tv_product_price"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/accent"
-                android:textColor="@android:color/black"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                tools:text="19.99 MAD" />
         </LinearLayout>
 
         <!-- Conteneur pour les champs de saisie à droite -->
@@ -149,21 +151,14 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="8dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Quantité :"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
                 <EditText
                     android:id="@+id/et_quantity_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1"
+                    android:text="@string/product_quantity"
                     android:inputType="number"
                     android:textAlignment="textStart"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"/>
             </LinearLayout>
 
             <!-- Champ Prix de vente -->

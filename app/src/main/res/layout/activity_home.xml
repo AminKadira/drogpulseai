@@ -7,6 +7,19 @@
     android:padding="16dp"
     tools:context=".activities.HomeActivity">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_language"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_language"
+        app:iconGravity="start"
+        app:iconPadding="8dp"
+        android:text="@string/app_language"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/tv_welcome"
         android:layout_width="wrap_content"
@@ -142,7 +155,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-        <!-- Autres cartes de modules à ajouter ici -->
 
         <!-- Carte Frais -->
         <com.google.android.material.card.MaterialCardView
@@ -180,4 +192,5 @@
         </com.google.android.material.card.MaterialCardView>
 
     </GridLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

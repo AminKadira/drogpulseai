@@ -92,7 +92,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix minimum de vente
         holder.tvPrixMin.setVisibility(View.VISIBLE);
         if (product.getPrixMinVente() > 0) {
-            holder.tvPrixMin.setText(String.format(Locale.getDefault(), "%.0f", product.getPrixMinVente()));
+            holder.tvPrixMin.setText(String.format(Locale.getDefault(), "%.2f", product.getPrixMinVente()));
         } else {
             holder.tvPrixMin.setText("Min");
         }
@@ -100,7 +100,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix de vente conseillé
         holder.tvPrixConseille.setVisibility(View.VISIBLE);
         if (product.getPrixVenteConseille() > 0) {
-            holder.tvPrixConseille.setText(String.format(Locale.getDefault(), "%.0f", product.getPrixVenteConseille()));
+            holder.tvPrixConseille.setText(String.format(Locale.getDefault(), "%.2f", product.getPrixVenteConseille()));
         } else {
             holder.tvPrixConseille.setText("Cons.");
         }
@@ -108,7 +108,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix normal
         double productPrice = product.getPrice();
         holder.tvPrice.setVisibility(View.VISIBLE);
-        holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", productPrice));
+        holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f", productPrice));
 
         // Gérer l'état de sélection
         boolean isSelected = selectedProducts.contains(productId);
@@ -116,6 +116,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
         // Gestion de la visibilité du conteneur parent
         holder.inputLayoutsContainer.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+        holder.inputPriceLayoutContainer.setVisibility(isSelected? View.VISIBLE : View.GONE);
 
         // Mettre à jour les valeurs des champs si sélectionné
         if (isSelected) {
@@ -134,8 +135,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             if (productPrices.containsKey(productId)) {
                 salePrice = productPrices.get(productId);
             }
-
-            holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
+            holder.etSalePrice.setText(context.getString(R.string.product_quantity) + String.format(Locale.getDefault(), "%.2f", salePrice));
         }
 
         // Charger l'image avec Glide
@@ -316,6 +316,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public LinearLayout inputPriceLayoutContainer;
         TextView tvReference, tvName, tvQuantity, tvPrice, tvPrixMin, tvPrixConseille;
         ImageView ivThumbnail;
         CheckBox checkBox;
@@ -336,7 +337,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
             // Nouveau conteneur parent
             inputLayoutsContainer = itemView.findViewById(R.id.input_layouts_container);
-
+            inputPriceLayoutContainer = itemView.findViewById(R.id.input_priceManager_layouts_container);
             // Sous-éléments
             quantityInputLayout = itemView.findViewById(R.id.quantity_input_layout);
             salePriceLayout = itemView.findViewById(R.id.sale_price_layout);
