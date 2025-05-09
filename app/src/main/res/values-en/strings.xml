@@ -17,6 +17,8 @@
     <string name="notes">Notes</string>
     <string name="location_automatically_detected">GPS location will be automatically detected</string>
     <string name="call">Call</string>
+    <string name="remove_photo">Delete the pic</string>
+    <string name="close">X</string>
 
     <!-- Authentication -->
     <string name="login">Login</string>

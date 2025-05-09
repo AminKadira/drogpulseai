@@ -3,6 +3,8 @@ package com.drogpulseai.models;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Product implements Serializable {
 
@@ -24,6 +26,12 @@ public class Product implements Serializable {
     @SerializedName("photo_url")
     private String photoUrl;
 
+    @SerializedName("photo_url2")
+    private String photoUrl2;
+
+    @SerializedName("photo_url3")
+    private String photoUrl3;
+
     @SerializedName("barcode")
     private String barcode;
 
@@ -42,7 +50,7 @@ public class Product implements Serializable {
     @SerializedName("updated_at")
     private String updatedAt;
 
-    // Nouveaux champs
+    // Additional fields
     @SerializedName("cout_de_revient_unitaire")
     private double coutDeRevientUnitaire;
 
@@ -52,16 +60,16 @@ public class Product implements Serializable {
     @SerializedName("prix_vente_conseille")
     private double prixVenteConseille;
 
-    // Champs non sérialisés (pour le suivi local)
+    // Non-serialized fields (for local tracking)
     private transient boolean dirty = false;
     private transient long lastUpdated = 0;
 
-    // Constructeur par défaut
+    // Default constructor
     public Product() {
         this.lastUpdated = System.currentTimeMillis();
     }
 
-    // Getters et Setters
+    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -118,6 +126,26 @@ public class Product implements Serializable {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+        this.dirty = true;
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
+    public String getPhotoUrl2() {
+        return photoUrl2;
+    }
+
+    public void setPhotoUrl2(String photoUrl2) {
+        this.photoUrl2 = photoUrl2;
+        this.dirty = true;
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
+    public String getPhotoUrl3() {
+        return photoUrl3;
+    }
+
+    public void setPhotoUrl3(String photoUrl3) {
+        this.photoUrl3 = photoUrl3;
         this.dirty = true;
         this.lastUpdated = System.currentTimeMillis();
     }
@@ -182,7 +210,7 @@ public class Product implements Serializable {
         this.lastUpdated = System.currentTimeMillis();
     }
 
-    // Getters et Setters pour les nouveaux champs
+    // Getters and Setters for additional fields
     public double getCoutDeRevientUnitaire() {
         return coutDeRevientUnitaire;
     }
@@ -213,7 +241,7 @@ public class Product implements Serializable {
         this.lastUpdated = System.currentTimeMillis();
     }
 
-    // Getter et Setter pour l'attribut dirty
+    // Getter and Setter for dirty flag
     public boolean isDirty() {
         return dirty;
     }
@@ -225,7 +253,7 @@ public class Product implements Serializable {
         }
     }
 
-    // Getter et Setter pour lastUpdated
+    // Getter and Setter for lastUpdated
     public long getLastUpdated() {
         return lastUpdated;
     }
@@ -234,16 +262,31 @@ public class Product implements Serializable {
         this.lastUpdated = timestamp;
     }
 
-    // Méthode pour réinitialiser l'état dirty
+    // Method to reset dirty state
     public void resetDirty() {
         this.dirty = false;
     }
 
-    // Méthodes utilitaires
+    // Method to get all photo URLs as a list
+    public List<String> getAllPhotoUrls() {
+        List<String> urls = new ArrayList<>();
+        if (photoUrl != null && !photoUrl.isEmpty()) {
+            urls.add(photoUrl);
+        }
+        if (photoUrl2 != null && !photoUrl2.isEmpty()) {
+            urls.add(photoUrl2);
+        }
+        if (photoUrl3 != null && !photoUrl3.isEmpty()) {
+            urls.add(photoUrl3);
+        }
+        return urls;
+    }
+
+    // Utility methods
 
     /**
-     * Calcule la marge brute en pourcentage
-     * @return Le pourcentage de marge brute ou 0 si le coût de revient est 0
+     * Calculate gross margin percentage
+     * @return Gross margin percentage or 0 if cost is 0
      */
     public double getMargePercent() {
         if (coutDeRevientUnitaire <= 0) {
@@ -255,37 +298,37 @@ public class Product implements Serializable {
     }
 
     /**
-     * Vérifie si le prix de vente est en dessous du prix minimum recommandé
-     * @return true si le prix est inférieur au prix minimum
+     * Check if selling price is below minimum recommended price
+     * @return true if price is below minimum
      */
     public boolean isPrixInferieurMin() {
         return prixMinVente > 0 && price < prixMinVente;
     }
 
     /**
-     * Calcule la marge brute en valeur
-     * @return La marge brute en valeur monétaire
+     * Calculate gross margin value
+     * @return Gross margin in monetary value
      */
     public double getMargeBrute() {
         return price - coutDeRevientUnitaire;
     }
 
     /**
-     * Vérifie si le prix de vente génère une marge négative
-     * @return true si le prix est inférieur au coût de revient
+     * Check if selling price generates negative margin
+     * @return true if price is below cost
      */
     public boolean hasNegativeMargin() {
         return coutDeRevientUnitaire > 0 && price < coutDeRevientUnitaire;
     }
 
     /**
-     * Vérifie si le prix de vente est conforme au prix conseillé
-     * @param tolerance Pourcentage de tolérance (ex: 5 pour 5%)
-     * @return true si le prix est proche du prix conseillé dans la limite de la tolérance
+     * Check if selling price is close to recommended price
+     * @param tolerance Tolerance percentage (e.g., 5 for 5%)
+     * @return true if price is within tolerance of recommended price
      */
     public boolean isPrixConforme(double tolerance) {
         if (prixVenteConseille <= 0) {
-            return true; // Pas de prix conseillé défini
+            return true; // No recommended price defined
         }
 
         double ecartPermis = prixVenteConseille * (tolerance / 100);

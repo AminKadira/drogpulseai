@@ -21,6 +21,8 @@ import com.drogpulseai.utils.SessionManager;
 import com.drogpulseai.sync.SyncManager;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -32,6 +34,7 @@ import retrofit2.Response;
 /**
  * ViewModel for ProductFormActivity
  * Handles data operations and business logic
+ * Updated to support multiple photos
  */
 public class ProductFormViewModel extends AndroidViewModel {
 
@@ -57,10 +60,33 @@ public class ProductFormViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> operationSuccess = new MutableLiveData<>();
 
+    // New LiveData for multiple photos
+    private final MutableLiveData<List<String>> photoUrls = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<PhotoUploadResult> newPhotoUrl = new MutableLiveData<>();
+
     // State variables
     private String mode = MODE_CREATE;
     private int productId = -1;
     private User currentUser;
+
+    // Class to encapsulate photo upload result
+    public static class PhotoUploadResult {
+        private final String url;
+        private final int index;
+
+        public PhotoUploadResult(String url, int index) {
+            this.url = url;
+            this.index = index;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+    }
 
     public ProductFormViewModel(@NonNull Application application) {
         super(application);
@@ -114,7 +140,24 @@ public class ProductFormViewModel extends AndroidViewModel {
         Product cachedProduct = repository.getProductById(productId);
         if (cachedProduct != null) {
             product.setValue(cachedProduct);
-            photoUrl.setValue(cachedProduct.getPhotoUrl());
+
+            // Load photos
+            List<String> urls = new ArrayList<>();
+            if (cachedProduct.getPhotoUrl() != null && !cachedProduct.getPhotoUrl().isEmpty()) {
+                urls.add(cachedProduct.getPhotoUrl());
+            }
+            if (cachedProduct.getPhotoUrl2() != null && !cachedProduct.getPhotoUrl2().isEmpty()) {
+                urls.add(cachedProduct.getPhotoUrl2());
+            }
+            if (cachedProduct.getPhotoUrl3() != null && !cachedProduct.getPhotoUrl3().isEmpty()) {
+                urls.add(cachedProduct.getPhotoUrl3());
+            }
+            photoUrls.setValue(urls);
+
+            if (!urls.isEmpty()) {
+                photoUrl.setValue(urls.get(0)); // First photo for backward compatibility
+            }
+
             isLoading.setValue(false);
         }
 
@@ -129,7 +172,23 @@ public class ProductFormViewModel extends AndroidViewModel {
 
                     // Update LiveData
                     product.setValue(remoteProduct);
-                    photoUrl.setValue(remoteProduct.getPhotoUrl());
+
+                    // Load photos
+                    List<String> urls = new ArrayList<>();
+                    if (remoteProduct.getPhotoUrl() != null && !remoteProduct.getPhotoUrl().isEmpty()) {
+                        urls.add(remoteProduct.getPhotoUrl());
+                    }
+                    if (remoteProduct.getPhotoUrl2() != null && !remoteProduct.getPhotoUrl2().isEmpty()) {
+                        urls.add(remoteProduct.getPhotoUrl2());
+                    }
+                    if (remoteProduct.getPhotoUrl3() != null && !remoteProduct.getPhotoUrl3().isEmpty()) {
+                        urls.add(remoteProduct.getPhotoUrl3());
+                    }
+                    photoUrls.setValue(urls);
+
+                    if (!urls.isEmpty()) {
+                        photoUrl.setValue(urls.get(0)); // First photo for backward compatibility
+                    }
 
                     // Cache product locally
                     repository.insertOrUpdateProduct(remoteProduct);
@@ -259,6 +318,13 @@ public class ProductFormViewModel extends AndroidViewModel {
      * Upload product photo
      */
     public void uploadProductPhoto(Uri imageUri, Context context) {
+        uploadProductPhoto(imageUri, context, 0); // Default to first photo for backward compatibility
+    }
+
+    /**
+     * Upload product photo at specified index
+     */
+    public void uploadProductPhoto(Uri imageUri, Context context, int index) {
         if (imageUri == null) {
             return;
         }
@@ -286,7 +352,14 @@ public class ProductFormViewModel extends AndroidViewModel {
 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     String url = response.body().getData();
-                    photoUrl.setValue(url);
+
+                    // Update for backward compatibility
+                    if (index == 0) {
+                        photoUrl.setValue(url);
+                    }
+
+                    // Update with index
+                    newPhotoUrl.setValue(new PhotoUploadResult(url, index));
                 } else {
                     handleApiError(response);
                 }
@@ -312,6 +385,14 @@ public class ProductFormViewModel extends AndroidViewModel {
     }
 
     /**
+     * Set the list of photo URLs
+     */
+    public void setPhotoUrls(List<String> urls) {
+        List<String> newList = new ArrayList<>(urls);
+        this.photoUrls.setValue(newList);
+    }
+
+    /**
      * Handle API error responses
      */
     private <T> void handleApiError(Response<T> response) {
@@ -330,6 +411,62 @@ public class ProductFormViewModel extends AndroidViewModel {
 
         errorMessage.setValue(error);
         Log.e(TAG, error);
+    }
+
+    /**
+     * Save a product locally
+     * @param product The product to save
+     */
+    public void saveProductLocally(Product product) {
+        // Mark product as "dirty" for future sync
+        product.setDirty(true);
+
+        // Timestamp for tracking last modification
+        product.setLastUpdated(System.currentTimeMillis());
+
+        // Save locally via repository
+        repository.insertOrUpdateProduct(product);
+
+        // If creating, generate a negative temporary ID
+        // (server IDs are always positive)
+        if (isCreateMode()) {
+            // Find lowest local ID to avoid conflicts
+            int tempId = repository.getLowestLocalId() - 1;
+            product.setId(tempId);
+            repository.insertOrUpdateProduct(product);
+        }
+
+        // If editing, update product in cache
+        if (!isCreateMode()) {
+            repository.insertOrUpdateProduct(product);
+        }
+
+        // Register this product for future sync
+        SyncManager.getInstance(getApplication()).addProductForSync(product.getId());
+
+        // Mark operation as successful
+        operationSuccess.setValue(true);
+    }
+
+    /**
+     * Sync all pending products
+     */
+    public void syncPendingProducts() {
+        SyncManager.getInstance(getApplication()).scheduleSyncNow();
+    }
+
+    /**
+     * Check if there are products pending sync
+     */
+    public boolean hasPendingProducts() {
+        return SyncManager.getInstance(getApplication()).hasPendingProducts();
+    }
+
+    /**
+     * Get count of products pending sync
+     */
+    public int getPendingProductCount() {
+        return SyncManager.getInstance(getApplication()).getPendingCount();
     }
 
     // Getters for LiveData
@@ -354,60 +491,11 @@ public class ProductFormViewModel extends AndroidViewModel {
         return operationSuccess;
     }
 
-
-    /**
-     * Sauvegarde un produit localement
-     * @param product Le produit à sauvegarder
-     */
-    public void saveProductLocally(Product product) {
-        // Marquer le produit comme "dirty" pour la synchronisation future
-        product.setDirty(true);
-
-        // Timestamp pour suivi de dernière modification
-        product.setLastUpdated(System.currentTimeMillis());
-
-        // Sauvegarder en local via le repository
-        repository.insertOrUpdateProduct(product);
-
-        // Si c'est une création, on génère un ID temporaire négatif
-        // (les IDs du serveur sont toujours positifs)
-        if (isCreateMode()) {
-            // Trouver l'ID local le plus bas pour éviter les conflits
-            int tempId = repository.getLowestLocalId() - 1;
-            product.setId(tempId);
-            repository.insertOrUpdateProduct(product);
-        }
-
-        // Si c'est une édition, on met à jour le produit dans le cache
-        if (!isCreateMode()) {
-            repository.insertOrUpdateProduct(product);
-        }
-
-        // Enregistrer ce produit pour synchronisation future
-        SyncManager.getInstance(getApplication()).addProductForSync(product.getId());
-
-        // Marquer l'opération comme réussie
-        operationSuccess.setValue(true);
+    public LiveData<List<String>> getPhotoUrls() {
+        return photoUrls;
     }
 
-    /**
-     * Synchroniser tous les produits en attente
-     */
-    public void syncPendingProducts() {
-        SyncManager.getInstance(getApplication()).scheduleSyncNow();
-    }
-
-    /**
-     * Vérifier s'il y a des produits en attente de synchronisation
-     */
-    public boolean hasPendingProducts() {
-        return SyncManager.getInstance(getApplication()).hasPendingProducts();
-    }
-
-    /**
-     * Obtenir le nombre de produits en attente de synchronisation
-     */
-    public int getPendingProductCount() {
-        return SyncManager.getInstance(getApplication()).getPendingCount();
+    public LiveData<PhotoUploadResult> getNewPhotoUrl() {
+        return newPhotoUrl;
     }
 }

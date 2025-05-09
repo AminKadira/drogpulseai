@@ -16,6 +16,8 @@ public class ProductConverter {
                 product.getName(),
                 product.getDescription(),
                 product.getPhotoUrl(),
+                product.getPhotoUrl2(),
+                product.getPhotoUrl3(),
                 product.getBarcode(),
                 product.getQuantity(),
                 product.getPrice(),
@@ -35,6 +37,8 @@ public class ProductConverter {
         product.setName(entity.getName());
         product.setDescription(entity.getDescription());
         product.setPhotoUrl(entity.getPhotoUrl());
+        product.setPhotoUrl2(entity.getPhotoUrl2());
+        product.setPhotoUrl3(entity.getPhotoUrl3());
         product.setBarcode(entity.getBarcode());
         product.setQuantity(entity.getQuantity());
         product.setPrice(entity.getPrice());

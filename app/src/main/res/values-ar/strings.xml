@@ -17,6 +17,8 @@
     <string name="notes">ملاحَظات</string>
     <string name="location_automatically_detected">المكان غادي يتحَدد بوحدو</string>
     <string name="call">عيط</string>
+    <string name="remove_photo">حدف التصويرة</string>
+    <string name="close">X</string>
 
     <!-- Authentification -->
     <string name="login">دخل</string>

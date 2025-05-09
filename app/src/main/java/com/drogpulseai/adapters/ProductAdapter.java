@@ -23,6 +23,7 @@ import java.util.Locale;
 
 /**
  * Adaptateur pour afficher les produits dans un RecyclerView
+ * Mis à jour pour prendre en charge plusieurs photos par produit
  */
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
@@ -83,7 +84,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             holder.tvPrice.setVisibility(View.GONE);
         }
 
-        // Charger l'image avec une gestion améliorée
+        // Charger l'image avec une gestion améliorée pour plusieurs photos
         loadProductImage(holder.ivThumbnail, product);
 
         // Configurer le clic sur l'élément
@@ -96,9 +97,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     /**
      * Méthode améliorée pour charger l'image du produit
+     * Supporte plusieurs photos par produit
      */
     private void loadProductImage(ImageView imageView, Product product) {
-        String photoUrl = product.getPhotoUrl();
+        // Déterminer quelle URL de photo utiliser, en priorité la première
+        String photoUrl = null;
+
+        if (product.getPhotoUrl() != null && !product.getPhotoUrl().isEmpty()) {
+            photoUrl = product.getPhotoUrl();
+        } else if (product.getPhotoUrl2() != null && !product.getPhotoUrl2().isEmpty()) {
+            photoUrl = product.getPhotoUrl2();
+        } else if (product.getPhotoUrl3() != null && !product.getPhotoUrl3().isEmpty()) {
+            photoUrl = product.getPhotoUrl3();
+        }
 
         // Définir une image par défaut
         RequestOptions options = new RequestOptions()

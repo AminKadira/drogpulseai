@@ -17,6 +17,8 @@
     <string name="notes">Notas</string>
     <string name="location_automatically_detected">La ubicación GPS se detectará automáticamente</string>
     <string name="call">Llamar</string>
+    <string name="remove_photo">Eliminar la foto</string>
+    <string name="close">X</string>
 
     <!-- Authentication -->
     <string name="login">Iniciar sesión</string>

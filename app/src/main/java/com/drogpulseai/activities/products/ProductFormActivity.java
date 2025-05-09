@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -31,23 +32,39 @@ import com.drogpulseai.viewmodels.ProductFormViewModel;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Activity for creating and editing products
  * Optimized version with ViewModel architecture and improved separation of concerns
+ * Updated to support multiple photos (up to 3)
  */
 public class ProductFormActivity extends AppCompatActivity implements
         ImageHelper.ImageSelectionCallback,
         BarcodeHelper.BarcodeCallback {
 
     private static final String TAG = "ProductFormActivity";
+    private static final int MAX_PHOTOS = 3;
 
     // Views
-    private ImageView ivProductPhoto;
-    private Button btnAddPhoto, btnSave, btnDelete;
+    private Button btnSave, btnDelete;
     private ImageButton btnScanBarcode;
     private EditText etReference, etLabel, etName, etDescription, etBarcode, etQuantity, etPrice;
     private ProgressBar progressBar;
 
+    // Photo views
+    private ImageView[] photoImageViews = new ImageView[MAX_PHOTOS];
+    private Button[] addPhotoButtons = new Button[MAX_PHOTOS];
+    private ImageButton[] removePhotoButtons = new ImageButton[MAX_PHOTOS];
+    private FrameLayout[] photoFrames = new FrameLayout[MAX_PHOTOS];
+
+    // Photo management
+    private int currentPhotoIndex = 0;
+    private List<String> photoUrls = new ArrayList<>();
+    private FrameLayout photoFullscreenOverlay;
+    private ImageView fullscreenImageView;
+    private ImageButton btnCloseFullscreen;
     // ViewModel
     private ProductFormViewModel viewModel;
 
@@ -69,13 +86,23 @@ public class ProductFormActivity extends AppCompatActivity implements
         barcodeHelper = new BarcodeHelper(this, this);
         validator = new FormValidator(this);
 
+        // Initialisation des vues pour l'affichage plein écran
+        photoFullscreenOverlay = findViewById(R.id.photo_fullscreen_overlay);
+        fullscreenImageView = findViewById(R.id.fullscreen_image_view);
+        btnCloseFullscreen = findViewById(R.id.btn_close_fullscreen);
+
         // Initialize views
         initializeViews();
+        initializePhotoViews();
 
         // Configure toolbar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        // Configurer le bouton de fermeture
+        btnCloseFullscreen.setOnClickListener(v -> hideFullscreenImage());
+        photoFullscreenOverlay.setOnClickListener(v -> hideFullscreenImage());
 
         // Get intent extras
         String mode = getIntent().getStringExtra("mode");
@@ -95,8 +122,6 @@ public class ProductFormActivity extends AppCompatActivity implements
      * Initialize views
      */
     private void initializeViews() {
-        ivProductPhoto = findViewById(R.id.iv_product_photo);
-        btnAddPhoto = findViewById(R.id.btn_add_photo);
         btnSave = findViewById(R.id.btn_save);
         btnDelete = findViewById(R.id.btn_delete);
         btnScanBarcode = findViewById(R.id.btn_scan_barcode);
@@ -108,6 +133,190 @@ public class ProductFormActivity extends AppCompatActivity implements
         etQuantity = findViewById(R.id.et_quantity);
         etPrice = findViewById(R.id.et_price);
         progressBar = findViewById(R.id.progress_bar);
+    }
+
+    /**
+     * Initialize photo views
+     */
+    private void initializePhotoViews() {
+        // Initialize arrays for photo views
+        for (int i = 0; i < MAX_PHOTOS; i++) {
+            final int index = i;
+
+            // Get view references
+            int imageViewId = getResources().getIdentifier("iv_product_photo_" + (i + 1), "id", getPackageName());
+            int addButtonId = getResources().getIdentifier("btn_add_photo_" + (i + 1), "id", getPackageName());
+            int removeButtonId = getResources().getIdentifier("btn_remove_photo_" + (i + 1), "id", getPackageName());
+            int frameId = getResources().getIdentifier("frame_photo_" + (i + 1), "id", getPackageName());
+
+            photoImageViews[i] = findViewById(imageViewId);
+            addPhotoButtons[i] = findViewById(addButtonId);
+            removePhotoButtons[i] = findViewById(removeButtonId);
+            photoFrames[i] = findViewById(frameId);
+
+            // Ajouter un clickListener sur l'ImageView
+            photoImageViews[i].setOnClickListener(v -> showFullscreenImage(index));
+
+            // Configure listeners for buttons
+            addPhotoButtons[i].setOnClickListener(v -> {
+                currentPhotoIndex = index;
+                checkNetworkAndSelectImage();
+            });
+
+            removePhotoButtons[i].setOnClickListener(v -> {
+                removePhoto(index);
+            });
+        }
+
+        // First frame is always visible
+        photoFrames[0].setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Afficher une image en plein écran
+     */
+    private void showFullscreenImage(int index) {
+        if (index < photoUrls.size()) {
+            // Charger l'image en plein écran
+            imageHelper.displayImage(photoUrls.get(index), fullscreenImageView);
+
+            // Afficher l'overlay
+            photoFullscreenOverlay.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Cacher l'image en plein écran
+     */
+    private void hideFullscreenImage() {
+        photoFullscreenOverlay.setVisibility(View.GONE);
+    }
+
+    // Ajoutez également cette méthode pour gérer le comportement du bouton "Retour"
+    @Override
+    public void onBackPressed() {
+        // Si l'overlay est visible, le fermer
+        if (photoFullscreenOverlay.getVisibility() == View.VISIBLE) {
+            hideFullscreenImage();
+        } else {
+            // Sinon, comportement normal
+            super.onBackPressed();
+        }
+    }
+    /**
+     * Check network availability before showing image dialog
+     */
+    private void checkNetworkAndSelectImage() {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            imageHelper.showImageSourceDialog();
+        } else {
+            Toast.makeText(this, "Connexion internet requise pour ajouter une photo", Toast.LENGTH_LONG).show();
+            new AlertDialog.Builder(this)
+                    .setTitle("Connexion requise")
+                    .setMessage("Une connexion internet est nécessaire pour télécharger des photos. Veuillez vous connecter à Internet et réessayer.")
+                    .setPositiveButton("OK", null)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+    }
+
+    /**
+     * Remove a photo at the specified index
+     */
+    private void removePhoto(int index) {
+        // Clear image and hide remove button
+        photoImageViews[index].setImageDrawable(null);
+        removePhotoButtons[index].setVisibility(View.GONE);
+        addPhotoButtons[index].setVisibility(View.VISIBLE);
+
+        // Remove URL from list
+        if (index < photoUrls.size()) {
+            photoUrls.remove(index);
+        }
+
+        // Reorganize photos
+        reorganizePhotos();
+
+        // Update ViewModel
+        viewModel.setPhotoUrls(photoUrls);
+    }
+
+    /**
+     * Reorganize photos after deletion
+     */
+    private void reorganizePhotos() {
+        // Hide unused frames
+        for (int i = 0; i < MAX_PHOTOS; i++) {
+            if (i == 0 || i < photoUrls.size() + 1) {
+                photoFrames[i].setVisibility(View.VISIBLE);
+            } else {
+                photoFrames[i].setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Add or update a photo at current index
+     */
+    private void updatePhotoAtCurrentIndex(String url) {
+        if (currentPhotoIndex < MAX_PHOTOS) {
+            // Update display
+            imageHelper.displayImage(url, photoImageViews[currentPhotoIndex]);
+            addPhotoButtons[currentPhotoIndex].setVisibility(View.GONE);
+            removePhotoButtons[currentPhotoIndex].setVisibility(View.VISIBLE);
+
+            // Update URL list
+            if (currentPhotoIndex < photoUrls.size()) {
+                photoUrls.set(currentPhotoIndex, url);
+            } else {
+                photoUrls.add(url);
+
+                // Make next photo slot visible if we haven't reached max
+                if (photoUrls.size() < MAX_PHOTOS) {
+                    photoFrames[photoUrls.size()].setVisibility(View.VISIBLE);
+                }
+            }
+
+            // Update ViewModel
+            viewModel.setPhotoUrls(photoUrls);
+        }
+    }
+
+    /**
+     * Display existing photos from a product
+     */
+    private void displayExistingPhotos(List<String> urls) {
+        photoUrls.clear();
+        photoUrls.addAll(urls);
+
+        for (int i = 0; i < MAX_PHOTOS; i++) {
+            if (i < urls.size()) {
+                // Afficher la photo existante
+                imageHelper.displayImage(urls.get(i), photoImageViews[i]);
+                addPhotoButtons[i].setVisibility(View.GONE);
+                removePhotoButtons[i].setVisibility(View.VISIBLE);
+                photoFrames[i].setVisibility(View.VISIBLE);
+
+                // S'assurer que l'ImageView est cliquable
+                photoImageViews[i].setClickable(true);
+            } else if (i == urls.size()) {
+                // Rendre visible le prochain emplacement vide
+                photoFrames[i].setVisibility(View.VISIBLE);
+                addPhotoButtons[i].setVisibility(View.VISIBLE);
+                removePhotoButtons[i].setVisibility(View.GONE);
+
+                // Réinitialiser l'image et la rendre non cliquable
+                photoImageViews[i].setImageDrawable(null);
+                photoImageViews[i].setClickable(false);
+            } else {
+                // Cacher les emplacements inutilisés
+                photoFrames[i].setVisibility(View.GONE);
+
+                // Réinitialiser l'image et la rendre non cliquable
+                photoImageViews[i].setImageDrawable(null);
+                photoImageViews[i].setClickable(false);
+            }
+        }
     }
 
     /**
@@ -126,29 +335,6 @@ public class ProductFormActivity extends AppCompatActivity implements
         }
 
         // Set up button click listeners
-        // btnAddPhoto.setOnClickListener(v -> imageHelper.showImageSourceDialog());
-        // Modifier le listener du bouton dans la méthode setupUI()
-        btnAddPhoto.setOnClickListener(v -> {
-            // Vérifier la connexion internet avant de montrer le dialogue de sélection d'image
-            if (NetworkUtils.isNetworkAvailable(this)) {
-                // Connexion disponible, afficher le dialogue de sélection d'image
-                imageHelper.showImageSourceDialog();
-            } else {
-                // Pas de connexion, afficher un message d'erreur
-                Toast.makeText(this,
-                        "Connexion internet requise pour ajouter une photo",
-                        Toast.LENGTH_LONG).show();
-
-                // Vous pourriez également afficher un dialogue plus détaillé
-                new AlertDialog.Builder(this)
-                        .setTitle("Connexion requise")
-                        .setMessage("Une connexion internet est nécessaire pour télécharger des photos. " +
-                                "Veuillez vous connecter à Internet et réessayer.")
-                        .setPositiveButton("OK", null)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-            }
-        });
         btnScanBarcode.setOnClickListener(v -> barcodeHelper.scanBarcode());
         btnSave.setOnClickListener(v -> validateAndSaveProduct());
         btnDelete.setOnClickListener(v -> confirmDeleteProduct());
@@ -176,14 +362,6 @@ public class ProductFormActivity extends AppCompatActivity implements
             }
         });
 
-        // Observe photo URL
-        viewModel.getPhotoUrl().observe(this, url -> {
-            if (url != null && !url.isEmpty()) {
-                imageHelper.displayImage(url, ivProductPhoto);
-                btnAddPhoto.setText(R.string.change_photo);
-            }
-        });
-
         // Observe error messages
         viewModel.getErrorMessage().observe(this, message -> {
             if (message != null && !message.isEmpty()) {
@@ -195,6 +373,20 @@ public class ProductFormActivity extends AppCompatActivity implements
         viewModel.getOperationSuccess().observe(this, success -> {
             if (success) {
                 finish();
+            }
+        });
+
+        // Observe photo URLs list
+        viewModel.getPhotoUrls().observe(this, urls -> {
+            if (urls != null && !urls.isEmpty()) {
+                displayExistingPhotos(urls);
+            }
+        });
+
+        // Observe newly uploaded photo URL
+        viewModel.getNewPhotoUrl().observe(this, result -> {
+            if (result != null && result.getIndex() >= 0 && result.getUrl() != null && !result.getUrl().isEmpty()) {
+                updatePhotoAtCurrentIndex(result.getUrl());
             }
         });
     }
@@ -226,15 +418,21 @@ public class ProductFormActivity extends AppCompatActivity implements
         etPrice.setEnabled(enabled);
         btnSave.setEnabled(enabled);
         btnDelete.setEnabled(enabled);
-        btnAddPhoto.setEnabled(enabled);
-        btnScanBarcode.setEnabled(enabled);
+
+        // Enable/disable photo buttons
+        for (int i = 0; i < MAX_PHOTOS; i++) {
+            if (photoFrames[i].getVisibility() == View.VISIBLE) {
+                addPhotoButtons[i].setEnabled(enabled);
+                removePhotoButtons[i].setEnabled(enabled);
+            }
+        }
     }
 
     /**
      * Validate form and save product
      */
     private void validateAndSaveProduct() {
-        // Créer la map de validation
+        // Create validation map
         ValidationMap validationMap = new ValidationMap();
         validationMap.add(etReference, validator.required("Référence requise"));
         validationMap.add(etLabel, validator.required("Libellé requis"));
@@ -242,27 +440,27 @@ public class ProductFormActivity extends AppCompatActivity implements
         validationMap.add(etQuantity, validator.integer("Quantité invalide"));
         validationMap.add(etPrice, validator.decimal("Prix invalide"));
 
-        // Valider le formulaire
+        // Validate form
         if (!validator.validate(validationMap)) {
             return;
         }
 
-        // Créer l'objet produit à partir des données du formulaire
+        // Create product object from form data
         Product product = getProductFromForm();
 
-        // Vérifier la connectivité réseau
+        // Check network connectivity
         if (NetworkUtils.isNetworkAvailable(this)) {
-            // Connexion internet disponible - sauvegarder via l'API
+            // Internet connection available - save via API
             viewModel.saveProduct(product);
         } else {
-            // Pas de connexion internet - sauvegarder localement
+            // No internet connection - save locally
             viewModel.saveProductLocally(product);
 
-            // Informer l'utilisateur
+            // Inform user
             Toast.makeText(this, "Produit sauvegardé localement. Synchronisation automatique dès que la connexion sera rétablie.",
                     Toast.LENGTH_LONG).show();
 
-            // Terminer l'activité
+            // Finish activity
             finish();
         }
     }
@@ -302,8 +500,14 @@ public class ProductFormActivity extends AppCompatActivity implements
         product.setBarcode(barcode);
         product.setQuantity(quantity);
         product.setPrice(price);
-        product.setPhotoUrl(viewModel.getPhotoUrl().getValue());
         product.setUserId(viewModel.getCurrentUserId());
+
+        // Set photo URLs from the list
+        if (!photoUrls.isEmpty()) {
+            if (photoUrls.size() > 0) product.setPhotoUrl(photoUrls.get(0));
+            if (photoUrls.size() > 1) product.setPhotoUrl2(photoUrls.get(1));
+            if (photoUrls.size() > 2) product.setPhotoUrl3(photoUrls.get(2));
+        }
 
         return product;
     }
@@ -323,7 +527,7 @@ public class ProductFormActivity extends AppCompatActivity implements
     // ImageHelper callback
     @Override
     public void onImageSelected(Uri imageUri) {
-        viewModel.uploadProductPhoto(imageUri, this);
+        viewModel.uploadProductPhoto(imageUri, this, currentPhotoIndex);
     }
 
     // BarcodeHelper callback
