@@ -1,5 +1,6 @@
 package com.drogpulseai.activities.settings;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -10,6 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.HomeActivity;
+import com.drogpulseai.activities.carts.CartManagementActivity;
+import com.drogpulseai.activities.carts.ContactSelectionActivity;
 import com.drogpulseai.adapters.LanguageAdapter;
 import com.drogpulseai.utils.LanguageManager;
 
@@ -81,6 +85,8 @@ public class LanguageSettingsActivity extends AppCompatActivity {
             } else {
                 Log.d(TAG, "Langue changée avec succès");
                 // L'activité sera recréée automatiquement
+                Intent intent= new Intent(this, HomeActivity.class);
+                startActivity(intent);
             }
         });
     }
