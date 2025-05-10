@@ -48,13 +48,16 @@ public class CartManagementActivity extends AppCompatActivity {
         // Carte Créer un panier
         MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
         cardCreateCart.setOnClickListener(v -> {
-            startActivity(new Intent(CartManagementActivity.this, ContactSelectionActivity.class));
+           Intent intent= new Intent(CartManagementActivity.this, ContactSelectionActivity.class);
+            startActivity(intent);
         });
 
         // Carte Tous les paniers
         MaterialCardView cardAllCarts = findViewById(R.id.card_all_carts);
         cardAllCarts.setOnClickListener(v -> {
-            startActivity(new Intent(CartManagementActivity.this, FilteredCartsActivity.class));
+            Intent intent =new Intent(CartManagementActivity.this, FilteredCartsActivity.class);
+            intent.putExtra("status", "pending");
+            startActivity(intent);
         });
     }
 

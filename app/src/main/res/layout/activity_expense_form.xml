@@ -109,16 +109,37 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/add_receipt_photo" />
 
-            <!-- Save button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_expense"
+            <!-- Container pour les boutons côte à côte -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:paddingVertical="12dp"
-                android:text="@string/save"
-                android:textSize="16sp" />
+                android:orientation="horizontal">
 
+                <!-- Bouton de suppression - visible uniquement en mode édition -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_delete_expense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:paddingVertical="12dp"
+                    android:text="@string/delete_expense"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/error"
+                    android:visibility="gone" />
+
+                <!-- Bouton de sauvegarde -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_expense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:paddingVertical="12dp"
+                    android:text="@string/save"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

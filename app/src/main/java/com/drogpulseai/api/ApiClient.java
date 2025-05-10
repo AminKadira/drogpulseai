@@ -55,6 +55,7 @@ public class ApiClient {
     private static Gson createGson() {
         return new GsonBuilder()
                 .setLenient() // Be lenient with malformed JSON
+                .setDateFormat("yyyy-MM-dd") // Format compatible avec votre API
                 .registerTypeAdapter(String.class, new StringAdapter())
                 .registerTypeAdapter(Integer.class, new SafeIntegerAdapter())
                 .registerTypeAdapter(Double.class, new SafeDoubleAdapter())

@@ -1,5 +1,6 @@
 package com.drogpulseai.activities.expenses;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -63,6 +64,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
     private ImageView ivReceipt;
     private Button btnAddReceipt;
     private Button btnSave;
+    private Button btnDeleteExpense;
     private ProgressBar progressBar;
 
     // Utilities
@@ -155,6 +157,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
         spinnerType = findViewById(R.id.spinner_expense_type);
         ivReceipt = findViewById(R.id.iv_receipt);
         btnAddReceipt = findViewById(R.id.btn_add_receipt);
+        btnDeleteExpense = findViewById(R.id.btn_delete_expense);
         btnSave = findViewById(R.id.btn_save_expense);
         progressBar = findViewById(R.id.progress_bar);
 
@@ -186,6 +189,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
     private void setupListeners() {
         // Date selection
         etDate.setOnClickListener(v -> showDatePicker());
+        btnDeleteExpense.setOnClickListener(v -> showDeleteConfirmationDialog());
 
         // Receipt photo
         btnAddReceipt.setOnClickListener(v -> {
@@ -250,8 +254,9 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
      */
     private void populateForm(Expense expense) {
         etAmount.setText(String.valueOf(expense.getAmount()));
-        etDate.setText(expense.getDate().toString());
+        etDate.setText(dateFormat.format(expense.getDate()));
         etDescription.setText(expense.getDescription());
+        btnDeleteExpense.setVisibility(View.VISIBLE);
 
         // Select the expense type in spinner
         ArrayAdapter adapter = (ArrayAdapter) spinnerType.getAdapter();
@@ -291,7 +296,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
 
         Date date;
         try {
-            date = dateFormat.parse(etDate.getText().toString().trim());
+            date = dateFormat.parse(etDate.getText().toString());
         } catch (ParseException e) {
             etDate.setError(getString(R.string.field_required));
             return;
@@ -422,6 +427,58 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
         });
     }
 
+
+    /**
+     * Affiche une boîte de dialogue de confirmation avant la suppression
+     */
+    private void showDeleteConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_expense)
+                .setMessage(R.string.delete_expense_confirmation)
+                .setPositiveButton(R.string.delete, (dialog, which) -> deleteExpense())
+                .setNegativeButton(R.string.cancel, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    /**
+     * Supprime l'expense après confirmation
+     */
+    private void deleteExpense() {
+        setLoading(true);
+
+        apiService.deleteExpense(expenseId).enqueue(new Callback<NetworkResult<Void>>() {
+            @Override
+            public void onResponse(Call<NetworkResult<Void>> call, Response<NetworkResult<Void>> response) {
+                setLoading(false);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    // Suppression réussie
+                    Toast.makeText(ExpenseFormActivity.this,
+                            R.string.expense_deleted, Toast.LENGTH_SHORT).show();
+
+                    // Définir le résultat et fermer l'activité
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    // Erreur de suppression
+                    String message = response.body() != null ?
+                            response.body().getMessage() :
+                            getString(R.string.error_server_connection);
+
+                    Toast.makeText(ExpenseFormActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NetworkResult<Void>> call, Throwable t) {
+                setLoading(false);
+                Toast.makeText(ExpenseFormActivity.this,
+                        getString(R.string.error_network) + ": " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     /**
      * Handle image selection callback
      */
@@ -452,6 +509,8 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
         spinnerType.setEnabled(!isLoading);
         btnAddReceipt.setEnabled(!isLoading);
         btnSave.setEnabled(!isLoading);
+        btnDeleteExpense.setEnabled(!isLoading);
+
     }
 
     /**

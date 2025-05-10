@@ -100,35 +100,32 @@
                     android:textStyle="bold"
                     tools:text="22.22" />
                 <!-- Affichage en ligne pour Prix vente, Min et Originale -->
-                <LinearLayout
-                    android:id="@+id/input_priceManager_layouts_container"
-                    android:layout_width="match_parent"
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/input_priceManager_layouts_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <!-- Prix minimum de vente -->
+                <TextView
+                    android:id="@+id/tv_product_prix_min"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <!-- Prix minimum de vente -->
-                    <TextView
-                        android:id="@+id/tv_product_prix_min"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#FF8880"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="4dp"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="4dp"
-                        tools:text="19.99" />
-                    <!-- Prix normal -->
-                    <TextView
-                        android:id="@+id/tv_product_price"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#F6C634"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="4dp"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        tools:text="19.99" />
-                </LinearLayout>
+                    android:textColor="#FF8880"
+                    android:paddingHorizontal="4dp"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="19.99" />
+                <!-- Prix normal -->
+                <TextView
+                    android:id="@+id/tv_product_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#F6C634"
+
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="19.99" />
             </LinearLayout>
 
         </LinearLayout>

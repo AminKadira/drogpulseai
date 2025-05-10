@@ -441,8 +441,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                                 Log.d(TAG, "ID du panier extrait: " + cartId);
 
                                 // Construire un message de succès
-                                String successMessage = String.format(
-                                        "Panier #%d créé avec succès!\n", cartId);
+                                String successMessage = String.format("Panier #%d créé avec succès!\n", cartId);
 
                                 // Ajouter d'autres informations si disponibles
                                 if (data.containsKey("contact_nom") && data.containsKey("contact_prenom")) {
