@@ -135,7 +135,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             if (productPrices.containsKey(productId)) {
                 salePrice = productPrices.get(productId);
             }
-            holder.etSalePrice.setText(context.getString(R.string.product_quantity) + String.format(Locale.getDefault(), "%.2f", salePrice));
+            holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
         }
 
         // Charger l'image avec Glide
