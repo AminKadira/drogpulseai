@@ -134,6 +134,10 @@
     <string name="cart_summary">بانِي تدار ل %1$s ب %2$d منتوج(ات) / %3$d عنصر(ات)\nالمجموع: %4$.2f درهم</string>
     <string name="item_summary">%1$d. %2$s (ريفرنس: %3$s) - %4$d x %5$.2f درهم = %6$.2f درهم</string>
 
+    <string name="create_new_cart_for_contact">صاوب سلة جديدة لواحد الكونتاكت</string>
+    <string name="view_and_filter_all_carts">شوف وفلتر جميع السلات</string>
+
+
     <!-- Dépenses -->
     <string name="expenses">مصاريف الخدمة</string>
     <string name="add_expense">زيد مصروف</string>

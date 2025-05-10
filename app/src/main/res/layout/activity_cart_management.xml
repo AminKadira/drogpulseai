@@ -67,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Créer un panier"
+                    android:text="@string/create_cart"
                     android:textAlignment="center"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -76,7 +76,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Créer un nouveau panier pour un contact"
+                    android:text="@string/create_new_cart_for_contact"
                     android:textAlignment="center"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -111,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Tous les paniers"
+                    android:text="@string/all_carts"
                     android:textAlignment="center"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -120,7 +120,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Voir et filtrer tous les paniers"
+                    android:text="@string/view_and_filter_all_carts"
                     android:textAlignment="center"
                     android:textSize="14sp" />
             </LinearLayout>

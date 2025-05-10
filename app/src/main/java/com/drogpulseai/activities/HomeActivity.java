@@ -208,6 +208,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Mettre à jour le texte du bouton
         if (!languageName.isEmpty()) {
             btnLanguage.setText(languageName);
+
         } else {
             btnLanguage.setText(R.string.app_language);
         }

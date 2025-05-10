@@ -141,6 +141,8 @@
     <string name="cart_summary">Panier créé pour %1$s avec %2$d produit(s) / %3$d article(s)\nTotal: %4$.2f MAD</string>
     <string name="item_summary">%1$d. %2$s (Réf: %3$s) - %4$d x %5$.2f MAD = %6$.2f MAD</string>
 
+    <string name="create_new_cart_for_contact">Créer un nouveau panier pour un contact</string>
+    <string name="view_and_filter_all_carts">Voir et filtrer tous les paniers</string>
 
     <!-- Gestion des frais -->
     <string name="expenses">Frais professionnels</string>

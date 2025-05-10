@@ -133,6 +133,8 @@
     <string name="selection_count">Selected: %1$d (%2$d items)</string>
     <string name="cart_summary">Cart created for %1$s with %2$d product(s) / %3$d item(s)\nTotal: %4$.2f MAD</string>
     <string name="item_summary">%1$d. %2$s (Ref: %3$s) - %4$d x %5$.2f MAD = %6$.2f MAD</string>
+    <string name="create_new_cart_for_contact">Create a new cart for a contact</string>
+    <string name="view_and_filter_all_carts">View and filter all carts</string>
 
     <!-- Expenses -->
     <string name="expenses">Professional expenses</string>

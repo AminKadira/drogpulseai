@@ -134,6 +134,9 @@
     <string name="cart_summary">Carrito creado para %1$s con %2$d producto(s) / %3$d artículo(s)\nTotal: %4$.2f MAD</string>
     <string name="item_summary">%1$d. %2$s (Ref: %3$s) - %4$d x %5$.2f MAD = %6$.2f MAD</string>
 
+    <string name="create_new_cart_for_contact">Crear un nuevo carrito para un contacto</string>
+    <string name="view_and_filter_all_carts">Ver y filtrar todos los carritos</string>
+
     <!-- Expenses -->
     <string name="expenses">Gastos profesionales</string>
     <string name="add_expense">Añadir gasto</string>
