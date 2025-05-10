@@ -73,6 +73,7 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
     private Date startDate;
     private Date endDate;
 
+    String status;
     // Date formatter
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -98,6 +99,8 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
 
         // Initialize UI components
         initializeViews();
+
+        status = getIntent().getStringExtra("status");
 
         // Setup adapters and listeners
         setupSpinner();
@@ -315,7 +318,13 @@ public class FilteredCartsActivity extends AppCompatActivity implements CartAdap
         if (selectedStatuses.size() < 3) { // If not all statuses are selected
             filters.put("status", selectedStatuses);
         }
-
+        if(!status.isEmpty()){
+            selectedStatuses.clear();
+            selectedStatuses.add("pending");
+            chipConfirmed.setChecked(false);
+            chipCancelled.setChecked(false);
+            status="";
+        }
         // Date filter
         if (!dateFilterType.equals("all")) {
             if (dateFilterType.equals("custom")) {

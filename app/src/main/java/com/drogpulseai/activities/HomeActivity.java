@@ -1,29 +1,45 @@
 package com.drogpulseai.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.activities.carts.CartManagementActivity;
+import com.drogpulseai.activities.carts.FilteredCartsActivity;
 import com.drogpulseai.activities.expenses.ExpenseListActivity;
 import com.drogpulseai.activities.products.ProductListActivity;
 import com.drogpulseai.activities.settings.LanguageSettingsActivity;
 import com.drogpulseai.activities.settings.SettingsActivity;
+import com.drogpulseai.api.ApiClient;
+import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.User;
+import com.drogpulseai.utils.AppExecutors;
 import com.drogpulseai.utils.CameraPermissionHelper;
 import com.drogpulseai.utils.LanguageManager;
 import com.drogpulseai.utils.SessionManager;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
+import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity implements CameraPermissionHelper.PermissionCallback {
 
@@ -31,11 +47,16 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     private User currentUser;
     private CameraPermissionHelper cameraPermissionHelper;
     private MaterialButton btnLanguage;
+    private MaterialButton btnNotification;
+    private BadgeDrawable notificationBadge;
 
     // Constantes pour les actions nécessitant la caméra
     private static final int ACTION_NONE = 0;
     private static final int ACTION_SCAN_BARCODE = 1;
     private static final int ACTION_TAKE_PHOTO = 2;
+
+    // Tag pour le badge
+    private static final int BADGE_TAG = 101;
 
     // Action en attente de permission
     private int pendingCameraAction = ACTION_NONE;
@@ -66,6 +87,9 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         TextView tvUserName = findViewById(R.id.tv_user_name);
         tvUserName.setText(currentUser.getFullName());
 
+        // Configuration du bouton de notification
+        setupNotificationButton();
+
         // Configuration du bouton de langue
         setupLanguageButton();
 
@@ -74,6 +98,73 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
 
         // Vérifier les permissions de caméra au démarrage
         checkCameraPermission();
+
+        // Exemple: simuler des notifications en attente (à supprimer dans la production)
+        // setNotificationPending(3);
+    }
+
+    /**
+     * Configure le bouton de notification et son badge
+     */
+    @OptIn(markerClass = ExperimentalBadgeUtils.class)
+    private void setupNotificationButton() {
+        btnNotification = findViewById(R.id.btn_notification);
+
+        // Créer le badge de notification
+        notificationBadge = BadgeDrawable.create(this);
+        notificationBadge.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
+        notificationBadge.setBadgeGravity(BadgeDrawable.TOP_END);
+        notificationBadge.setVisible(false); // Invisible par défaut
+
+        try {
+            // Attacher le badge au bouton
+            BadgeUtils.attachBadgeDrawable(notificationBadge, btnNotification);
+        } catch (Exception e) {
+            // Fallback si l'attachement échoue
+            btnNotification.setIconTint(ColorStateList.valueOf(getResources().getColor(R.color.primary)));
+        }
+
+        // Vérifier s'il y a des paniers en attente
+        checkForNewNotifications();
+
+        // Configurer le listener de clic pour ouvrir FilteredCartsActivity avec statut "pending"
+        btnNotification.setOnClickListener(v -> {
+            // Créer l'intent vers FilteredCartsActivity
+            Intent intent = new Intent(HomeActivity.this, FilteredCartsActivity.class);
+
+            // Ajouter le filtre pour les paniers en statut "pending"
+            intent.putExtra("status", "pending");
+
+            // Démarrer l'activité
+            startActivity(intent);
+
+            // Réinitialiser l'indicateur de notification après avoir cliqué
+            setNotificationPending(3);
+        });
+    }
+
+    /**
+     * Met à jour l'état des notifications en attente
+     * @param count Nombre de notifications en attente (0 pour aucune)
+     */
+    public void setNotificationPending(int count) {
+        if (notificationBadge != null) {
+            if (count > 0) {
+                notificationBadge.setNumber(count);
+                notificationBadge.setVisible(true);
+            } else {
+                notificationBadge.setVisible(false);
+            }
+        } else {
+            // Solution alternative si le badge n'est pas disponible
+            if (count > 0) {
+                btnNotification.setIconTint(ColorStateList.valueOf(getResources().getColor(R.color.error)));
+                btnNotification.setText(String.valueOf(count));
+            } else {
+                btnNotification.setIconTint(ColorStateList.valueOf(getResources().getColor(R.color.primary)));
+                btnNotification.setText("");
+            }
+        }
     }
 
     /**
@@ -309,5 +400,46 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         super.onResume();
         // Mettre à jour le texte du bouton de langue au retour de l'activité de sélection
         updateLanguageButtonText();
+
+        // Vous pourriez vérifier ici s'il y a de nouvelles notifications
+         checkForNewNotifications();
+    }
+
+    /**
+     * Méthode pour vérifier les paniers en attente
+     */
+    private void checkForNewNotifications() {
+        // Utiliser AsyncTask ou Executor pour ne pas bloquer l'UI thread
+        AppExecutors.getInstance().networkIO().execute(() -> {
+            try {
+                // Appel à l'API pour obtenir le nombre de paniers en attente
+                ApiService apiService = ApiClient.getApiService();
+
+                // Créer un map avec les filtres pour obtenir uniquement les paniers "pending"
+                Map<String, Object> filters = new HashMap<>();
+                filters.put("user_id", currentUser.getId());
+                filters.put("status", "pending");
+
+                // Faire l'appel API
+                Call<Map<String, Object>> call = apiService.getFilteredCarts(filters);
+                Response<Map<String, Object>> response = call.execute();
+
+                // Traiter la réponse
+                if (response.isSuccessful() && response.body() != null) {
+                    Map<String, Object> result = response.body();
+
+                    // Vérifier si la liste des paniers est disponible
+                    if (result.containsKey("carts") && result.get("carts") instanceof List) {
+                        List<?> carts = (List<?>) result.get("carts");
+
+                        // Mettre à jour l'UI sur le thread principal
+                        runOnUiThread(() -> setNotificationPending(carts.size()));
+                    }
+                }
+            } catch (Exception e) {
+                // En cas d'erreur, ne pas mettre à jour le badge
+                e.printStackTrace();
+            }
+        });
     }
 }

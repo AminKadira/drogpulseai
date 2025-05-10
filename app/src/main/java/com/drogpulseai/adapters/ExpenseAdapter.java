@@ -57,10 +57,10 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
 
         // Formater la date
         try {
-            Date date = inputFormat.parse(expense.getDate());
-            holder.tvDate.setText(date != null ? outputFormat.format(date) : expense.getDate());
+            Date date = inputFormat.parse(String.valueOf(expense.getDate()));
+            holder.tvDate.setText((date != null ? String.valueOf(date) : String.valueOf(expense.getDate())));
         } catch (ParseException e) {
-            holder.tvDate.setText(expense.getDate());
+            holder.tvDate.setText(String.valueOf(expense.getDate()));
         }
 
         // Définir l'icône en fonction du type de frais

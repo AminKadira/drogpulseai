@@ -250,7 +250,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
      */
     private void populateForm(Expense expense) {
         etAmount.setText(String.valueOf(expense.getAmount()));
-        etDate.setText(expense.getDate());
+        etDate.setText(expense.getDate().toString());
         etDescription.setText(expense.getDescription());
 
         // Select the expense type in spinner
@@ -373,7 +373,7 @@ public class ExpenseFormActivity extends AppCompatActivity implements ImageHelpe
 
         expense.setType(type);
         expense.setAmount(amount);
-        expense.setDate(String.valueOf(date));
+        expense.setDate(date);
         expense.setDescription(description);
         expense.setReceiptPhotoUrl(photoUrl);
         expense.setUserId(currentUser.getId());

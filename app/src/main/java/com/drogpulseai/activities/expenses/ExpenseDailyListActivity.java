@@ -184,7 +184,7 @@ public class ExpenseDailyListActivity extends AppCompatActivity implements Daily
         for (Expense expense : filteredExpenses) {
             try {
                 // Convertir la date du format API au format d'affichage
-                Date expenseDate = dateFormatAPI.parse(expense.getDate());
+                Date expenseDate = dateFormatAPI.parse(String.valueOf(expense.getDate()));
                 String dateKey = dateFormatAPI.format(expenseDate);
 
                 // Créer ou récupérer le groupe pour cette date
@@ -228,7 +228,7 @@ public class ExpenseDailyListActivity extends AppCompatActivity implements Daily
         // Filtrer les frais pour ce mois
         for (Expense expense : expenses) {
             try {
-                Date expenseDate = dateFormatAPI.parse(expense.getDate());
+                Date expenseDate = dateFormatAPI.parse(String.valueOf(expense.getDate()));
                 cal.setTime(expenseDate);
                 int expenseYear = cal.get(Calendar.YEAR);
                 int expenseMonth = cal.get(Calendar.MONTH);

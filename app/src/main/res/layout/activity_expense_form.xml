@@ -63,6 +63,7 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="false"
+                    android:editable="false"
                     android:hint="@string/expense_date"
                     android:inputType="none"
                     tools:text="2023-05-09" />
