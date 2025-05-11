@@ -136,6 +136,11 @@
 
     <string name="create_new_cart_for_contact">Crear un nuevo carrito para un contacto</string>
     <string name="view_and_filter_all_carts">Ver y filtrar todos los carritos</string>
+    <string name="contact_type">Tipo de contacto</string>
+    <string name="contact_type_supplier">Proveedor</string>
+    <string name="contact_type_seller">Vendedor</string>
+    <string name="contact_type_distributor">Distribuidor</string>
+    <string name="contact_type_other">Otro</string>
 
     <!-- Expenses -->
     <string name="expenses">Gastos profesionales</string>

@@ -29,9 +29,9 @@
     <string name="logout">خرج</string>
 
     <!-- Contacts -->
-    <string name="contacts">كونتاكتات</string>
-    <string name="add_contact">زيد كونتاكت</string>
-    <string name="create_contact">دير كونتاكت</string>
+    <string name="contacts">الزباين</string>
+    <string name="add_contact">زيد زبون</string>
+    <string name="create_contact">دير زبون</string>
     <string name="edit_contact">بدل الكونتاكت</string>
     <string name="delete_contact">حيد الكونتاكت</string>
     <string name="delete_confirmation">واخا تبغي تحيد هاد الكونتاكت؟</string>
@@ -112,30 +112,35 @@
     <string name="ok">واخا</string>
     <string name="add_photo_no_connection">الكونيكسيون ضرورية باش تزيد تصويرة</string>
 
+
     <!-- Cart -->
-    <string name="select_contact">ختار كونتاكت</string>
-    <string name="create_cart">دير بانِي</string>
-    <string name="cart">بانِي</string>
-    <string name="contact_info">كونتاكت: %1$s (ID: %2$d)</string>
+    <string name="select_contact">اختار الزبون</string>
+    <string name="create_cart"> (باني) صاوب سلة</string>
+    <string name="cart">سلة المبيعات (باني)</string>
+    <string name="contact_info">الزبون: %1$s (ID: %2$d)</string>
     <string name="products_list">ليستة المنتوجات</string>
     <string name="no_products_available">ما كاين حتى منتوج</string>
-    <string name="select_all">ختار الكل</string>
-    <string name="clear_selection">مسح</string>
-    <string name="add_to_cart">زيد فالبانِي</string>
-    <string name="selected_count">مختار(ين): %d</string>
-    <string name="cart_created">بانِي تدار ل %1$s ب %2$d منتوج(ات)</string>
-    <string name="select_at_least_one">عفاك، ختار على الأقل منتوج واحد</string>
+    <string name="select_all">اختار الكل</string>
+    <string name="clear_selection">مسح الاختيار</string>
+    <string name="add_to_cart">زيد فالسلة</string>
+    <string name="selected_count">مختار: %d</string>
+    <string name="cart_created">تدار سلة ل %1$s ب %2$d منتوج(ات)</string>
+    <string name="select_at_least_one">عفاك، اختار منتوج واحد على الأقل</string>
     <string name="clear_search">مسح البحث</string>
-    <string name="no_results_found">ما كاين حتى منتوج</string>
+    <string name="no_results_found">ما كاين حتى نتيجة</string>
     <string name="quantity">الكمية</string>
     <string name="decrease">نقص</string>
     <string name="increase">زيد</string>
-    <string name="selection_count">مختار(ين): %1$d (%2$d عنصر)</string>
-    <string name="cart_summary">بانِي تدار ل %1$s ب %2$d منتوج(ات) / %3$d عنصر(ات)\nالمجموع: %4$.2f درهم</string>
-    <string name="item_summary">%1$d. %2$s (ريفرنس: %3$s) - %4$d x %5$.2f درهم = %6$.2f درهم</string>
-
-    <string name="create_new_cart_for_contact">صاوب سلة جديدة لواحد الكونتاكت</string>
-    <string name="view_and_filter_all_carts">شوف وفلتر جميع السلات</string>
+    <string name="selection_count">مختارين: %1$d (%2$d عنصر)</string>
+    <string name="cart_summary">تدار سلة ل %1$s ب %2$d منتوج(ات) / %3$d عنصر(ات)\nالمجموع: %4$.2f درهم</string>
+    <string name="item_summary">%1$d. %2$s (ريفرنس: %3$s) - %4$d × %5$.2f درهم = %6$.2f درهم</string>
+    <string name="create_new_cart_for_contact">صاوب سلة جديدة لزبون</string>
+    <string name="view_and_filter_all_carts">شوف و صفي جميع السلات</string>
+    <string name="contact_type">نوع الزبون</string>
+    <string name="contact_type_supplier">المُمون</string>
+    <string name="contact_type_seller">البايع</string>
+    <string name="contact_type_distributor">الموزع</string>
+    <string name="contact_type_other">نوع آخر</string>
 
 
     <!-- Dépenses -->

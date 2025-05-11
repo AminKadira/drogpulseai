@@ -16,6 +16,7 @@ public class ContactConverter {
                 contact.getTelephone(),
                 contact.getEmail(),
                 contact.getNotes(),
+                contact.getType(),
                 contact.getLatitude(),
                 contact.getLongitude(),
                 contact.getUserId()
@@ -29,6 +30,7 @@ public class ContactConverter {
                 entity.getTelephone(),
                 entity.getEmail(),
                 entity.getNotes(),
+                entity.getType(),
                 entity.getLatitude(),
                 entity.getLongitude(),
                 entity.getUserId()

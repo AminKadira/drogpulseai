@@ -3,6 +3,8 @@ package com.drogpulseai.activities.contacts;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -22,6 +24,7 @@ import com.drogpulseai.utils.LocationUtils;
 import com.drogpulseai.utils.NetworkUtils;
 import com.drogpulseai.utils.ValidationMap;
 import com.drogpulseai.viewmodels.ContactFormViewModel;
+import com.google.android.material.textfield.TextInputLayout;
 
 /**
  * Activité pour la création et la modification de contacts, avec support hors-ligne
@@ -37,7 +40,8 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
     private Button btnSave, btnDelete;
     private ProgressBar progressBar;
     private TextView tvLocationInfo;
-
+    private AutoCompleteTextView actType;
+    private TextInputLayout tilType;
     // Utilities
     private LocationUtils locationUtils;
     private FormValidator validator;
@@ -79,6 +83,14 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
                     R.string.create_contact : R.string.edit_contact);
         }
 
+        // Configurer l'adaptateur pour la liste déroulante
+        String[] types = {getString(R.string.contact_type_supplier),
+                getString(R.string.contact_type_seller),
+                getString(R.string.contact_type_distributor),
+                getString(R.string.contact_type_other)};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_dropdown, types);
+        actType.setAdapter(adapter);
+
         // Configuration selon le mode
         if (viewModel.isCreateMode()) {
             btnDelete.setVisibility(View.GONE);
@@ -102,6 +114,8 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         etTelephone = findViewById(R.id.et_telephone);
         etEmail = findViewById(R.id.et_email);
         etNotes = findViewById(R.id.et_notes);
+        actType = findViewById(R.id.act_type);
+        tilType = findViewById(R.id.til_type);
         btnSave = findViewById(R.id.btn_save);
         btnDelete = findViewById(R.id.btn_delete);
         progressBar = findViewById(R.id.progress_bar);
@@ -161,6 +175,10 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         etEmail.setText(contact.getEmail());
         etNotes.setText(contact.getNotes());
 
+        if (contact.getType() != null) {
+            actType.setText(contact.getType(), false);
+        }
+
         // Stocker les coordonnées
         latitude = contact.getLatitude();
         longitude = contact.getLongitude();
@@ -189,7 +207,7 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Créer la map de validation
         ValidationMap validationMap = new ValidationMap();
         validationMap.add(etNom, validator.required("Nom requis"));
-        validationMap.add(etPrenom, validator.required("Prénom requis"));
+        //validationMap.add(etPrenom, validator.required("Prénom requis"));
         validationMap.add(etTelephone, validator.required("Téléphone requis"));
 
         // Valider l'email si présent
@@ -230,11 +248,12 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         String nom = etNom.getText().toString().trim();
         String prenom = etPrenom.getText().toString().trim();
         String telephone = etTelephone.getText().toString().trim();
+        String type = actType.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String notes = etNotes.getText().toString().trim();
 
         // Créer l'objet contact
-        Contact contact = new Contact(nom, prenom, telephone, email, notes, latitude, longitude, viewModel.getCurrentUserId());
+        Contact contact = new Contact(nom, prenom, telephone, email, notes,type, latitude, longitude, viewModel.getCurrentUserId());
 
         // Si en mode édition, définir l'ID existant
         if (!viewModel.isCreateMode() && viewModel.getContact().getValue() != null) {

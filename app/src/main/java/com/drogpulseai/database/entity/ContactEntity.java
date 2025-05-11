@@ -14,6 +14,7 @@ public class ContactEntity {
     private String telephone;
     private String email;
     private String notes;
+    private String type;
     private double latitude;
     private double longitude;
     private int userId;
@@ -22,7 +23,7 @@ public class ContactEntity {
 
     // Constructeur
     public ContactEntity(int id, String nom, String prenom, String telephone,
-                         String email, String notes, double latitude,
+                         String email, String notes, String type, double latitude,
                          double longitude, int userId) {
         this.id = id;
         this.nom = nom;
@@ -30,10 +31,11 @@ public class ContactEntity {
         this.telephone = telephone;
         this.email = email;
         this.notes = notes;
+        this.type = type;
         this.latitude = latitude;
         this.longitude = longitude;
         this.userId = userId;
-        this.isSynced = id > 0; // Si id > 0, alors déjà synchronisé
+        this.isSynced = id > 0;
         this.isDeleted = false;
     }
 
@@ -59,6 +61,8 @@ public class ContactEntity {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
     public double getLatitude() { return latitude; }
     public void setLatitude(double latitude) { this.latitude = latitude; }
 

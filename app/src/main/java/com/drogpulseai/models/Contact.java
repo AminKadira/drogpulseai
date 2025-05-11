@@ -22,6 +22,10 @@ public class Contact implements Serializable {
     @SerializedName("notes")
     private String notes;
 
+    @SerializedName("type")
+    private String type;
+
+
     @SerializedName("latitude")
     private double latitude;
 
@@ -41,18 +45,17 @@ public class Contact implements Serializable {
     public Contact() {
     }
 
-    public Contact(String nom, String prenom, String telephone, String email,
-                   String notes, double latitude, double longitude, int userId) {
+    public Contact(String nom, String prenom, String telephone, String email, String notes,
+                   String type, double latitude, double longitude, int userId) {
         this.nom = nom;
         this.prenom = prenom;
         this.telephone = telephone;
         this.email = email;
         this.notes = notes;
+        this.type = type;
         this.latitude = latitude;
         this.longitude = longitude;
         this.userId = userId;
-        this.lastUpdated = System.currentTimeMillis();
-        this.isDirty = false;
     }
 
     // Getters et Setters existants
@@ -74,6 +77,8 @@ public class Contact implements Serializable {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
     public double getLatitude() { return latitude; }
     public void setLatitude(double latitude) { this.latitude = latitude; }
 

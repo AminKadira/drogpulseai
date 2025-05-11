@@ -135,6 +135,7 @@ public class ContactSyncWorker extends Worker {
                     contact.getTelephone(),
                     contact.getEmail(),
                     contact.getNotes(),
+                    contact.getType(),
                     contact.getLatitude(),
                     contact.getLongitude(),
                     contact.getUserId()
