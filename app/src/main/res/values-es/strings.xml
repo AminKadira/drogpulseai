@@ -39,7 +39,7 @@
     <string name="search_hint">Nombre, apellido o teléfono</string>
     <string name="no_contacts_found">No se encontraron contactos</string>
     <string name="no_search_results">No se encontraron resultados</string>
-
+    <string name="all_contacts">Todos los clientes</string>
     <!-- Messages -->
     <string name="contact_created">Contacto creado con éxito</string>
     <string name="contact_updated">Contacto actualizado con éxito</string>

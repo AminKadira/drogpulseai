@@ -39,7 +39,7 @@
     <string name="search_hint">الإسم، النّسب ولا النّيمرة</string>
     <string name="no_contacts_found">ما كاين حتى كونتاكت</string>
     <string name="no_search_results">ما كاين حتى نتيجة</string>
-
+    <string name="all_contacts">جميع الزبائن</string>
     <!-- Messages -->
     <string name="contact_created">الكونتاكت تدار بنجاح</string>
     <string name="contact_updated">الكونتاكت تبدل بنجاح</string>

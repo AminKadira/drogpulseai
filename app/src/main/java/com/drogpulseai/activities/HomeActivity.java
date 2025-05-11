@@ -13,6 +13,9 @@ import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.drogpulseai.activities.contacts.ContactSearchActivity;
+import com.google.android.material.card.MaterialCardView;
+
 import com.drogpulseai.R;
 import com.drogpulseai.activities.appuser.LoginActivity;
 import com.drogpulseai.activities.carts.CartManagementActivity;
@@ -106,7 +109,6 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     /**
      * Configure le bouton de notification et son badge
      */
-    @OptIn(markerClass = ExperimentalBadgeUtils.class)
     private void setupNotificationButton() {
         btnNotification = findViewById(R.id.btn_notification);
 
@@ -218,7 +220,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Carte Contacts
         MaterialCardView cardContacts = findViewById(R.id.card_contacts);
         cardContacts.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, MainActivity.class));
+            startActivity(new Intent(HomeActivity.this, ContactSearchActivity.class));
         });
 
         // Carte Produits

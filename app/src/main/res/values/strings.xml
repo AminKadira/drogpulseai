@@ -45,6 +45,7 @@
     <string name="contact_type_seller">Vendeur</string>
     <string name="contact_type_distributor">Distributeur</string>
     <string name="contact_type_other">Autre</string>
+    <string name="all_contacts">Tous les contacts</string>
 
     <!-- Messages -->
     <string name="contact_created">Contact créé avec succès</string>

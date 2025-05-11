@@ -230,20 +230,6 @@
                     android:gravity="top|start" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Code-barres -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_barcode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/product_barcode"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Ligne pour quantité et prix -->
             <LinearLayout
@@ -320,6 +306,21 @@
                 android:layout_marginTop="16dp" />
         </LinearLayout>
     </ScrollView>
+    <!-- Code-barres -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:visibility="invisible"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_barcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/product_barcode"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Overlay pour l'affichage des photos en grand -->
     <FrameLayout

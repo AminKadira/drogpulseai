@@ -39,6 +39,7 @@
     <string name="search_hint">Name, first name or phone</string>
     <string name="no_contacts_found">No contact found</string>
     <string name="no_search_results">No search results</string>
+    <string name="all_contacts">All customers</string>
 
     <!-- Messages -->
     <string name="contact_created">Contact created successfully</string>

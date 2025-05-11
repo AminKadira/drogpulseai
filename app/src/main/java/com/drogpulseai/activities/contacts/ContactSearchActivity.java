@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.MainActivity;
 import com.drogpulseai.activities.carts.ContactCartsActivity;
 import com.drogpulseai.adapters.ContactAdapter;
 import com.drogpulseai.api.ApiClient;
@@ -23,6 +24,9 @@ import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.SessionManager;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +46,10 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView tvNoResults;
+    private FloatingActionButton fabAddContact;
 
+    private Chip chipAll,chipFournisseur,chipVendeur,chipDistributeur,chipAutre;
+    private ChipGroup chipGroup;
     // Utilities
     private ApiService apiService;
     private SessionManager sessionManager;
@@ -73,6 +80,10 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         // Initialisation des vues
         initializeViews();
 
+        // Définir "Tous" comme sélection par défaut
+        chipAll.setChecked(true);
+
+
         // Configuration du RecyclerView
         setupRecyclerView();
 
@@ -89,6 +100,15 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         recyclerView = findViewById(R.id.recycler_view);
         progressBar = findViewById(R.id.progress_bar);
         tvNoResults = findViewById(R.id.tv_no_results);
+        // Initialiser et configurer le ChipGroup
+        chipGroup = findViewById(R.id.chip_group_types);
+        chipAll = findViewById(R.id.chip_all);
+        chipFournisseur = findViewById(R.id.chip_fournisseur);
+        chipVendeur = findViewById(R.id.chip_vendeur);
+        chipDistributeur = findViewById(R.id.chip_distributeur);
+        chipAutre = findViewById(R.id.chip_autre);
+        fabAddContact = findViewById(R.id.fab_add_contact);
+
     }
 
     /**
@@ -105,12 +125,25 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
      * Configuration des écouteurs d'événements
      */
     private void setupListeners() {
+
         btnSearch.setOnClickListener(v -> performSearch());
+
+        chipGroup.setOnCheckedStateChangeListener((group, checkedId) -> {
+            // Rafraîchir la recherche avec le nouveau filtre
+            performSearch();
+        });
 
         // Recherche lorsque l'utilisateur appuie sur Entrée
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             performSearch();
             return true;
+        });
+
+        // Bouton d'ajout de contact
+        fabAddContact.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ContactFormActivity.class);
+            intent.putExtra("mode", "create");
+            startActivity(intent);
         });
     }
 
@@ -120,20 +153,32 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
     private void performSearch() {
         String query = etSearch.getText().toString().trim();
 
-        if (query.isEmpty()) {
-            etSearch.setError("Veuillez saisir un terme de recherche");
-            return;
+        // Déterminer le type sélectionné
+        String selectedType = null;
+
+        if (chipFournisseur.isChecked()) {
+            selectedType = "Fournisseur";
+        } else if (chipVendeur.isChecked()) {
+            selectedType = "Vendeur";
+        } else if (chipDistributeur.isChecked()) {
+            selectedType = "Distributeur";
+        } else if (chipAutre.isChecked()) {
+            selectedType = "Autre";
         }
 
         // Afficher la progression
         progressBar.setVisibility(View.VISIBLE);
         tvNoResults.setVisibility(View.GONE);
 
-        // Appel à l'API pour la recherche
-        apiService.searchContacts(currentUser.getId(), query).enqueue(new Callback<List<Contact>>() {
+        // Désactiver les contrôles pendant la recherche
+        setControlsEnabled(false);
+
+        // Appel à l'API avec les paramètres (noter que query peut être vide)
+        apiService.searchContacts(currentUser.getId(), query, selectedType).enqueue(new Callback<List<Contact>>() {
             @Override
             public void onResponse(Call<List<Contact>> call, Response<List<Contact>> response) {
                 progressBar.setVisibility(View.GONE);
+                setControlsEnabled(true);
 
                 if (response.isSuccessful() && response.body() != null) {
                     contacts.clear();
@@ -154,13 +199,24 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
             @Override
             public void onFailure(Call<List<Contact>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
+                setControlsEnabled(true);
                 Toast.makeText(ContactSearchActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
-
             }
         });
     }
 
+    // Méthode utilitaire pour activer/désactiver les contrôles
+    private void setControlsEnabled(boolean enabled) {
+        btnSearch.setEnabled(enabled);
+        etSearch.setEnabled(enabled);
+
+        // Activer/désactiver les chips
+        ChipGroup chipGroup = findViewById(R.id.chip_group_types);
+        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+            chipGroup.getChildAt(i).setEnabled(enabled);
+        }
+    }
     @Override
     public void onContactClick(Contact contact) {
         // Code existant pour gérer le clic sur un contact

@@ -11,7 +11,6 @@ import com.drogpulseai.R;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.SessionManager;
 import com.google.android.material.card.MaterialCardView;
-
 /**
  * Activity for cart management options
  * Provides access to cart creation and viewing all carts

@@ -1,5 +1,7 @@
 package com.drogpulseai.api;
 
+import androidx.annotation.Nullable;
+
 import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.Expense;
@@ -66,12 +68,17 @@ public interface ApiService {
     Call<List<Contact>> getContacts(@Query("user_id") int userId);
 
     /**
-     * Rechercher des contacts
+     * Recherche des contacts avec filtrage flexible
+     * @param userId ID de l'utilisateur
+     * @param query Terme de recherche (peut être vide pour tous les contacts)
+     * @param type Type de contact (peut être null pour tous les types)
+     * @return Liste des contacts correspondant aux critères
      */
     @GET("contacts/search.php")
     Call<List<Contact>> searchContacts(
             @Query("user_id") int userId,
-            @Query("query") String query
+            @Query("query") @Nullable String query,
+            @Query("type") @Nullable String type
     );
 
     /**

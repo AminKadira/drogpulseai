@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -62,6 +63,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
             holder.tvEmail.setVisibility(View.GONE);
         }
 
+        // Afficher le type du contact
+        if (contact.getType() != null && !contact.getType().isEmpty()) {
+            holder.tvType.setVisibility(View.VISIBLE);
+            holder.tvType.setText(contact.getType());
+        } else {
+            holder.tvType.setVisibility(View.GONE);
+        }
+
         // Configurer le clic sur l'élément
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -77,25 +86,23 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         });
     }
 
-    @Override
-    public int getItemCount() {
-        return contacts.size();
-    }
-
-    /**
-     * ViewHolder pour les éléments de contact
-     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvPhone, tvEmail;
-        Button btnViewCarts; // Ajout du bouton
+        TextView tvName, tvPhone, tvEmail, tvType; // Ajout de tvType
+        Button btnViewCarts;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_contact_name);
             tvPhone = itemView.findViewById(R.id.tv_contact_phone);
             tvEmail = itemView.findViewById(R.id.tv_contact_email);
+            tvType = itemView.findViewById(R.id.tv_contact_type); // Initialiser tvType
             btnViewCarts = itemView.findViewById(R.id.btn_view_carts);
         }
+    }
+
+    @Override
+    public int getItemCount() {
+        return contacts.size();
     }
 
     // Méthode pour mettre à jour les données (inchangée)
