@@ -21,6 +21,7 @@ import com.drogpulseai.activities.carts.ContactCartsActivity;
 import com.drogpulseai.activities.carts.ContactSelectionActivity;
 import com.drogpulseai.activities.contacts.ContactFormActivity;
 import com.drogpulseai.activities.contacts.ContactSearchActivity;
+import com.drogpulseai.activities.products.ProductFormActivity;
 import com.drogpulseai.activities.products.ProductListActivity;
 
 
@@ -258,7 +259,15 @@ public class MainActivity extends AppCompatActivity implements ContactAdapter.On
         menu.add(Menu.NONE, R.id.action_create_cart, Menu.NONE, R.string.create_cart);
         return true;
     }
-
+    @Override
+    public void onAddProductsClick(Contact contact) {
+        // Naviguer vers l'activité d'ajout de produits pour ce fournisseur
+        Intent intent = new Intent(this, ProductFormActivity.class);
+        intent.putExtra("mode", "create");
+        intent.putExtra("supplier_id", contact.getId());
+        intent.putExtra("supplier_name", contact.getFullName());
+        startActivity(intent);
+    }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();

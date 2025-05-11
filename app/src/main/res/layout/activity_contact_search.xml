@@ -60,7 +60,6 @@
                 android:id="@+id/chip_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tous"
                 android:checked="true"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
@@ -69,6 +68,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Fournisseur"
+                android:textSize="10dp"
+                android:textStyle="bold"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
@@ -76,13 +77,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Vendeur"
-                style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:textSize="10dp"
+                android:textStyle="bold"
+               style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_distributeur"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Distributeur"
+                android:textSize="10dp"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
@@ -90,6 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Autre"
+                android:textSize="10dp"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>

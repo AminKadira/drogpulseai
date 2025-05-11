@@ -31,6 +31,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
     public interface OnContactClickListener {
         void onContactClick(Contact contact);
         void onViewCartsClick(Contact contact); // Nouvelle méthode
+        void onAddProductsClick(Contact contact); // Nouvelle méthode
     }
 
     // Constructeur inchangé
@@ -67,6 +68,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         if (contact.getType() != null && !contact.getType().isEmpty()) {
             holder.tvType.setVisibility(View.VISIBLE);
             holder.tvType.setText(contact.getType());
+            // Afficher le bouton "Ajouter produits" uniquement pour les contacts de type "Fournisseur"
+            if ("Fournisseur".equals(contact.getType())) {
+                holder.btnAddProducts.setVisibility(View.VISIBLE);
+            } else {
+                holder.btnAddProducts.setVisibility(View.GONE);
+            }
         } else {
             holder.tvType.setVisibility(View.GONE);
         }
@@ -84,11 +91,18 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                 listener.onViewCartsClick(contact);
             }
         });
+
+        // Configurer le clic sur le bouton Ajouter produits
+        holder.btnAddProducts.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddProductsClick(contact);
+            }
+        });
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvPhone, tvEmail, tvType; // Ajout de tvType
-        Button btnViewCarts;
+        Button btnViewCarts,btnAddProducts;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -97,6 +111,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
             tvEmail = itemView.findViewById(R.id.tv_contact_email);
             tvType = itemView.findViewById(R.id.tv_contact_type); // Initialiser tvType
             btnViewCarts = itemView.findViewById(R.id.btn_view_carts);
+            btnAddProducts = itemView.findViewById(R.id.btn_add_products);
         }
     }
 

@@ -74,7 +74,7 @@
             android:id="@+id/btn_view_carts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Panier"
+            android:text="@string/all_carts"
             android:textSize="12sp"
             app:icon="@android:drawable/ic_menu_agenda"
             app:iconSize="16dp"
@@ -82,5 +82,19 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
+        <!-- Nouveau bouton pour ajouter des produits (visible uniquement pour les fournisseurs) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_products"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_product"
+            android:textSize="12sp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconSize="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_view_carts"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

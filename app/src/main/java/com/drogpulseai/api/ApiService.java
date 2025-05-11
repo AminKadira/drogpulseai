@@ -169,6 +169,11 @@ public interface ApiService {
             @Part("user_id") RequestBody userId
     );
 
+    /**
+     * Associer un fournisseur à un produit
+    */
+    @POST("products/add_product_supplier.php")
+    Call<NetworkResult<Map<String, Object>>> addProductSupplier(@Body Map<String, Object> supplierData);
 
     /**
      * Créer un nouveau panier
