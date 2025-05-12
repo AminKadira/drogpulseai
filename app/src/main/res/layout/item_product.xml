@@ -21,7 +21,7 @@
         <ImageView
             android:id="@+id/iv_product_thumbnail"
             android:layout_width="140dp"
-            android:layout_height="140dp"
+            android:layout_height="160dp"
             android:scaleType="centerCrop"
             android:contentDescription="@string/product_photo"
             android:background="@color/cardview_dark_background"
@@ -51,8 +51,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/primaryText"
-                android:textSize="14sp"
-                android:textStyle="bold"
+                android:textSize="12sp"
                 tools:text="REF-12345" />
 
             <LinearLayout
@@ -96,7 +95,7 @@
             <Button
                 android:id="@+id/btn_view_suppliers"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="match_parent"
                 android:layout_marginTop="8dp"
                 android:text="@string/product_suppliers"
                 android:textSize="12sp"
