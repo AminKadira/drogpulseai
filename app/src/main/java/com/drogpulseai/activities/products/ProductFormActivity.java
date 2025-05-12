@@ -34,6 +34,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Activity for creating and editing products
@@ -398,11 +399,13 @@ public class ProductFormActivity extends AppCompatActivity implements
     private void populateForm(Product product) {
         etReference.setText(product.getReference());
         etLabel.setText(product.getLabel());
-        etName.setText(product.getLabel());
+        etName.setText(product.getName());
         etDescription.setText(product.getDescription());
         etBarcode.setText(product.getReference());
         etQuantity.setText(String.valueOf(product.getQuantity()));
-        etPrice.setText(String.format("%.2f", product.getPrice()));
+        //etPrice.setText(String.format("%.2f", product.getPrice()));
+        etPrice.setText(String.format(Locale.US, "%.2f", product.getPrice()));
+
     }
 
     /**
@@ -438,6 +441,7 @@ public class ProductFormActivity extends AppCompatActivity implements
         validationMap.add(etName, validator.required("Nom requis"));
         validationMap.add(etQuantity, validator.integer("Quantité invalide"));
         validationMap.add(etPrice, validator.decimal("Prix invalide"));
+        validationMap.add(etPrice, validator.required("Prix requis"));
 
         // Validate form
         if (!validator.validate(validationMap)) {

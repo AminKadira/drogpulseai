@@ -102,7 +102,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix minimum de vente
         holder.tvPrixMin.setVisibility(View.VISIBLE);
         if (product.getPrixMinVente() > 0) {
-            holder.tvPrixMin.setText(String.format(Locale.getDefault(), "%.2f", product.getPrixMinVente()));
+            holder.tvPrixMin.setText(String.format(Locale.US, "%.2f", product.getPrixMinVente()));
         } else {
             holder.tvPrixMin.setText("Min");
         }
@@ -110,7 +110,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix de vente conseillé
         holder.tvPrixConseille.setVisibility(View.VISIBLE);
         if (product.getPrixVenteConseille() > 0) {
-            holder.tvPrixConseille.setText(String.format(Locale.getDefault(), "%.2f", product.getPrixVenteConseille()));
+            holder.tvPrixConseille.setText(String.format(Locale.US, "%.2f", product.getPrixVenteConseille()));
         } else {
             holder.tvPrixConseille.setText("Cons.");
         }
@@ -118,7 +118,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         // Afficher le prix normal
         double productPrice = product.getPrice();
         holder.tvPrice.setVisibility(View.VISIBLE);
-        holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f", productPrice));
+        holder.tvPrice.setText(String.format(Locale.US, "%.2f", productPrice));
 
         // Gérer l'état de sélection
         boolean isSelected = selectedProducts.contains(productId);
@@ -145,7 +145,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
             if (productPrices.containsKey(productId)) {
                 salePrice = productPrices.get(productId);
             }
-            holder.etSalePrice.setText(String.format(Locale.getDefault(), "%.2f", salePrice));
+            holder.etSalePrice.setText(String.format(Locale.US, "%.2f", salePrice));
         }
 
         // Charger l'image avec Glide

@@ -215,7 +215,7 @@
     <string name="settings">Configuración</string>
     <string name="app_language">Idioma de la aplicación</string>
 
-    <string name="device_language">Idioma del dispositivo</string>
+    <string name="device_language">ES</string>
 
     <!-- Tipos de gastos -->
     <string name="expense_type_fuel">Combustible</string>
