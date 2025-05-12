@@ -235,6 +235,13 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
     }
 
     @Override
+    public void onViewSuppliersClick(Product product) {
+        Intent intent = new Intent(ProductListActivity.this, ProductSuppliersActivity.class);
+        intent.putExtra("product_id", product.getId());
+        intent.putExtra("product", product); // Passer l'objet entier pour optimisation
+        startActivity(intent);
+    }
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 

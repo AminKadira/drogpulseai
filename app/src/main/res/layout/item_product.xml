@@ -100,11 +100,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:drawableStart="@android:drawable/ic_menu_sort_by_size"
-                android:drawablePadding="8dp"
                 android:textSize="14sp"
                 android:gravity="center_vertical"
                 tools:text="123456789012" />
 
+            <Button
+                android:id="@+id/btn_view_suppliers"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_gravity="end"
+                android:text="Fournisseurs"
+                android:textSize="10sp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@android:color/white"
+                style="@style/Widget.MaterialComponents.Button" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

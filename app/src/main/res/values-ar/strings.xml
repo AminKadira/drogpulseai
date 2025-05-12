@@ -100,6 +100,9 @@
     <string name="price_format">%.2f درهم</string>
     <string name="product_price_stock">الثمن: %1$s | الستوك: %2$d</string>
     <string name="barcode_format">كود بار: %s</string>
+    <string name="product_suppliers">المزوّدين ديال المنتوج</string>
+    <string name="delivery_time_format">المدّة: %d نهار</string>
+    <string name="no_suppliers_found">ما كاين حتى مزوّد لهاد المنتوج</string>
 
     <!-- Caméra -->
     <string name="take_photo">خد تصويرة</string>

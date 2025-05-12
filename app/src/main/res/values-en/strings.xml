@@ -101,6 +101,9 @@
     <string name="price_format">%.2f MAD</string>
     <string name="product_price_stock">Price: %1$s | Stock: %2$d</string>
     <string name="barcode_format">Barcode: %s</string>
+    <string name="product_suppliers">Product suppliers</string>
+    <string name="delivery_time_format">Delivery time: %d days</string>
+    <string name="no_suppliers_found">No supplier found for this product</string>
 
     <!-- Camera features -->
     <string name="take_photo">Take a photo</string>

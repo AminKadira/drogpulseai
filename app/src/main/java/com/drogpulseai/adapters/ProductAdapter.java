@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,12 +33,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     private final OnProductClickListener listener;
     private final LayoutInflater inflater;
     private final Context context;
-
     /**
      * Interface pour gérer les clics sur les produits
      */
     public interface OnProductClickListener {
         void onProductClick(Product product);
+        void onViewSuppliersClick(Product product);
+
     }
 
     /**
@@ -91,6 +93,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onProductClick(product);
+            }
+        });
+
+        holder.btnViewSuppliers.setOnClickListener(v -> {
+            if (listener != null) {
+                // Créer une nouvelle méthode dans l'interface
+                listener.onViewSuppliersClick(product);
             }
         });
     }
@@ -159,6 +168,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
      * ViewHolder pour les éléments de produit
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        Button btnViewSuppliers;
         TextView tvReference, tvName, tvBarcode, tvQuantity, tvPrice;
         ImageView ivThumbnail;
 
@@ -170,6 +181,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
             tvPrice = itemView.findViewById(R.id.tv_product_price);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);
+            btnViewSuppliers = itemView.findViewById(R.id.btn_view_suppliers);
+
         }
     }
 

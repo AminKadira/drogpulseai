@@ -143,6 +143,15 @@
             android:name=".activities.suppliers.SupplierProductsActivity"
             android:exported="false" />
 
+        <!-- Ajoutez cette nouvelle déclaration -->
+        <activity
+            android:name=".activities.products.ProductSuppliersActivity"
+            android:label="@string/product_suppliers"
+            android:parentActivityName=".activities.products.ProductListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.products.ProductListActivity" />
+        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -184,7 +184,14 @@ public interface ApiService {
             @Query("contact_id") int contactId,   // Correction du paramètre
             @Query("user_id") int userId          // Ajout du paramètre user_id
     );
-
+    /**
+     * Récupère les fournisseurs associés à un produit spécifique
+     */
+    @GET("products/get_product_suppliers.php")
+    Call<Map<String, Object>> getProductSuppliers(
+            @Query("product_id") int productId,
+            @Query("only_active") boolean onlyActive
+    );
     /**
      * Créer un nouveau panier
      */

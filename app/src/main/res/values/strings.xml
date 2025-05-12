@@ -109,6 +109,10 @@
     <string name="product_price_stock">Prix: %1$s | Stock: %2$d</string>
     <string name="barcode_format">Code-barres: %s</string>
 
+    <string name="product_suppliers">Fournisseurs du produit</string>
+    <string name="delivery_time_format">Délai: %d jours</string>
+    <string name="no_suppliers_found">Aucun fournisseur trouvé pour ce produit</string>
+
     <!-- Chaînes pour les fonctionnalités de caméra -->
     <string name="take_photo">Prendre une photo</string>
     <string name="camera_permission_required">L\'accès à la caméra est nécessaire</string>

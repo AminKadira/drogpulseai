@@ -161,7 +161,13 @@ public class ProductSearchActivity extends AppCompatActivity implements ProductA
             }
         });
     }
-
+    @Override
+    public void onViewSuppliersClick(Product product) {
+        Intent intent = new Intent(this, ProductSuppliersActivity.class);
+        intent.putExtra("product_id", product.getId());
+        intent.putExtra("product", product); // Passer l'objet entier pour optimisation
+        startActivity(intent);
+    }
     @Override
     public void onProductClick(Product product) {
         Intent intent = new Intent(ProductSearchActivity.this, ProductFormActivity.class);
