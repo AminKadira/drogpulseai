@@ -67,17 +67,20 @@
                 android:id="@+id/chip_fournisseur"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/accent"
                 android:text="Fournisseur"
-                android:textSize="10dp"
+                android:textSize="12dp"
                 android:textStyle="bold"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_vendeur"
+                android:textColor="@color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/info"
                 android:text="Vendeur"
-                android:textSize="10dp"
+                android:textSize="12dp"
                 android:textStyle="bold"
                style="@style/Widget.MaterialComponents.Chip.Filter" />
 
@@ -86,15 +89,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Distributeur"
-                android:textSize="10dp"
+                android:textSize="12dp"
+                android:visibility="gone"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_autre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/cardStroke"
                 android:text="Autre"
-                android:textSize="10dp"
+                android:textSize="12dp"
                 style="@style/Widget.MaterialComponents.Chip.Filter" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
