@@ -1,5 +1,7 @@
 package com.drogpulseai.adapters;
 
+import static com.drogpulseai.R.*;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -69,7 +72,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
         // Afficher la quantité
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
-
+        if(product.getQuantity() > 20 ){
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
+        } else if (product.getQuantity() > 0 && product.getQuantity() < 20) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.accent));
+        } else if (product.getQuantity() == 0) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
+        }
         // Afficher le prix
         if (product.getPrice() > 0) {
             holder.tvPrice.setVisibility(View.VISIBLE);

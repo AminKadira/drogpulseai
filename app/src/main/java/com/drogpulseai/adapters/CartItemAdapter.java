@@ -1,5 +1,6 @@
 package com.drogpulseai.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drogpulseai.R;
@@ -38,6 +40,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
         return new ViewHolder(view);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CartItem item = items.get(position);
@@ -52,7 +55,13 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
 
         // Quantité
         holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
-
+        if(item.getQuantity() > 20 ){
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
+        } else if (item.getQuantity() > 0 && item.getQuantity() < 20) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.accent));
+        } else if (item.getQuantity() <= 0) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
+        }
         // Prix unitaire
         holder.tvUnitPrice.setText(String.format(Locale.getDefault(),
                 "%.2f MAD",

@@ -20,18 +20,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone"/>
 
         <!-- Image du produit -->
         <ImageView
             android:id="@+id/iv_product_thumbnail"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:layout_marginStart="8dp"
             android:scaleType="centerCrop"
             android:contentDescription="@string/product_photo"
             android:background="@color/cardview_dark_background"
-            android:padding="1dp"
             app:layout_constraintStart_toEndOf="@id/checkbox_select_product"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@android:drawable/ic_menu_gallery" />
@@ -60,7 +59,7 @@
                 android:id="@+id/tv_product_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/primaryText"
                 android:layout_marginTop="4dp"
@@ -151,8 +150,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Quantité :"
-                    android:textSize="14sp"
+                    android:text="@string/product_quantity"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
                 <EditText
                     android:id="@+id/et_quantity_value"
@@ -174,8 +173,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Prix vente :"
-                    android:textSize="14sp"
+                    android:text="@string/product_price"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <EditText

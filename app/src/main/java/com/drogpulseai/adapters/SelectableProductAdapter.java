@@ -1,5 +1,6 @@
 package com.drogpulseai.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -58,6 +60,7 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         return new ViewHolder(view);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Product product = products.get(position);
@@ -65,6 +68,14 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         // Afficher les informations du produit
         holder.tvReference.setText(product.getReference());
         holder.tvName.setText(product.getName());
+
+        if(product.getQuantity() > 20 ){
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
+        } else if (product.getQuantity() > 0 && product.getQuantity() < 20) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.accent));
+        } else if (product.getQuantity() <= 0) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
+        }
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
         // Afficher le prix

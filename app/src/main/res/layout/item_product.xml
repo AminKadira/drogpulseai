@@ -83,7 +83,7 @@
                     android:id="@+id/tv_product_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@color/accent"
+                    android:background="@color/cardStroke"
                     android:textColor="@android:color/black"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="4dp"

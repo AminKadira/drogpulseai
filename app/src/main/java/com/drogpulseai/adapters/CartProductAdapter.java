@@ -1,5 +1,6 @@
 package com.drogpulseai.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -71,6 +73,7 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
         return new ViewHolder(view);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Product product = filteredProducts.get(position);
@@ -87,6 +90,13 @@ public class CartProductAdapter extends RecyclerView.Adapter<CartProductAdapter.
 
         // Afficher la quantité en stock
         holder.tvQuantity.setVisibility(View.VISIBLE);
+        if(product.getQuantity() > 20 ){
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
+        } else if (product.getQuantity() > 0 && product.getQuantity() < 20) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.accent));
+        } else if (product.getQuantity() <= 0) {
+            holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
+        }
         holder.tvQuantity.setText(String.valueOf(product.getQuantity()));
 
         // Afficher le prix minimum de vente

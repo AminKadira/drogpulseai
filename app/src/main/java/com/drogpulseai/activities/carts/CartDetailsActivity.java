@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -306,23 +307,22 @@ public class CartDetailsActivity extends AppCompatActivity {
         switch (cart.getStatus()) {
             case "pending":
                 tvStatus.setText("En attente");
-                tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
-                tvStatus.setBackgroundColor(R.drawable.bg_status_pending);
+                tvStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.warning));
 
                 break;
             case "confirmed":
                 tvStatus.setText("Confirmé");
-                tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
-                tvStatus.setBackgroundColor(R.drawable.bg_status_confirmed);
+                tvStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.success));
+
                 break;
             case "cancelled":
                 tvStatus.setText("Annulé");
-                tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
-                tvStatus.setBackgroundColor(R.drawable.bg_status_cancelled);
+                tvStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
+
                 break;
             default:
                 tvStatus.setText(cart.getStatus());
-                tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                tvStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.warning));
                 break;
         }
     }

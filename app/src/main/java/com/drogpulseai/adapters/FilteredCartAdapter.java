@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drogpulseai.R;
@@ -124,13 +125,13 @@ public class FilteredCartAdapter extends RecyclerView.Adapter<FilteredCartAdapte
     private int getStatusColor(String status) {
         switch (status) {
             case "pending":
-                return context.getResources().getColor(R.color.warning);
+                return ContextCompat.getColor(context, R.color.warning);            
             case "confirmed":
-                return context.getResources().getColor(R.color.success);
+                return ContextCompat.getColor(context, R.color.success);
             case "cancelled":
-                return context.getResources().getColor(R.color.error);
+                return ContextCompat.getColor(context, R.color.error);
             default:
-                return context.getResources().getColor(R.color.primaryText);
+                return ContextCompat.getColor(context, R.color.primaryText);
         }
     }
 }
