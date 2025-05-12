@@ -61,6 +61,13 @@ public class Product implements Serializable {
     private double prixVenteConseille;
 
     // Non-serialized fields (for local tracking)
+    private boolean isAssociatedWithSupplier;
+    private Double supplierPrice;
+    private String supplierNotes;
+    private String deliveryConditions;
+    private Integer deliveryTime;
+    private boolean isPrimarySupplier;
+    private Integer associationId; // ID de l'association dans product_suppliers
     private transient boolean dirty = false;
     private transient long lastUpdated = 0;
 
@@ -335,7 +342,64 @@ public class Product implements Serializable {
         return (price >= (prixVenteConseille - ecartPermis)) &&
                 (price <= (prixVenteConseille + ecartPermis));
     }
+    // Getters et setters
 
+    // Getters et setters pour les nouveaux champs
+    public boolean isAssociatedWithSupplier() {
+        return isAssociatedWithSupplier;
+    }
+
+    public void setAssociatedWithSupplier(boolean associatedWithSupplier) {
+        this.isAssociatedWithSupplier = associatedWithSupplier;
+    }
+
+    public Double getSupplierPrice() {
+        return supplierPrice;
+    }
+
+    public void setSupplierPrice(Double supplierPrice) {
+        this.supplierPrice = supplierPrice;
+    }
+
+    public String getSupplierNotes() {
+        return supplierNotes;
+    }
+
+    public void setSupplierNotes(String supplierNotes) {
+        this.supplierNotes = supplierNotes;
+    }
+
+    public String getDeliveryConditions() {
+        return deliveryConditions;
+    }
+
+    public void setDeliveryConditions(String deliveryConditions) {
+        this.deliveryConditions = deliveryConditions;
+    }
+
+    public Integer getDeliveryTime() {
+        return deliveryTime;
+    }
+
+    public void setDeliveryTime(Integer deliveryTime) {
+        this.deliveryTime = deliveryTime;
+    }
+
+    public boolean isPrimarySupplier() {
+        return isPrimarySupplier;
+    }
+
+    public void setPrimarySupplier(boolean primarySupplier) {
+        isPrimarySupplier = primarySupplier;
+    }
+
+    public Integer getAssociationId() {
+        return associationId;
+    }
+
+    public void setAssociationId(Integer associationId) {
+        this.associationId = associationId;
+    }
     @Override
     public String toString() {
         return "Product{" +

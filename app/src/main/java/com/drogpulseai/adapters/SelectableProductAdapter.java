@@ -18,14 +18,18 @@ import com.drogpulseai.R;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.models.Product;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class SelectableProductAdapter extends RecyclerView.Adapter<SelectableProductAdapter.ViewHolder> {
 
     private final List<Product> products;
     private final Context context;
     private final OnProductSelectionListener listener;
+    // Nouveau champ pour stocker les IDs de produits sélectionnés
+    private Set<Integer> selectedProductIds = new HashSet<>();
 
     public interface OnProductSelectionListener {
         void onProductSelected(int productId, boolean isSelected);
@@ -35,6 +39,15 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         this.context = context;
         this.products = products;
         this.listener = listener;
+    }
+
+    /**
+     * Définir les IDs de produits sélectionnés
+     * @param selectedProductIds Ensemble des IDs de produits sélectionnés
+     */
+    public void setSelectedProductIds(Set<Integer> selectedProductIds) {
+        this.selectedProductIds = new HashSet<>(selectedProductIds);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -54,19 +67,41 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         holder.tvName.setText(product.getName());
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
-        if (product.getPrice() > 0) {
+        // Afficher le prix
+        if (product.isAssociatedWithSupplier() && product.getSupplierPrice() != null && product.getSupplierPrice() > 0) {
+            // Afficher le prix du fournisseur s'il existe
+            holder.tvPrice.setVisibility(View.VISIBLE);
+            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", product.getSupplierPrice()));
+            holder.tvPrice.setBackgroundResource(R.color.supplier_price_bg); // Couleur différente pour les prix fournisseur
+        } else if (product.getPrice() > 0) {
+            // Sinon afficher le prix standard
             holder.tvPrice.setVisibility(View.VISIBLE);
             holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", product.getPrice()));
+            holder.tvPrice.setBackgroundResource(R.color.accent);
         } else {
             holder.tvPrice.setVisibility(View.GONE);
         }
 
-        // Charger l'image du produit
-        loadProductImage(holder.ivProductImage, product);
+        // Indiquer visuellement que le produit est déjà associé au fournisseur
+        if (product.isAssociatedWithSupplier()) {
+            // Ajouter un indicateur visuel différent pour les fournisseurs principaux
+            if (product.isPrimarySupplier()) {
+                holder.itemView.setBackgroundResource(R.drawable.bg_primary_supplier_product);
+                // Ajouter un badge ou indicateur
+                holder.tvPrimaryBadge.setVisibility(View.VISIBLE);
+            } else {
+                holder.itemView.setBackgroundResource(R.drawable.bg_associated_product);
+                holder.tvPrimaryBadge.setVisibility(View.GONE);
+            }
+        } else {
+            holder.itemView.setBackgroundResource(android.R.color.transparent);
+            holder.tvPrimaryBadge.setVisibility(View.GONE);
+        }
 
         // Configurer la case à cocher
         holder.checkBox.setOnCheckedChangeListener(null);
-        holder.checkBox.setChecked(false); // Réinitialiser l'état
+        // Vérifier si ce produit est sélectionné
+        holder.checkBox.setChecked(selectedProductIds.contains(product.getId()));
 
         // Configurer le clic sur l'élément
         holder.itemView.setOnClickListener(v -> {
@@ -79,6 +114,9 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
                 listener.onProductSelected(product.getId(), isChecked);
             }
         });
+
+        // Charger l'image du produit
+        loadProductImage(holder.ivProductImage, product);
     }
 
     @Override
@@ -93,6 +131,7 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         final TextView tvQuantity;
         final TextView tvPrice;
         final ImageView ivProductImage;
+        final TextView tvPrimaryBadge;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -102,6 +141,7 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
             tvPrice = itemView.findViewById(R.id.tv_product_price);
             ivProductImage = itemView.findViewById(R.id.iv_product_image);
+            tvPrimaryBadge = itemView.findViewById(R.id.tv_primary_badge);
         }
     }
 
@@ -109,6 +149,7 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
      * Méthode pour charger l'image du produit
      */
     private void loadProductImage(ImageView imageView, Product product) {
+        // Le reste du code reste inchangé
         String photoUrl = product.getPhotoUrl();
 
         // Définir une image par défaut

@@ -177,6 +177,15 @@ public interface ApiService {
     Call<NetworkResult<Void>> addProductSupplier(@Body SupplierProductRequest request);
 
     /**
+     * Récupère les produits associés à un fournisseur spécifique
+     */
+    @GET("products/get_supplier_products.php")
+    Call<List<Map<String, Object>>> getSupplierProducts(
+            @Query("contact_id") int contactId,   // Correction du paramètre
+            @Query("user_id") int userId          // Ajout du paramètre user_id
+    );
+
+    /**
      * Créer un nouveau panier
      */
     @POST("carts/create.php")

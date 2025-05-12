@@ -3,6 +3,7 @@ package com.drogpulseai.activities.suppliers;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
@@ -31,8 +32,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -149,6 +153,8 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
 
     private void setupRecyclerView() {
         adapter = new SelectableProductAdapter(this, filteredProducts, this);
+        // Initialiser l'adaptateur avec la sélection actuelle
+        adapter.setSelectedProductIds(selectedProductIds);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
@@ -284,6 +290,10 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
         }
     }
 
+
+    /**
+     * Charge les produits depuis l'API, en affichant d'abord ceux associés au fournisseur
+     */
     private void loadProducts() {
         if (!NetworkUtils.isNetworkAvailable(this)) {
             Toast.makeText(this, "Aucune connexion Internet", Toast.LENGTH_LONG).show();
@@ -292,6 +302,114 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
 
         loadingOverlay.setVisibility(View.VISIBLE);
 
+        // Ensemble pour stocker les ID des produits associés au fournisseur
+        final Set<Integer> associatedProductIds = new HashSet<>();
+        final Map<Integer, ProductSupplierInfo> supplierProductInfo = new HashMap<>();
+
+        // 1. D'abord récupérer les produits associés au fournisseur
+        apiService.getSupplierProducts(supplierId, currentUser.getId()).enqueue(new Callback<List<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<List<Map<String, Object>>> call, Response<List<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        List<Map<String, Object>> supplierProducts = response.body();
+
+                        for (Map<String, Object> product : supplierProducts) {
+                            // Extraire l'ID du produit
+                            int productId = ((Double) product.get("product_id")).intValue();
+                            associatedProductIds.add(productId);
+
+                            // Créer un objet pour stocker les infos du fournisseur pour ce produit
+                            ProductSupplierInfo info = new ProductSupplierInfo();
+
+                            // Extraire le prix
+                            if (product.containsKey("price")) {
+                                Object priceObj = product.get("price");
+                                if (priceObj instanceof Double) {
+                                    info.setPrice((Double) priceObj);
+                                } else if (priceObj instanceof String) {
+                                    try {
+                                        info.setPrice(Double.parseDouble((String) priceObj));
+                                    } catch (NumberFormatException e) {
+                                        Log.e("SupplierProductsActivity", "Error parsing price: " + e.getMessage());
+                                    }
+                                }
+                            }
+
+                            // Extraire si c'est un fournisseur principal
+                            if (product.containsKey("is_primary")) {
+                                info.setPrimarySupplier((Boolean) product.get("is_primary"));
+                            }
+
+                            // Extraire le délai de livraison
+                            if (product.containsKey("delivery_time")) {
+                                Object deliveryTimeObj = product.get("delivery_time");
+                                if (deliveryTimeObj instanceof Double) {
+                                    info.setDeliveryTime(((Double) deliveryTimeObj).intValue());
+                                } else if (deliveryTimeObj instanceof Integer) {
+                                    info.setDeliveryTime((Integer) deliveryTimeObj);
+                                }
+                            }
+
+                            // Stocker les infos pour ce produit
+                            supplierProductInfo.put(productId, info);
+                        }
+                    } catch (Exception e) {
+                        Log.e("SupplierProductsActivity", "Error processing response: " + e.getMessage());
+                    }
+                }
+
+                // Passer à l'étape suivante : charger tous les produits
+                loadAllProducts(associatedProductIds, supplierProductInfo);
+            }
+
+            @Override
+            public void onFailure(Call<List<Map<String, Object>>> call, Throwable t) {
+                Log.e("SupplierProductsActivity", "API Error: " + t.getMessage());
+                // En cas d'erreur réseau, charger quand même tous les produits
+                loadAllProducts(new HashSet<>(), new HashMap<>());
+            }
+        });
+    }
+
+    /**
+     * Classe pour stocker les informations du fournisseur pour un produit spécifique
+     */
+    private static class ProductSupplierInfo {
+        private Double price;
+        private Boolean isPrimarySupplier;
+        private Integer deliveryTime;
+
+        // Getters et setters
+        public Double getPrice() {
+            return price;
+        }
+
+        public void setPrice(Double price) {
+            this.price = price;
+        }
+
+        public Boolean isPrimarySupplier() {
+            return isPrimarySupplier != null && isPrimarySupplier;
+        }
+
+        public void setPrimarySupplier(Boolean primarySupplier) {
+            isPrimarySupplier = primarySupplier;
+        }
+
+        public Integer getDeliveryTime() {
+            return deliveryTime;
+        }
+
+        public void setDeliveryTime(Integer deliveryTime) {
+            this.deliveryTime = deliveryTime;
+        }
+    }
+
+    /**
+     * Charge tous les produits et marque ceux qui sont déjà associés au fournisseur
+     */
+    private void loadAllProducts(final Set<Integer> associatedProductIds, final Map<Integer, ProductSupplierInfo> supplierProductInfo) {
         apiService.getProducts(currentUser.getId()).enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -299,11 +417,60 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
 
                 if (response.isSuccessful() && response.body() != null) {
                     allProducts = response.body();
+
+                    // Marquer les produits associés et trier la liste
+                    List<Product> associatedProducts = new ArrayList<>();
+                    List<Product> nonAssociatedProducts = new ArrayList<>();
+
+                    for (Product product : allProducts) {
+                        // Vérifier si ce produit est associé au fournisseur
+                        boolean isAssociated = associatedProductIds.contains(product.getId());
+                        product.setAssociatedWithSupplier(isAssociated);
+
+                        // Si associé, ajouter toutes les informations du fournisseur
+                        if (isAssociated && supplierProductInfo.containsKey(product.getId())) {
+                            ProductSupplierInfo info = supplierProductInfo.get(product.getId());
+                            product.setSupplierPrice(info.getPrice());
+                            product.setPrimarySupplier(info.isPrimarySupplier());
+                            product.setDeliveryTime(info.getDeliveryTime());
+                        }
+
+                        // Séparer les produits en deux listes: associés et non-associés
+                        if (isAssociated) {
+                            associatedProducts.add(product);
+                        } else {
+                            nonAssociatedProducts.add(product);
+                        }
+                    }
+
+                    // Trier les produits associés (fournisseurs principaux en premier)
+                    Collections.sort(associatedProducts, (p1, p2) -> {
+                        // Fournisseurs principaux en premier
+                        if (p1.isPrimarySupplier() && !p2.isPrimarySupplier()) return -1;
+                        if (!p1.isPrimarySupplier() && p2.isPrimarySupplier()) return 1;
+
+                        // Ensuite, trier par référence
+                        return p1.getReference().compareTo(p2.getReference());
+                    });
+
+                    // Réorganiser la liste complète: associés en premier, puis les autres
+                    allProducts.clear();
+                    allProducts.addAll(associatedProducts);
+                    allProducts.addAll(nonAssociatedProducts);
+
+                    // Mettre à jour la liste affichée
                     filteredProducts.clear();
                     filteredProducts.addAll(allProducts);
                     adapter.notifyDataSetChanged();
-
+                    adapter.setSelectedProductIds(selectedProductIds);
                     updateEmptyView();
+
+                    // Afficher un message informatif
+                    if (!associatedProducts.isEmpty()) {
+                        Snackbar.make(recyclerView,
+                                associatedProducts.size() + " produits déjà associés à ce fournisseur",
+                                Snackbar.LENGTH_LONG).show();
+                    }
                 } else {
                     Toast.makeText(SupplierProductsActivity.this,
                             "Erreur lors du chargement des produits", Toast.LENGTH_LONG).show();
@@ -319,6 +486,9 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
         });
     }
 
+    /**
+     * Filtre les produits en fonction de la recherche
+     */
     private void filterProducts() {
         String query = etSearch.getText().toString().toLowerCase().trim();
 
@@ -335,6 +505,8 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
         }
 
         adapter.notifyDataSetChanged();
+        // Maintenir l'état de sélection après le filtrage
+        adapter.setSelectedProductIds(selectedProductIds);
         updateEmptyView();
     }
 
@@ -363,6 +535,8 @@ public class SupplierProductsActivity extends AppCompatActivity implements Selec
         }
 
         updateSelectedCount();
+        // Mettre à jour l'adaptateur avec les IDs sélectionnés
+        adapter.setSelectedProductIds(selectedProductIds);
     }
 
     private void updateSelectedCount() {
