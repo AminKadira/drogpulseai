@@ -35,6 +35,15 @@
             android:orientation="vertical"
             android:gravity="center_vertical"
             android:padding="16dp">
+            <!-- Nom du produit -->
+            <TextView
+                android:id="@+id/tv_product_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/primaryText"
+                tools:text="Nom du produit" />
 
             <!-- Référence du produit -->
             <TextView
@@ -56,16 +65,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-                <!-- Nom du produit -->
-                <TextView
-                    android:id="@+id/tv_product_name"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primaryText"
-                    tools:text="Nom du produit" />
+
 
                 <!-- Quantité en stock -->
                 <TextView
@@ -76,7 +76,6 @@
                     android:textColor="@android:color/white"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
-                    android:layout_marginStart="8dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     tools:text="Stock: 42" />
@@ -86,8 +85,9 @@
                     android:layout_height="wrap_content"
                     android:background="@color/accent"
                     android:textColor="@android:color/black"
-                    android:paddingHorizontal="8dp"
+                    android:paddingHorizontal="16dp"
                     android:paddingVertical="4dp"
+                    android:layout_marginStart="8dp"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     tools:text="19.99 MAD" />
