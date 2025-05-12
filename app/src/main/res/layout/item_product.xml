@@ -100,23 +100,23 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:drawableStart="@android:drawable/ic_menu_sort_by_size"
+                android:drawablePadding="8dp"
                 android:textSize="14sp"
                 android:gravity="center_vertical"
-                tools:text="123456789012" />
+                tools:text="123456789012"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/btn_view_suppliers"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
-                android:layout_gravity="end"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="8dp"
                 android:text="Fournisseurs"
-                android:textSize="10sp"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="0dp"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
+                android:textSize="12sp"
                 android:backgroundTint="@color/primary"
                 android:textColor="@android:color/white"
+                android:paddingHorizontal="8dp"
+                android:minHeight="0dp"
                 style="@style/Widget.MaterialComponents.Button" />
         </LinearLayout>
     </LinearLayout>
