@@ -51,7 +51,7 @@ public class DailyExpensesAdapter extends RecyclerView.Adapter<DailyExpensesAdap
 
         // Afficher la date et le total pour le jour
         holder.tvDayDate.setText(dateFormat.format(group.getDate()));
-        holder.tvDayTotal.setText(String.format(Locale.getDefault(), "%.2f MAD", group.getTotalAmount()));
+        holder.tvDayTotal.setText(String.format(Locale.US, "%.2f MAD", group.getTotalAmount()));
 
         // Vider d'abord le conteneur
         holder.llExpensesContainer.removeAllViews();
@@ -71,7 +71,7 @@ public class DailyExpensesAdapter extends RecyclerView.Adapter<DailyExpensesAdap
             // Définir les textes
             tvType.setText(expense.getType());
             tvDescription.setText(expense.getDescription());
-            tvAmount.setText(String.format(Locale.getDefault(), "%.2f MAD", expense.getAmount()));
+            tvAmount.setText(String.format(Locale.US, "%.2f MAD", expense.getAmount()));
 
             // Configurer le clic sur l'élément
             expenseView.setOnClickListener(v -> {

@@ -57,7 +57,7 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.ViewHo
         // Afficher le prix
         if (supplier.getPrice() > 0) {
             holder.tvSupplierPrice.setVisibility(View.VISIBLE);
-            holder.tvSupplierPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", supplier.getPrice()));
+            holder.tvSupplierPrice.setText(String.format(Locale.US, "%.2f MAD", supplier.getPrice()));
         } else {
             holder.tvSupplierPrice.setVisibility(View.GONE);
         }

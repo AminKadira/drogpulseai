@@ -82,12 +82,12 @@ public class SelectableProductAdapter extends RecyclerView.Adapter<SelectablePro
         if (product.isAssociatedWithSupplier() && product.getSupplierPrice() != null && product.getSupplierPrice() > 0) {
             // Afficher le prix du fournisseur s'il existe
             holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", product.getSupplierPrice()));
+            holder.tvPrice.setText(String.format(Locale.US, "%.2f MAD", product.getSupplierPrice()));
             holder.tvPrice.setBackgroundResource(R.color.supplier_price_bg); // Couleur différente pour les prix fournisseur
         } else if (product.getPrice() > 0) {
             // Sinon afficher le prix standard
             holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(String.format(Locale.getDefault(), "%.2f MAD", product.getPrice()));
+            holder.tvPrice.setText(String.format(Locale.US, "%.2f MAD", product.getPrice()));
             holder.tvPrice.setBackgroundResource(R.color.accent);
         } else {
             holder.tvPrice.setVisibility(View.GONE);

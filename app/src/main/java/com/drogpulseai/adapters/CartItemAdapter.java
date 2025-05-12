@@ -63,12 +63,12 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
             holder.tvQuantity.setBackgroundColor(ContextCompat.getColor(context, R.color.error));
         }
         // Prix unitaire
-        holder.tvUnitPrice.setText(String.format(Locale.getDefault(),
+        holder.tvUnitPrice.setText(String.format(Locale.US,
                 "%.2f MAD",
                 item.getPrice()));
 
         // Prix total
-        holder.tvTotalPrice.setText(String.format(Locale.getDefault(),
+        holder.tvTotalPrice.setText(String.format(Locale.US,
                 "%.2f MAD",
                 item.getTotalPrice()));
     }

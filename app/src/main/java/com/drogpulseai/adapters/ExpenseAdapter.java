@@ -52,7 +52,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
 
         // Afficher les informations du frais
         holder.tvType.setText(expense.getType());
-        holder.tvAmount.setText(String.format(Locale.getDefault(), "%.2f MAD", expense.getAmount()));
+        holder.tvAmount.setText(String.format(Locale.US, "%.2f MAD", expense.getAmount()));
         holder.tvDescription.setText(expense.getDescription());
 
         // Formater la date
