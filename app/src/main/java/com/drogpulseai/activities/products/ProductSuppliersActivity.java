@@ -171,12 +171,6 @@ public class ProductSuppliersActivity extends AppCompatActivity implements Suppl
         tvProductName.setText(product.getName());
         tvProductQuantity.setText(getString(R.string.stock_format, product.getQuantity()));
 
-//        if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
-//            tvProductBarcode.setVisibility(View.VISIBLE);
-//            tvProductBarcode.setText(product.getBarcode());
-//        } else {
-//            tvProductBarcode.setVisibility(View.GONE);
-//        }
 
         // Charger l'image du produit si disponible
         if (product.getPhotoUrl() != null && !product.getPhotoUrl().isEmpty()) {

@@ -23,6 +23,8 @@ import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Product;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.SessionManager;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,8 @@ public class ProductSearchActivity extends AppCompatActivity implements ProductA
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView tvNoResults;
-
+    private ImageButton btnScanBarcode;
+    private TextView tvScannedBarcode;
     // Utilities
     private ApiService apiService;
     private SessionManager sessionManager;
@@ -89,6 +92,8 @@ public class ProductSearchActivity extends AppCompatActivity implements ProductA
         recyclerView = findViewById(R.id.recycler_view);
         progressBar = findViewById(R.id.progress_bar);
         tvNoResults = findViewById(R.id.tv_no_results);
+        btnScanBarcode = findViewById(R.id.btn_scan_barcode);
+        tvScannedBarcode = findViewById(R.id.tv_scanned_barcode);
     }
 
     /**
@@ -115,6 +120,52 @@ public class ProductSearchActivity extends AppCompatActivity implements ProductA
             }
             return false;
         });
+
+        btnScanBarcode.setOnClickListener(v -> {
+            initiateBarcodeScanner();
+        });
+    }
+
+    // Méthode pour lancer le scanner de code-barres
+    private void initiateBarcodeScanner() {
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+        integrator.setPrompt("Scannez un code-barres");
+        integrator.setCameraId(0);  // Caméra arrière
+        integrator.setBeepEnabled(true);
+        integrator.setBarcodeImageEnabled(true);
+        integrator.initiateScan();
+    }
+
+    // Gérer le résultat du scan
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() != null) {
+                // Code-barres scanné avec succès
+                String scannedBarcode = result.getContents();
+
+                // Afficher le code-barres scanné
+                tvScannedBarcode.setText("Code-barres: " + scannedBarcode);
+                tvScannedBarcode.setVisibility(View.VISIBLE);
+
+                // Mettre le code-barres dans le champ de recherche
+                etSearch.setText(scannedBarcode);
+
+                // Lancer la recherche
+                performSearch();
+
+                // Afficher un toast pour confirmer
+                Toast.makeText(this, "Code-barres scanné: " + scannedBarcode, Toast.LENGTH_SHORT).show();
+            } else {
+                // Scan annulé
+                Toast.makeText(this, "Scan annulé", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // Passer à l'implémentation parent pour d'autres résultats d'activité
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     /**
@@ -161,6 +212,8 @@ public class ProductSearchActivity extends AppCompatActivity implements ProductA
             }
         });
     }
+
+
     @Override
     public void onViewSuppliersClick(Product product) {
         Intent intent = new Intent(this, ProductSuppliersActivity.class);
