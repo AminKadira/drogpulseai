@@ -107,28 +107,35 @@
             android:text="Rechercher" />
     </LinearLayout>
 
-    <!-- Product List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_products"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottom_panel"
-        app:layout_constraintTop_toBottomOf="@id/filter_bar" />
+        app:layout_constraintTop_toBottomOf="@id/filter_bar">
 
-    <!-- Empty View -->
-    <TextView
-        android:id="@+id/tv_empty_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Aucun produit trouvé"
-        android:textAppearance="?attr/textAppearanceBody1"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/recyclerview_products"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/recyclerview_products" />
+        <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+            <!-- Product List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerview_products"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="8dp" />
+
+            <!-- Empty View -->
+            <TextView
+            android:id="@+id/tv_empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Aucun produit trouvé"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:visibility="gone" />
+         </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Bottom Panel -->
     <LinearLayout
@@ -248,4 +255,16 @@
                 android:text="Définir comme fournisseur principal pour ces produits" />
         </LinearLayout>
     </LinearLayout>
+    <!-- Floating Action Button pour ajouter un nouveau produit -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_product"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/accent"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toTopOf="@id/bottom_panel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@android:color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>

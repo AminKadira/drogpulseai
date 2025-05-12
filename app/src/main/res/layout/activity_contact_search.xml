@@ -43,68 +43,68 @@
     </LinearLayout>
 
     <!-- Section de filtrage par type -->
+
+    <!-- Liste des contacts avec indicateurs -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        android:scrollbars="none">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group_types"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="false">
+            app:selectionRequired="false"
+            app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_all"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:checked="true" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_fournisseur"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/accent"
                 android:text="Fournisseur"
-                android:textSize="12dp"
-                android:textStyle="bold"
-                style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:textSize="12sp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_vendeur"
-                android:textColor="@color/white"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/info"
                 android:text="Vendeur"
-                android:textSize="12dp"
-                android:textStyle="bold"
-               style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_distributeur"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Distributeur"
-                android:textSize="12dp"
-                android:visibility="gone"
-                style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:textSize="12sp"
+                android:visibility="gone" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_autre"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/cardStroke"
                 android:text="Autre"
-                android:textSize="12dp"
-                style="@style/Widget.MaterialComponents.Chip.Filter" />
+                android:textSize="12sp" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <!-- Liste des contacts avec indicateurs -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

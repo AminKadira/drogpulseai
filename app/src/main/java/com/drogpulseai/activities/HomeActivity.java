@@ -103,12 +103,13 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         checkCameraPermission();
 
         // Exemple: simuler des notifications en attente (à supprimer dans la production)
-        // setNotificationPending(3);
+         setNotificationPending(3);
     }
 
     /**
      * Configure le bouton de notification et son badge
      */
+    @OptIn(markerClass = ExperimentalBadgeUtils.class)
     private void setupNotificationButton() {
         btnNotification = findViewById(R.id.btn_notification);
 
@@ -253,76 +254,13 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     }
 
     /**
-     * Lancer le scanner de code-barres (après vérification de la permission)
-     */
-    private void scanBarcode() {
-        pendingCameraAction = ACTION_SCAN_BARCODE;
-
-        if (cameraPermissionHelper.checkAndRequestPermission()) {
-            // La permission est déjà accordée, lancer le scanner immédiatement
-            startBarcodeScanner();
-        }
-        // Sinon, onPermissionGranted sera appelé si l'utilisateur accorde la permission
-    }
-
-    /**
-     * Lancer l'appareil photo pour prendre une photo (après vérification de la permission)
-     */
-    private void takePhoto() {
-        pendingCameraAction = ACTION_TAKE_PHOTO;
-
-        if (cameraPermissionHelper.checkAndRequestPermission()) {
-            // La permission est déjà accordée, lancer l'appareil photo immédiatement
-            startCamera();
-        }
-        // Sinon, onPermissionGranted sera appelé si l'utilisateur accorde la permission
-    }
-
-    /**
-     * Lancer l'activité de scan de code-barres
-     */
-    private void startBarcodeScanner() {
-        Toast.makeText(this, "Lancement du scanner de code-barres", Toast.LENGTH_SHORT).show();
-
-        // Ici vous pouvez lancer votre activité de scan de code-barres
-        // Exemple : ProductScanActivity
-
-        // Intent intent = new Intent(this, ProductScanActivity.class);
-        // startActivity(intent);
-    }
-
-    /**
-     * Lancer l'activité de prise de photo
-     */
-    private void startCamera() {
-        Toast.makeText(this, "Lancement de l'appareil photo", Toast.LENGTH_SHORT).show();
-
-        // Ici vous pouvez lancer votre activité de prise de photo
-        // ou utiliser l'intent de la caméra système
-
-        // Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-        //     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        // }
-    }
-
-    /**
      * Callback appelé lorsque la permission caméra est accordée
      */
     @Override
     public void onPermissionGranted() {
         // Exécuter l'action en attente
-        switch (pendingCameraAction) {
-            case ACTION_SCAN_BARCODE:
-                startBarcodeScanner();
-                break;
-            case ACTION_TAKE_PHOTO:
-                startCamera();
-                break;
-            case ACTION_NONE:
-                // Aucune action en attente, juste informer l'utilisateur
-                Toast.makeText(this, "Permission caméra accordée", Toast.LENGTH_SHORT).show();
-                break;
+        if (pendingCameraAction == ACTION_NONE) {// Aucune action en attente, juste informer l'utilisateur
+            Toast.makeText(this, "Permission caméra accordée", Toast.LENGTH_SHORT).show();
         }
 
         // Réinitialiser l'action en attente
@@ -357,13 +295,6 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.home_menu, menu);
-        // Ajouter les options pour la caméra et le scan
-        menu.add(Menu.NONE, R.id.action_scan, Menu.NONE, R.string.scan_barcode);
-        menu.add(Menu.NONE, R.id.action_camera, Menu.NONE, R.string.take_photo);
-
-        // Ajouter les paramètres (en utilisant le menu XML au lieu de l'ID dynamique)
-        getMenuInflater().inflate(R.menu.settings_menu, menu);
-
         return true;
     }
 
@@ -377,14 +308,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
             return true;
-        } else if (id == R.id.action_scan) {
-            // Lancer le scanner de code-barres (avec vérification de permission)
-            scanBarcode();
-            return true;
-        } else if (id == R.id.action_camera) {
-            // Lancer l'appareil photo (avec vérification de permission)
-            takePhoto();
-            return true;
+
         } else if (id == R.id.action_expenses) {
             // Naviguer vers l'écran des frais
             startActivity(new Intent(this, ExpenseListActivity.class));

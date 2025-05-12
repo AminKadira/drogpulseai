@@ -398,9 +398,9 @@ public class ProductFormActivity extends AppCompatActivity implements
     private void populateForm(Product product) {
         etReference.setText(product.getReference());
         etLabel.setText(product.getLabel());
-        etName.setText(product.getName());
+        etName.setText(product.getLabel());
         etDescription.setText(product.getDescription());
-        etBarcode.setText(product.getBarcode());
+        etBarcode.setText(product.getReference());
         etQuantity.setText(String.valueOf(product.getQuantity()));
         etPrice.setText(String.format("%.2f", product.getPrice()));
     }
@@ -435,7 +435,6 @@ public class ProductFormActivity extends AppCompatActivity implements
         // Create validation map
         ValidationMap validationMap = new ValidationMap();
         validationMap.add(etReference, validator.required("Référence requise"));
-        validationMap.add(etLabel, validator.required("Libellé requis"));
         validationMap.add(etName, validator.required("Nom requis"));
         validationMap.add(etQuantity, validator.integer("Quantité invalide"));
         validationMap.add(etPrice, validator.decimal("Prix invalide"));

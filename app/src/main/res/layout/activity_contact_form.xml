@@ -157,9 +157,8 @@
                 android:layout_marginStart="8dp"
                 android:text="@string/delete"
                 android:paddingVertical="12dp"
-                app:backgroundTint="@color/error"
-                android:visibility="invisible"/>
-                android:visibility="invisible"/>
+                app:backgroundTint="@color/error"/>
+
         </LinearLayout>
 
         <ProgressBar

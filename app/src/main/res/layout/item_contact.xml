@@ -19,26 +19,40 @@
             android:id="@+id/tv_contact_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:textColor="@color/primaryText"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@color/primaryText"
-            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tv_contact_type"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread"
             tools:text="John Doe" />
+
+        <TextView
+            android:id="@+id/tv_contact_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_menu_my_calendar"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@+id/tv_contact_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_contact_name"
+            tools:text="Fournisseur" />
 
         <TextView
             android:id="@+id/tv_contact_phone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textSize="14sp"
             android:drawableStart="@android:drawable/ic_menu_call"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_contact_name"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_contact_name"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:text="+33 6 12 34 56 78" />
 
         <TextView
@@ -46,55 +60,49 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textSize="14sp"
             android:drawableStart="@android:drawable/ic_dialog_email"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_contact_phone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_contact_phone"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:text="john.doe@example.com" />
 
-        <TextView
-            android:id="@+id/tv_contact_type"
-            android:layout_width="0dp"
+        <!-- Flow helper to arrange buttons responsively -->
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow_buttons"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"
-            android:drawableStart="@android:drawable/ic_menu_my_calendar"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            app:layout_constraintEnd_toStartOf="@+id/btn_view_carts"
+            app:flow_wrapMode="chain"
+            app:flow_horizontalGap="8dp"
+            app:flow_verticalGap="8dp"
+            app:constraint_referenced_ids="btn_view_carts,btn_add_products"
+            app:layout_constraintTop_toBottomOf="@id/tv_contact_email"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_contact_email"
-            tools:text="Fournisseur" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Bouton Panier -->
+        <!-- Buttons to be arranged by Flow -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_view_carts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/all_carts"
             android:textSize="12sp"
-            app:icon="@android:drawable/ic_menu_agenda"
-            app:iconSize="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:icon="@android:drawable/ic_search_category_default"
+            app:iconSize="16dp" />
 
-        <!-- Nouveau bouton pour ajouter des produits (visible uniquement pour les fournisseurs) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_add_products"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_product"
             android:textSize="12sp"
+            android:backgroundTint="@color/accent"
             app:icon="@android:drawable/ic_input_add"
-            app:iconSize="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_view_carts"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="gone"
-            android:layout_marginTop="8dp" />
+            app:iconSize="16dp" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </com.google.android.material.card.MaterialCardView>
