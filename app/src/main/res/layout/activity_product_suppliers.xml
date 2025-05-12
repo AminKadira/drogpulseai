@@ -70,16 +70,7 @@
                         android:textSize="12sp"
                         tools:text="Stock: 42" />
 
-                    <TextView
-                        android:id="@+id/tv_product_barcode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:drawableStart="@android:drawable/ic_menu_sort_by_size"
-                        android:drawablePadding="4dp"
-                        android:gravity="center_vertical"
-                        android:textSize="12sp"
-                        tools:text="123456789012" />
+
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

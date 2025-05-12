@@ -67,14 +67,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         holder.tvReference.setText(product.getReference());
         holder.tvName.setText(product.getName());
 
-        // Afficher le code-barres s'il est disponible
-        if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
-            holder.tvBarcode.setVisibility(View.VISIBLE);
-            holder.tvBarcode.setText(context.getString(R.string.barcode_format, product.getBarcode()));
-        } else {
-            holder.tvBarcode.setVisibility(View.GONE);
-        }
-
         // Afficher la quantité
         holder.tvQuantity.setText(context.getString(R.string.stock_format, product.getQuantity()));
 
@@ -170,14 +162,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         Button btnViewSuppliers;
-        TextView tvReference, tvName, tvBarcode, tvQuantity, tvPrice;
+        TextView tvReference, tvName, tvQuantity, tvPrice;
         ImageView ivThumbnail;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvReference = itemView.findViewById(R.id.tv_product_reference);
             tvName = itemView.findViewById(R.id.tv_product_name);
-            tvBarcode = itemView.findViewById(R.id.tv_product_barcode);
             tvQuantity = itemView.findViewById(R.id.tv_product_quantity);
             tvPrice = itemView.findViewById(R.id.tv_product_price);
             ivThumbnail = itemView.findViewById(R.id.iv_product_thumbnail);

@@ -93,31 +93,22 @@
                     tools:text="19.99 MAD" />
             </LinearLayout>
 
-            <!-- Code-barres -->
-            <TextView
-                android:id="@+id/tv_product_barcode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_sort_by_size"
-                android:drawablePadding="8dp"
-                android:textSize="14sp"
-                android:gravity="center_vertical"
-                tools:text="123456789012"
-                android:visibility="gone"/>
-
             <Button
                 android:id="@+id/btn_view_suppliers"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
                 android:layout_marginTop="8dp"
-                android:text="Fournisseurs"
+                android:text="@string/product_suppliers"
                 android:textSize="12sp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@android:color/white"
-                android:paddingHorizontal="8dp"
+                android:drawableStart="@drawable/bg_status_pending"
+                android:drawablePadding="8dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:minHeight="0dp"
+                android:backgroundTint="@color/supplier_price_bg"
+                android:textColor="@android:color/white"
                 style="@style/Widget.MaterialComponents.Button" />
+
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

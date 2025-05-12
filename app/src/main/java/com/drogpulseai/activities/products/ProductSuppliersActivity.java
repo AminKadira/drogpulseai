@@ -54,7 +54,6 @@ public class ProductSuppliersActivity extends AppCompatActivity implements Suppl
     private TextView tvProductReference;
     private TextView tvProductName;
     private TextView tvProductQuantity;
-    private TextView tvProductBarcode;
     private RecyclerView recyclerView;
     private TextView tvEmptySuppliers;
     private ProgressBar progressBar;
@@ -130,7 +129,7 @@ public class ProductSuppliersActivity extends AppCompatActivity implements Suppl
         tvProductReference = findViewById(R.id.tv_product_reference);
         tvProductName = findViewById(R.id.tv_product_name);
         tvProductQuantity = findViewById(R.id.tv_product_quantity);
-        tvProductBarcode = findViewById(R.id.tv_product_barcode);
+      //  tvProductBarcode = findViewById(R.id.tv_product_barcode);
         recyclerView = findViewById(R.id.recycler_view_suppliers);
         tvEmptySuppliers = findViewById(R.id.tv_empty_suppliers);
         progressBar = findViewById(R.id.progress_bar);
@@ -172,12 +171,12 @@ public class ProductSuppliersActivity extends AppCompatActivity implements Suppl
         tvProductName.setText(product.getName());
         tvProductQuantity.setText(getString(R.string.stock_format, product.getQuantity()));
 
-        if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
-            tvProductBarcode.setVisibility(View.VISIBLE);
-            tvProductBarcode.setText(product.getBarcode());
-        } else {
-            tvProductBarcode.setVisibility(View.GONE);
-        }
+//        if (product.getBarcode() != null && !product.getBarcode().isEmpty()) {
+//            tvProductBarcode.setVisibility(View.VISIBLE);
+//            tvProductBarcode.setText(product.getBarcode());
+//        } else {
+//            tvProductBarcode.setVisibility(View.GONE);
+//        }
 
         // Charger l'image du produit si disponible
         if (product.getPhotoUrl() != null && !product.getPhotoUrl().isEmpty()) {
