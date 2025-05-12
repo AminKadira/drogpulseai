@@ -139,6 +139,10 @@
             android:name=".activities.settings.LanguageSettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.suppliers.SupplierProductsActivity"
+            android:exported="false" />
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

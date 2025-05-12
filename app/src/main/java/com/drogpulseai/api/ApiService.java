@@ -6,6 +6,7 @@ import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.models.Expense;
 import com.drogpulseai.models.Product;
+import com.drogpulseai.models.SupplierProductRequest;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.NetworkResult;
 
@@ -171,9 +172,9 @@ public interface ApiService {
 
     /**
      * Associer un fournisseur à un produit
-    */
+     */
     @POST("products/add_product_supplier.php")
-    Call<NetworkResult<Map<String, Object>>> addProductSupplier(@Body Map<String, Object> supplierData);
+    Call<NetworkResult<Void>> addProductSupplier(@Body SupplierProductRequest request);
 
     /**
      * Créer un nouveau panier

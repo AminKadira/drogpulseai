@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.drogpulseai.R;
 import com.drogpulseai.activities.carts.ContactCartsActivity;
 import com.drogpulseai.activities.products.ProductFormActivity;
+import com.drogpulseai.activities.suppliers.SupplierProductsActivity;
 import com.drogpulseai.adapters.ContactAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
@@ -228,10 +229,12 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
     @Override
     public void onAddProductsClick(Contact contact) {
         // Naviguer vers l'activité d'ajout de produits pour ce fournisseur
-        Intent intent = new Intent(this, ProductFormActivity.class);
+        Intent intent = new Intent(this, SupplierProductsActivity.class);
         intent.putExtra("mode", "create");
         intent.putExtra("supplier_id", contact.getId());
         intent.putExtra("supplier_name", contact.getFullName());
+        intent.putExtra("supplier_phone", contact.getTelephone());
+        intent.putExtra("supplier_note", contact.getNotes());
         startActivity(intent);
     }
     @Override
