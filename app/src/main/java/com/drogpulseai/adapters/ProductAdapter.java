@@ -1,7 +1,5 @@
 package com.drogpulseai.adapters;
 
-import static com.drogpulseai.R.*;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -82,7 +80,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         // Afficher le prix
         if (product.getPrice() > 0) {
             holder.tvPrice.setVisibility(View.VISIBLE);
-            holder.tvPrice.setText(String.format(Locale.US, "%.2f MAD", product.getPrice()));
+            holder.tvPrice.setText(String.format(Locale.US, "%.2f MAD", product.getPrixVenteConseille()));
         } else {
             holder.tvPrice.setVisibility(View.GONE);
         }

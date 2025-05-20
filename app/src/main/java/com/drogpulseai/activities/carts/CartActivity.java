@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.contacts.ContactSearchActivity;
 import com.drogpulseai.adapters.CartProductAdapter;
 import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
@@ -73,8 +74,10 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
     // Données
     private List<Product> products;
     private User currentUser;
-    private int contactId;
-    private String contactName;
+
+    int cartId;
+//    private int contactId;
+//    private String contactName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,16 +93,16 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
         }
 
         // Récupérer les données de l'intent
-        contactId = getIntent().getIntExtra("contact_id", -1);
-        contactName = getIntent().getStringExtra("contact_name");
+//        contactId = getIntent().getIntExtra("contact_id", -1);
+//        contactName = getIntent().getStringExtra("contact_name");
 
-        Log.d(TAG, "Contact ID: " + contactId + ", Nom: " + contactName);
-
-        if (contactId == -1 || contactName == null) {
-            Toast.makeText(this, "Données de contact invalides", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+//        Log.d(TAG, "Contact ID: " + contactId + ", Nom: " + contactName);
+//
+//        if (contactId == -1 || contactName == null) {
+//            Toast.makeText(this, "Données de contact invalides", Toast.LENGTH_SHORT).show();
+//            finish();
+//            return;
+//        }
 
         // Initialisation des utilitaires
         apiService = ApiClient.getApiService();
@@ -144,7 +147,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
         btnClearSearch = findViewById(R.id.btn_clear_search);
 
         // Afficher les informations du contact
-        tvContactInfo.setText("Contact: " + contactName + " (ID: " + contactId + ")");
+        //tvContactInfo.setText("Contact: " + contactName + " (ID: " + contactId + ")");
         tvSelectionCount.setText("Sélectionné(s): 0 (0 articles)");
 
         // S'assurer que le champ de recherche est vide
@@ -365,7 +368,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
 
         // Préparer les données pour l'API
         Map<String, Object> cartData = new HashMap<>();
-        cartData.put("contact_id", contactId);
+        //cartData.put("contact_id", contactId);
         cartData.put("user_id", currentUser.getId());
         cartData.put("notes", "Panier créé depuis l'application mobile");
 
@@ -427,7 +430,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                                 Log.d(TAG, "ID brut: " + (rawId != null ? rawId.toString() : "null") +
                                         ", Type: " + (rawId != null ? rawId.getClass().getName() : "unknown"));
 
-                                int cartId;
+
                                 if (rawId instanceof Double) {
                                     cartId = ((Double) rawId).intValue();
                                 } else if (rawId instanceof Integer) {
@@ -512,7 +515,7 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
     private void showSuccessDialogWithDetails(String title, String message, int cartId) {
         Log.d(TAG, "Affichage du dialogue de succès avec ID: " + cartId);
 
-        new AlertDialog.Builder(this)
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (dialog, which) -> finish())
@@ -523,8 +526,22 @@ public class CartActivity extends AppCompatActivity implements CartProductAdapte
                     Log.d(TAG, "Lancement de CartDetailsActivity avec cart_id=" + cartId);
                     startActivity(intent);
                     finish();
-                })
-                .setCancelable(false)
+                });
+
+        // Ajouter un troisième bouton pour assigner un contact
+        builder.setNegativeButton("Ajouter un contact", (dialog, which) -> {
+            // Lancer l'activité de recherche de contacts
+            Intent intent = new Intent(CartActivity.this, ContactSearchActivity.class);
+            // Passer l'ID du panier pour pouvoir l'associer au contact sélectionné
+            intent.putExtra("cart_id", cartId);
+            // Ajouter un flag pour indiquer qu'il s'agit d'une assignation de contact à un panier
+            intent.putExtra("mode", "assign_to_cart");
+            Log.d(TAG, "Lancement de ContactSearchActivity pour assigner un contact au panier " + cartId);
+            startActivity(intent);
+            finish();
+        });
+
+        builder.setCancelable(false)
                 .show();
     }
     @Override

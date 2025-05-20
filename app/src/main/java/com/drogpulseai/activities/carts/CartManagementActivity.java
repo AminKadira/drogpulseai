@@ -47,7 +47,7 @@ public class CartManagementActivity extends AppCompatActivity {
         // Carte Créer un panier
         MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
         cardCreateCart.setOnClickListener(v -> {
-           Intent intent= new Intent(CartManagementActivity.this, ContactSelectionActivity.class);
+           Intent intent= new Intent(CartManagementActivity.this, CartActivity.class);
             startActivity(intent);
         });
 

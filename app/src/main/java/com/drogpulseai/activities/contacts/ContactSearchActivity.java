@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.carts.CartDetailsActivity;
 import com.drogpulseai.activities.carts.ContactCartsActivity;
 import com.drogpulseai.activities.products.ProductFormActivity;
 import com.drogpulseai.activities.suppliers.SupplierProductsActivity;
@@ -30,7 +31,9 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,8 +41,11 @@ import retrofit2.Response;
 
 /**
  * Activité de recherche de contacts
+ * Peut également être utilisée pour assigner un contact à un panier existant
  */
 public class ContactSearchActivity extends AppCompatActivity implements ContactAdapter.OnContactClickListener {
+
+    private static final String TAG = "ContactSearchActivity";
 
     // UI Components
     private EditText etSearch;
@@ -49,8 +55,9 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
     private TextView tvNoResults;
     private FloatingActionButton fabAddContact;
 
-    private Chip chipAll,chipFournisseur,chipVendeur,chipDistributeur,chipAutre;
+    private Chip chipAll, chipFournisseur, chipVendeur, chipDistributeur, chipAutre;
     private ChipGroup chipGroup;
+
     // Utilities
     private ApiService apiService;
     private SessionManager sessionManager;
@@ -60,15 +67,36 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
     private ContactAdapter adapter;
     private User currentUser;
 
+    // Paramètres de mode
+    private String mode;
+    private int cartId = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_search);
 
+        // Récupérer le mode et l'ID du panier le cas échéant
+        mode = getIntent().getStringExtra("mode");
+        if ("assign_to_cart".equals(mode)) {
+            cartId = getIntent().getIntExtra("cart_id", -1);
+            if (cartId == -1) {
+                Toast.makeText(this, "ID de panier invalide", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+        }
+
         // Configurer la barre d'action
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.search_contacts);
+
+            // Mettre à jour le titre en fonction du mode
+            if ("assign_to_cart".equals(mode)) {
+                getSupportActionBar().setTitle("Choisir un contact pour le panier #" + cartId);
+            } else {
+                getSupportActionBar().setTitle(R.string.search_contacts);
+            }
         }
 
         // Initialisation des utilitaires
@@ -84,12 +112,14 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         // Définir "Tous" comme sélection par défaut
         chipAll.setChecked(true);
 
-
         // Configuration du RecyclerView
         setupRecyclerView();
 
         // Configuration des listeners
         setupListeners();
+
+        // Effectuer une recherche initiale pour charger les contacts
+        performSearch();
     }
 
     /**
@@ -101,6 +131,7 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         recyclerView = findViewById(R.id.recycler_view);
         progressBar = findViewById(R.id.progress_bar);
         tvNoResults = findViewById(R.id.tv_no_results);
+
         // Initialiser et configurer le ChipGroup
         chipGroup = findViewById(R.id.chip_group_types);
         chipAll = findViewById(R.id.chip_all);
@@ -110,6 +141,8 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         chipAutre = findViewById(R.id.chip_autre);
         fabAddContact = findViewById(R.id.fab_add_contact);
 
+        // Configurer le texte du chip "Tous"
+        chipAll.setText("Tous");
     }
 
     /**
@@ -126,7 +159,6 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
      * Configuration des écouteurs d'événements
      */
     private void setupListeners() {
-
         btnSearch.setOnClickListener(v -> performSearch());
 
         chipGroup.setOnCheckedStateChangeListener((group, checkedId) -> {
@@ -174,7 +206,7 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         // Désactiver les contrôles pendant la recherche
         setControlsEnabled(false);
 
-        // Appel à l'API avec les paramètres (noter que query peut être vide)
+        // Appel à l'API avec les paramètres
         apiService.searchContacts(currentUser.getId(), query, selectedType).enqueue(new Callback<List<Contact>>() {
             @Override
             public void onResponse(Call<List<Contact>> call, Response<List<Contact>> response) {
@@ -207,25 +239,88 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         });
     }
 
-    // Méthode utilitaire pour activer/désactiver les contrôles
+    /**
+     * Méthode utilitaire pour activer/désactiver les contrôles
+     */
     private void setControlsEnabled(boolean enabled) {
         btnSearch.setEnabled(enabled);
         etSearch.setEnabled(enabled);
 
         // Activer/désactiver les chips
-        ChipGroup chipGroup = findViewById(R.id.chip_group_types);
         for (int i = 0; i < chipGroup.getChildCount(); i++) {
             chipGroup.getChildAt(i).setEnabled(enabled);
         }
     }
+
     @Override
     public void onContactClick(Contact contact) {
-        // Code existant pour gérer le clic sur un contact
-        Intent intent = new Intent(ContactSearchActivity.this, ContactFormActivity.class);
-        intent.putExtra("mode", "edit");
-        intent.putExtra("contact_id", contact.getId());
-        startActivity(intent);
+        if ("assign_to_cart".equals(mode) && cartId != -1) {
+            // Mode assignation à un panier
+            assignContactToCart(contact.getId(), cartId);
+        } else {
+            // Comportement standard
+            Intent intent = new Intent(ContactSearchActivity.this, ContactFormActivity.class);
+            intent.putExtra("mode", "edit");
+            intent.putExtra("contact_id", contact.getId());
+            startActivity(intent);
+        }
     }
+
+    /**
+     * Assigne un contact à un panier existant
+     */
+    private void assignContactToCart(int contactId, int cartId) {
+        // Afficher la progression
+        progressBar.setVisibility(View.VISIBLE);
+        setControlsEnabled(false);
+
+        // Préparer les données pour l'appel API
+        Map<String, Object> requestData = new HashMap<>();
+        requestData.put("cart_id", cartId);
+        requestData.put("contact_id", contactId);
+        requestData.put("user_id", currentUser.getId());
+
+        // Faire l'appel API
+        apiService.assignContactToCart(requestData).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                progressBar.setVisibility(View.GONE);
+                setControlsEnabled(true);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    Map<String, Object> result = response.body();
+                    boolean success = (boolean) result.get("success");
+
+                    if (success) {
+                        Toast.makeText(ContactSearchActivity.this,
+                                "Contact assigné au panier avec succès", Toast.LENGTH_SHORT).show();
+
+                        // Ouvrir les détails du panier
+                        Intent intent = new Intent(ContactSearchActivity.this, CartDetailsActivity.class);
+                        intent.putExtra("cart_id", cartId);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        String message = (String) result.get("message");
+                        Toast.makeText(ContactSearchActivity.this,
+                                "Erreur: " + message, Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(ContactSearchActivity.this,
+                            "Erreur lors de l'assignation du contact au panier", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                setControlsEnabled(true);
+                Toast.makeText(ContactSearchActivity.this,
+                        "Erreur réseau: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     @Override
     public void onAddProductsClick(Contact contact) {
         // Naviguer vers l'activité d'ajout de produits pour ce fournisseur
@@ -237,6 +332,7 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         intent.putExtra("supplier_note", contact.getNotes());
         startActivity(intent);
     }
+
     @Override
     public void onViewCartsClick(Contact contact) {
         // Implémentation pour gérer le clic sur le bouton Panier
@@ -245,6 +341,7 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
         intent.putExtra("contact_name", contact.getFullName());
         startActivity(intent);
     }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

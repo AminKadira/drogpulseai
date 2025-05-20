@@ -196,7 +196,7 @@ public interface ApiService {
      * Créer un nouveau panier
      */
     @POST("carts/create.php")
-    Call<Map<String, Object>> createCart(@Body Map<String, Object> cartData);
+    Call<Map<String, Object>>  createCart(@Body Map<String, Object> cartData);
     /**
      * Récupérer un panier par son ID
      */
@@ -234,7 +234,13 @@ public interface ApiService {
             @Body Map<String, Object> statusData
     );
 
-
+    /**
+     * Assigne un contact à un panier existant
+     * @param data Données contenant cart_id, contact_id et user_id
+     * @return Réponse de l'API
+     */
+    @POST("carts/assign_contact.php")
+    Call<Map<String, Object>> assignContactToCart(@Body Map<String, Object> data);
     /**
      * Récupérer tous les frais d'un utilisateur
      */
