@@ -172,10 +172,27 @@ public class ContactSearchActivity extends AppCompatActivity implements ContactA
             return true;
         });
 
-        // Bouton d'ajout de contact
         fabAddContact.setOnClickListener(v -> {
             Intent intent = new Intent(this, ContactFormActivity.class);
-            intent.putExtra("mode", "create");
+
+            // Check the different mode scenarios
+            if ("assign_to_cart".equals(mode) && cartId != -1) {
+                // Assigning a contact to a cart (existing mode)
+                intent.putExtra("mode", "assign_contact");
+                intent.putExtra("cart_id", cartId);
+            } else if ("assign_cart_to_contact".equals(mode) && cartId != -1) {
+                // Assigning a cart to a contact (new mode)
+                // In this case, we just want to create a new contact
+                // that will later be assigned to the cart
+                intent.putExtra("mode", "create");
+                intent.putExtra("cart_id", cartId);
+                // We'll handle the actual assignment after contact creation
+                intent.putExtra("assign_cart_after_create", true);
+            } else {
+                // Standard contact creation
+                intent.putExtra("mode", "create");
+            }
+
             startActivity(intent);
         });
     }

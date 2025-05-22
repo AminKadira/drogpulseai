@@ -1,6 +1,9 @@
 package com.drogpulseai.activities.contacts;
 
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,11 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.drogpulseai.R;
+import com.drogpulseai.activities.carts.CartDetailsActivity;
+import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.models.Contact;
 import com.drogpulseai.utils.DialogUtils;
 import com.drogpulseai.utils.FormValidator;
@@ -26,22 +30,39 @@ import com.drogpulseai.utils.ValidationMap;
 import com.drogpulseai.viewmodels.ContactFormViewModel;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * Activité pour la création et la modification de contacts, avec support hors-ligne
+ * Supporte également l'assignation directe d'un nouveau contact à un panier
  */
 public class ContactFormActivity extends AppCompatActivity implements LocationUtils.LocationCallback {
 
     // Mode de l'activité
     private static final String MODE_CREATE = "create";
     private static final String MODE_EDIT = "edit";
+    private static final String MODE_ASSIGN = "assign_contact";
+    //private static final String MODE_ASSIGN_CART = "assign_cart_to_contact";
+    private static final String TAG = "ContactFormActivity";
+
+    // Variables membres
+    private int cartId = -1;
+    private String mode;
+
 
     // UI Components
     private EditText etNom, etPrenom, etTelephone, etEmail, etNotes;
-    private Button btnSave, btnDelete;
+    private Button btnSave, btnDelete, btnAssignCart;
     private ProgressBar progressBar;
     private TextView tvLocationInfo;
     private AutoCompleteTextView actType;
     private TextInputLayout tilType;
+    private TextView tvCartInfo;
     // Utilities
     private LocationUtils locationUtils;
     private FormValidator validator;
@@ -49,22 +70,48 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
     // ViewModel
     private ContactFormViewModel viewModel;
 
+
     // Données
     private double latitude = 0.0;
     private double longitude = 0.0;
-
+    Contact contact;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_form);
 
         // Récupérer le mode et les données
-        String mode = getIntent().getStringExtra("mode");
+        mode = getIntent().getStringExtra("mode");
         int contactId = getIntent().getIntExtra("contact_id", -1);
+
+        // Récupérer l'ID du panier selon le mode
+        if (MODE_ASSIGN.equals(mode)) {
+            cartId = getIntent().getIntExtra("cart_id", -1);
+            if (cartId == -1) {
+                Toast.makeText(this, "ID du panier invalide", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+            Log.d(TAG, "Mode assignation contact avec cart_id: " + cartId);
+        } else if (MODE_ASSIGN.equals(mode)) {
+            cartId = getIntent().getIntExtra("cart_id", -1);
+            if (cartId == -1 || contactId == -1) {
+                Toast.makeText(this, "ID du panier ou du contact invalide", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+            Log.d(TAG, "Mode assignation panier avec contact_id: " + contactId + " et cart_id: " + cartId);
+        }
 
         // Initialiser le ViewModel
         viewModel = new ViewModelProvider(this).get(ContactFormViewModel.class);
-        viewModel.initializeMode(mode, contactId);
+
+        // Initialiser le ViewModel selon le mode
+        if (MODE_ASSIGN.equals(mode)) {
+            viewModel.initializeMode(mode, contactId, cartId);
+        } else {
+            viewModel.initializeMode(mode, contactId);
+        }
 
         // Initialiser les utilitaires
         locationUtils = new LocationUtils(this, this);
@@ -76,11 +123,17 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Configuration des listeners
         setupListeners();
 
-        // Configuration de la barre d'action
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(viewModel.isCreateMode() ?
-                    R.string.create_contact : R.string.edit_contact);
+            if (viewModel.isCreateMode()) {
+                // Convertir R.string.create_contact en String pour avoir des types compatibles
+                getSupportActionBar().setTitle(MODE_ASSIGN.equals(mode) ?
+                        "Créer un contact pour ce panier" : getString(R.string.create_contact));
+            } else if (viewModel.isAssignCartMode()) {
+                getSupportActionBar().setTitle("Associer le panier au contact");
+            } else {
+                getSupportActionBar().setTitle(R.string.edit_contact);
+            }
         }
 
         // Configurer l'adaptateur pour la liste déroulante
@@ -94,7 +147,19 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Configuration selon le mode
         if (viewModel.isCreateMode()) {
             btnDelete.setVisibility(View.GONE);
+            btnAssignCart.setVisibility(View.GONE);
+        } else if (viewModel.isAssignCartMode()) {
+            // En mode assignation de panier, on désactive la modification
+            //setFormEnabled(false);
+            btnDelete.setVisibility(View.GONE);
+            btnSave.setVisibility(View.GONE);
+            btnAssignCart.setVisibility(View.VISIBLE);
+
+            // Afficher l'info du panier
+            tvCartInfo.setVisibility(View.VISIBLE);
+            tvCartInfo.setText("Panier #" + cartId);
         } else {
+            btnAssignCart.setVisibility(View.GONE);
             viewModel.loadContactDetails();
         }
 
@@ -118,8 +183,14 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         tilType = findViewById(R.id.til_type);
         btnSave = findViewById(R.id.btn_save);
         btnDelete = findViewById(R.id.btn_delete);
+        btnAssignCart = findViewById(R.id.btn_assign_cart);
         progressBar = findViewById(R.id.progress_bar);
         tvLocationInfo = findViewById(R.id.tv_location_info);
+        tvCartInfo = findViewById(R.id.tv_cart_info);
+
+        // Par défaut, masquer l'info du panier et le bouton d'assignation
+        tvCartInfo.setVisibility(View.GONE);
+        btnAssignCart.setVisibility(View.GONE);
     }
 
     /**
@@ -131,6 +202,25 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
 
         // Bouton de suppression
         btnDelete.setOnClickListener(v -> confirmDeleteContact());
+
+        // Bouton d'assignation de panier
+        btnAssignCart.setOnClickListener(v -> confirmAssignCart());
+    }
+
+    /**
+     * Confirmer l'assignation du panier au contact
+     */
+    private void confirmAssignCart() {
+        DialogUtils.showConfirmationDialog(
+                this,
+                "Associer le panier",
+                "Voulez-vous associer le panier #" + cartId + " au contact " +
+                        (etPrenom.getText().toString() + " " + etNom.getText().toString()).trim() + " ?",
+                () -> {
+
+                    viewModel.assignCartToContact();
+                }
+        );
     }
 
     /**
@@ -140,7 +230,10 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Observer le chargement
         viewModel.getIsLoading().observe(this, isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            setFormEnabled(!isLoading);
+            if (!viewModel.isAssignCartMode()) {
+                setFormEnabled(!isLoading);
+            }
+            btnAssignCart.setEnabled(!isLoading);
         });
 
         // Observer les données du contact
@@ -160,6 +253,33 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         // Observer le succès des opérations
         viewModel.getOperationSuccess().observe(this, success -> {
             if (success) {
+                // Si en mode assign, effectuer l'assignation avant de fermer
+                if (MODE_ASSIGN.equals(mode) && cartId != -1) {
+                    // Récupérer l'ID du contact nouvellement créé
+                    if (viewModel.getContact().getValue() != null) {
+                        int newContactId = viewModel.getContact().getValue().getId();
+                        assignContactToCart(newContactId);
+                    } else {
+                        Toast.makeText(this, "Erreur: ID de contact non disponible",
+                                Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                } else {
+                    // Comportement normal pour les autres modes
+                    finish();
+                }
+            }
+        });
+
+        // Observer le succès de l'assignation du panier
+        viewModel.getAssignmentSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Panier associé au contact avec succès", Toast.LENGTH_SHORT).show();
+
+                // Rediriger vers les détails du panier
+                Intent intent = new Intent(this, CartDetailsActivity.class);
+                intent.putExtra("cart_id", cartId);
+                startActivity(intent);
                 finish();
             }
         });
@@ -196,6 +316,7 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         etTelephone.setEnabled(enabled);
         etEmail.setEnabled(enabled);
         etNotes.setEnabled(enabled);
+        actType.setEnabled(enabled);
         btnSave.setEnabled(enabled);
         btnDelete.setEnabled(enabled);
     }
@@ -228,7 +349,7 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         }
 
         // Créer l'objet contact à partir des données du formulaire
-        Contact contact = getContactFromForm();
+        contact = getContactFromForm();
 
         // Sauvegarder le contact
         viewModel.saveContact(contact);
@@ -253,7 +374,7 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
         String notes = etNotes.getText().toString().trim();
 
         // Créer l'objet contact
-        Contact contact = new Contact(nom, prenom, telephone, email, notes,type, latitude, longitude, viewModel.getCurrentUserId());
+        Contact contact = new Contact(nom, prenom, telephone, email, notes, type, latitude, longitude, viewModel.getCurrentUserId());
 
         // Si en mode édition, définir l'ID existant
         if (!viewModel.isCreateMode() && viewModel.getContact().getValue() != null) {
@@ -273,6 +394,96 @@ public class ContactFormActivity extends AppCompatActivity implements LocationUt
                 "Êtes-vous sûr de vouloir supprimer ce contact ?",
                 () -> viewModel.deleteContact()
         );
+    }
+
+    /**
+     * Assigne un contact nouvellement créé au panier
+     */
+    private void assignContactToCart(int contactId) {
+        Log.d(TAG, "Assignation du contact " + contactId + " au panier " + cartId);
+
+        // Afficher un dialogue de progression
+        AlertDialog progressDialog = new AlertDialog.Builder(this)
+                .setTitle("Association en cours")
+                .setMessage("Association du contact au panier...")
+                .setCancelable(false)
+                .create();
+        progressDialog.show();
+
+        // Créer les données pour l'API
+        Map<String, Object> assignData = new HashMap<>();
+        assignData.put("cart_id", cartId);
+        assignData.put("contact_id", contactId);
+        assignData.put("user_id", viewModel.getCurrentUserId());
+
+        // Appeler l'API
+        ApiClient.getApiService().assignContactToCart(assignData)
+                .enqueue(new Callback<Map<String, Object>>() {
+                    @Override
+                    public void onResponse(Call<Map<String, Object>> call,
+                                           Response<Map<String, Object>> response) {
+                        progressDialog.dismiss();
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            // Vérifier le succès de l'opération
+                            boolean success = false;
+                            try {
+                                success = (boolean) response.body().get("success");
+                            } catch (Exception e) {
+                                Log.e(TAG, "Erreur lors du parsing de la réponse", e);
+                            }
+
+                            if (success) {
+                                Toast.makeText(ContactFormActivity.this,
+                                        "Contact créé et assigné au panier avec succès",
+                                        Toast.LENGTH_SHORT).show();
+
+                                // Rediriger vers les détails du panier
+                                Intent intent = new Intent(ContactFormActivity.this,
+                                        CartDetailsActivity.class);
+                                intent.putExtra("cart_id", cartId);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                String message = response.body().containsKey("message") ?
+                                        (String) response.body().get("message") :
+                                        "Erreur lors de l'assignation";
+
+                                Toast.makeText(ContactFormActivity.this,
+                                        "Contact créé mais erreur lors de l'assignation: " + message,
+                                        Toast.LENGTH_LONG).show();
+                                finish();
+                            }
+                        } else {
+                            String errorBody = "";
+                            try {
+                                if (response.errorBody() != null) {
+                                    errorBody = response.errorBody().string();
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Erreur lors de la lecture de l'erreur", e);
+                            }
+
+                            Log.e(TAG, "Erreur API: " + response.code() + " - " + errorBody);
+
+                            Toast.makeText(ContactFormActivity.this,
+                                    "Contact créé mais erreur de serveur lors de l'assignation",
+                                    Toast.LENGTH_LONG).show();
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                        progressDialog.dismiss();
+                        Log.e(TAG, "Échec de la requête d'assignation", t);
+
+                        Toast.makeText(ContactFormActivity.this,
+                                "Contact créé mais erreur réseau: " + t.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
     }
 
     @Override

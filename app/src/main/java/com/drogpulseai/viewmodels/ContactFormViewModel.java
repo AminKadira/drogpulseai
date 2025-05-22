@@ -17,6 +17,7 @@ import com.drogpulseai.sync.SyncManager;
 import com.drogpulseai.utils.NetworkUtils;
 import com.drogpulseai.utils.SessionManager;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -29,11 +30,14 @@ import retrofit2.Response;
  */
 public class ContactFormViewModel extends AndroidViewModel {
 
+
     private static final String TAG = "ContactFormViewModel";
 
     // Constants
     private static final String MODE_CREATE = "create";
     private static final String MODE_EDIT = "edit";
+    private static final String MODE_ASSIGN_CONTACT = "assign_contact";
+    private static final String MODE_ASSIGN_CART = "assign_contact";
 
     // Repository
     private final ContactRepository repository;
@@ -49,10 +53,12 @@ public class ContactFormViewModel extends AndroidViewModel {
     private final MutableLiveData<Contact> contact = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> operationSuccess = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> assignmentSuccess = new MutableLiveData<>(false);
 
     // State variables
     private String mode = MODE_CREATE;
     private int contactId = -1;
+    private int cartId = -1;
     private User currentUser;
 
     public ContactFormViewModel(@NonNull Application application) {
@@ -78,21 +84,38 @@ public class ContactFormViewModel extends AndroidViewModel {
         this.mode = mode;
         this.contactId = contactId;
     }
-
+    /**
+     * Initialize ViewModel with mode, contact ID and cart ID
+     */
+    public void initializeMode(String mode, int contactId, int cartId) {
+        this.mode = mode;
+        this.contactId = contactId;
+        this.cartId = cartId;
+    }
     /**
      * Check if in create mode
      */
     public boolean isCreateMode() {
         return MODE_CREATE.equals(mode);
     }
-
+    /**
+     * Check if in assign cart mode
+     */
+    public boolean isAssignCartMode() {
+        return MODE_ASSIGN_CART.equals(mode);
+    }
     /**
      * Get current user ID
      */
     public int getCurrentUserId() {
         return currentUser.getId();
     }
-
+    /**
+     * Get cart ID
+     */
+    public int getCartId() {
+        return cartId;
+    }
     /**
      * Load contact details
      */
@@ -143,6 +166,13 @@ public class ContactFormViewModel extends AndroidViewModel {
      * Save contact (create or update)
      */
     public void saveContact(Contact contact) {
+        // If we're in assign cart mode, we don't want to save contact changes
+        // since it's just for assignment purposes
+        if (isAssignCartMode()) {
+            // Just set success to true to continue the flow
+            operationSuccess.setValue(true);
+            return;
+        }
         // Check network connectivity
         if (NetworkUtils.isNetworkAvailable(getApplication())) {
             // Online - save to server
@@ -157,6 +187,67 @@ public class ContactFormViewModel extends AndroidViewModel {
             // Offline - save locally
             saveContactLocally(contact);
         }
+    }
+
+    /**
+     * Assign cart to contact
+     */
+    public void assignCartToContact() {
+        if (contactId <= 0 || cartId <= 0) {
+            errorMessage.setValue("ID de contact ou de panier invalide");
+            return;
+        }
+
+        isLoading.setValue(true);
+
+        // Préparer les données pour l'appel API
+        Map<String, Object> assignData = new HashMap<>();
+        assignData.put("cart_id", cartId);
+        assignData.put("contact_id", contactId);
+        assignData.put("user_id", currentUser.getId());
+
+        // Appel à l'API
+        apiService.assignContactToCart(assignData).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                isLoading.setValue(false);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    boolean success = false;
+                    try {
+                        success = (boolean) response.body().get("success");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Erreur lors du parsing de la réponse", e);
+                    }
+
+                    if (success) {
+                        // Notification du succès
+                        assignmentSuccess.setValue(true);
+                    } else {
+                        String message = response.body().containsKey("message") ?
+                                (String) response.body().get("message") :
+                                "Erreur lors de l'assignation";
+                        errorMessage.setValue(message);
+                    }
+                } else {
+                    handleApiError(response);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                isLoading.setValue(false);
+                errorMessage.setValue("Erreur réseau: " + t.getMessage());
+                Log.e(TAG, "Network error: ", t);
+            }
+        });
+    }
+
+    // [Reste des méthodes inchangées]
+
+    // Ajout d'un getter pour assignmentSuccess
+    public LiveData<Boolean> getAssignmentSuccess() {
+        return assignmentSuccess;
     }
 
     /**

@@ -21,6 +21,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!-- Add these elements to the existing layout file -->
+            <TextView
+                android:id="@+id/tv_cart_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_assign_cart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Associer le panier à ce contact"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
             <!-- Type contact -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_type"
