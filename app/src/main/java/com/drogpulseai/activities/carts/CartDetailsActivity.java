@@ -22,6 +22,7 @@ import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.Cart;
 import com.drogpulseai.models.CartItem;
+import com.drogpulseai.models.User;
 import com.drogpulseai.utils.NetworkResult;
 
 import java.text.SimpleDateFormat;
@@ -39,12 +40,15 @@ import retrofit2.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.drogpulseai.utils.SessionManager;
 import com.google.gson.Gson;
 
 public class CartDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "CartDetailsActivity";
-
+    private SessionManager sessionManager;
+    private User currentUser;
     // UI Components
     private TextView tvCartInfo, tvContactInfo, tvStatus, tvTotal;
     private RecyclerView recyclerView;
@@ -85,6 +89,10 @@ public class CartDetailsActivity extends AppCompatActivity {
         // Initialisation des utilitaires
         apiService = ApiClient.getApiService();
 
+        // Initialize session manager
+        sessionManager = new SessionManager(this);
+        currentUser = sessionManager.getUser();
+
         // Initialisation des vues
         initializeViews();
 
@@ -116,19 +124,32 @@ public class CartDetailsActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Bouton Confirmer
-        btnConfirm.setOnClickListener(v -> {
-            if (cart != null && cart.isPending()) {
-                showConfirmationDialog("confirmer");
-            }
-        });
+        if (currentUser.canManageThisOption()) {
+            // Bouton Confirmer
+            btnConfirm.setOnClickListener(v -> {
+                if (cart != null && cart.isPending()) {
+                    showConfirmationDialog("confirmer");
+                }
+            });
 
-        // Bouton Annuler
-        btnCancel.setOnClickListener(v -> {
-            if (cart != null && !cart.isCancelled()) {
-                showConfirmationDialog("annuler");
-            }
-        });
+            // Bouton Annuler
+            btnCancel.setOnClickListener(v -> {
+                if (cart != null && !cart.isCancelled()) {
+                    showConfirmationDialog("annuler");
+                }
+            });
+        }else{
+            btnCancel.setAlpha(0.5f);
+            btnConfirm.setAlpha(0.5f);
+            btnCancel.setEnabled(false);
+            btnConfirm.setEnabled(false);
+            btnCancel.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+            btnConfirm.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     private void loadCartDetails() {

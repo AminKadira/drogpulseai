@@ -353,7 +353,11 @@ public class ProductFormActivity extends AppCompatActivity implements
         // Observe loading state
         viewModel.getIsLoading().observe(this, isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            setFormEnabled(!isLoading);
+            if(viewModel.getCurrentUser().canManageThisOption()) {
+                setFormEnabled(!isLoading);
+            }else{
+                setFormEnabled(false);
+            }
         });
 
         // Observe product data
@@ -390,6 +394,8 @@ public class ProductFormActivity extends AppCompatActivity implements
                 updatePhotoAtCurrentIndex(result.getUrl());
             }
         });
+
+
     }
 
     /**

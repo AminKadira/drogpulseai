@@ -237,4 +237,27 @@
         <item>@string/expense_type_other</item>
     </string-array>
 
+    <!-- Menú y acciones de admin -->
+    <string name="add_user">Añadir Usuario</string>
+    <string name="create_user">Crear Usuario</string>
+    <string name="admin_add_user_info">Como administrador, puedes crear nuevas cuentas de usuario</string>
+    <string name="location_optional">Ubicación (opcional)</string>
+    <string name="get_location">Obtener ubicación</string>
+
+    <!-- Mensajes de interfaz admin -->
+    <string name="admin_user_created_success">Usuario creado con éxito ✅</string>
+    <string name="admin_access_denied">Acceso denegado: se requieren derechos de administrador</string>
+    <string name="admin_creating_user">Creando usuario...</string>
+
+    <!-- Validación específica admin -->
+    <string name="admin_all_fields_required">Todos los campos son obligatorios</string>
+    <string name="admin_password_requirements">La contraseña debe contener al menos 6 caracteres</string>
+    <string name="admin_location_obtained">Ubicación obtenida con éxito</string>
+
+    <!-- Información de acceso por rol -->
+    <string name="access_info_admin">⚠️ Acceso completo a todas las funciones</string>
+    <string name="access_info_manager">📊 Acceso a informes y gestión de equipo</string>
+    <string name="access_info_commercial">🛍️ Gestión de productos y ventas</string>
+    <string name="access_info_vendeur">💼 Acceso a ventas y clientes</string>
+    <string name="access_info_invite">👁️ Acceso limitado de consulta</string>
 </resources>

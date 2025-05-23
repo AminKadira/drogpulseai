@@ -103,6 +103,13 @@ public class ProductSuppliersActivity extends AppCompatActivity implements Suppl
         sessionManager = new SessionManager(this);
         currentUser = sessionManager.getUser();
 
+        if (!currentUser.canManageThisOption()) {
+            Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+
+            finish();
+            return;
+        }
+
         // Initialiser les vues
         initializeViews();
 

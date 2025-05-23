@@ -3,6 +3,7 @@ package com.drogpulseai.activities.carts;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,11 +47,19 @@ public class CartManagementActivity extends AppCompatActivity {
     private void initializeViews() {
         // Carte Créer un panier
         MaterialCardView cardCreateCart = findViewById(R.id.card_create_cart);
-        cardCreateCart.setOnClickListener(v -> {
-           Intent intent= new Intent(CartManagementActivity.this, CartActivity.class);
-            startActivity(intent);
-        });
-
+        if (currentUser.canManageThisOption()) {
+                cardCreateCart.setOnClickListener(v -> {
+                Intent intent = new Intent(CartManagementActivity.this, CartActivity.class);
+                startActivity(intent);
+            });
+        }else {
+            // Désactiver la carte pour les utilisateurs sans permission
+            cardCreateCart.setAlpha(0.5f);
+            cardCreateCart.setEnabled(false);
+            cardCreateCart.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+        }
         // Carte Tous les paniers
         MaterialCardView cardAllCarts = findViewById(R.id.card_all_carts);
         cardAllCarts.setOnClickListener(v -> {

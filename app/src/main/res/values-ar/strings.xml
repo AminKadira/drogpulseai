@@ -237,4 +237,28 @@
         <item>@string/expense_type_supplies</item>
         <item>@string/expense_type_other</item>
     </string-array>
+
+    <!-- قوائم وإجراءات المدير -->
+    <string name="add_user">زيد مستخدم</string>
+    <string name="create_user">دير مستخدم</string>
+    <string name="admin_add_user_info">كمدير، يمكنك إنشاء حسابات مستخدمين جدد</string>
+    <string name="location_optional">المكان (اختياري)</string>
+    <string name="get_location">جيب المكان</string>
+
+    <!-- رسائل واجهة المدير -->
+    <string name="admin_user_created_success">تدار المستخدم بنجاح ✅</string>
+    <string name="admin_access_denied">الوصول مرفوض: صلاحيات المدير مطلوبة</string>
+    <string name="admin_creating_user">كايتدار المستخدم...</string>
+
+    <!-- التحقق الخاص بالمدير -->
+    <string name="admin_all_fields_required">جميع الحقول مطلوبة</string>
+    <string name="admin_password_requirements">الكود يخاص يكون فيه على الأقل 6 حروف</string>
+    <string name="admin_location_obtained">تحصل على المكان بنجاح</string>
+
+    <!-- معلومات الوصول حسب الدور -->
+    <string name="access_info_admin">⚠️ وصول كامل لجميع الميزات</string>
+    <string name="access_info_manager">📊 وصول للتقارير وإدارة الفريق</string>
+    <string name="access_info_commercial">🛍️ إدارة المنتجات والمبيعات</string>
+    <string name="access_info_vendeur">💼 وصول للمبيعات والزبائن</string>
+    <string name="access_info_invite">👁️ وصول محدود للاستشارة</string>
 </resources>

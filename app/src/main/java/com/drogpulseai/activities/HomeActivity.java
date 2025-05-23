@@ -13,6 +13,7 @@ import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.drogpulseai.activities.appuser.AdminAddUserActivity;
 import com.drogpulseai.activities.contacts.ContactSearchActivity;
 import com.google.android.material.card.MaterialCardView;
 
@@ -53,6 +54,9 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     private MaterialButton btnNotification;
     private BadgeDrawable notificationBadge;
 
+    // Menu de référence pour le contrôle des permissions
+    private Menu optionsMenu;
+
     // Constantes pour les actions nécessitant la caméra
     private static final int ACTION_NONE = 0;
     private static final int ACTION_SCAN_BARCODE = 1;
@@ -86,9 +90,9 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Récupérer les données de l'utilisateur
         currentUser = sessionManager.getUser();
 
-        // Afficher le nom de l'utilisateur
+        // Afficher le nom de l'utilisateur avec son type
         TextView tvUserName = findViewById(R.id.tv_user_name);
-        tvUserName.setText(currentUser.getFullName());
+        tvUserName.setText(currentUser.getDisplayInfo()); // Affiche nom + type
 
         // Configuration du bouton de notification
         setupNotificationButton();
@@ -96,14 +100,14 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Configuration du bouton de langue
         setupLanguageButton();
 
-        // Configuration des cartes
-        setupCards();
+        // Configuration des cartes avec permissions
+        setupCardsWithPermissions();
 
         // Vérifier les permissions de caméra au démarrage
         checkCameraPermission();
 
         // Exemple: simuler des notifications en attente (à supprimer dans la production)
-         setNotificationPending(3);
+        setNotificationPending(3);
     }
 
     /**
@@ -217,12 +221,24 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         }
     }
 
-    private void setupCards() {
+    /**
+     * Configuration des cartes avec gestion des permissions
+     */
+    private void setupCardsWithPermissions() {
         // Carte Contacts
         MaterialCardView cardContacts = findViewById(R.id.card_contacts);
+        if (currentUser.canManageThisOption()) {
         cardContacts.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ContactSearchActivity.class));
         });
+        } else {
+            // Désactiver la carte pour les utilisateurs sans permission
+            cardContacts.setAlpha(0.5f);
+            cardContacts.setEnabled(false);
+            cardContacts.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         // Carte Produits
         MaterialCardView cardProducts = findViewById(R.id.card_products);
@@ -236,11 +252,23 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
             startActivity(new Intent(HomeActivity.this, CartManagementActivity.class));
         });
 
-        // Carte Frais
+        // Carte Frais - Visible pour tous mais avec restrictions selon le rôle
         MaterialCardView cardExpenses = findViewById(R.id.card_expenses);
-        cardExpenses.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, ExpenseListActivity.class));
-        });
+        if (currentUser.canManageThisOption()) {
+            cardExpenses.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, ExpenseListActivity.class));
+            });
+        } else {
+            // Désactiver la carte pour les utilisateurs sans permission
+            cardExpenses.setAlpha(0.5f);
+            cardExpenses.setEnabled(false);
+            cardExpenses.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+
+
     }
 
     /**
@@ -295,14 +323,57 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.home_menu, menu);
+
+        // Conserver une référence au menu pour le contrôle des permissions
+        this.optionsMenu = menu;
+
+        // Configurer la visibilité des éléments selon les permissions
+        configureMenuVisibility();
+
         return true;
+    }
+
+    /**
+     * Configure la visibilité des éléments de menu selon le type d'utilisateur
+     */
+    private void configureMenuVisibility() {
+        if (optionsMenu != null && currentUser != null) {
+            // Menu "Ajouter utilisateur" - Visible uniquement pour les admins
+            MenuItem addUserItem = optionsMenu.findItem(R.id.action_add_user);
+            if (addUserItem != null) {
+                addUserItem.setVisible(currentUser.isAdmin());
+            }
+
+            // Menu "Paramètres" - Visible pour tous
+            MenuItem settingsItem = optionsMenu.findItem(R.id.action_settings);
+            if (settingsItem != null) {
+                settingsItem.setVisible(true);
+            }
+
+            // Menu "Déconnexion" - Visible pour tous
+            MenuItem logoutItem = optionsMenu.findItem(R.id.action_logout);
+            if (logoutItem != null) {
+                logoutItem.setVisible(true);
+            }
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_logout) {
+        if (id == R.id.action_add_user) {
+            // Vérification supplémentaire de sécurité
+            if (currentUser.isAdmin()) {
+                // Naviguer vers l'activité d'ajout d'utilisateur
+                Intent intent = new Intent(HomeActivity.this, AdminAddUserActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Accès refusé : droits administrateur requis", Toast.LENGTH_LONG).show();
+            }
+            return true;
+
+        } else if (id == R.id.action_logout) {
             // Déconnexion
             sessionManager.logout();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
@@ -313,6 +384,7 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
             // Naviguer vers l'écran des frais
             startActivity(new Intent(this, ExpenseListActivity.class));
             return true;
+
         } else if (id == R.id.action_settings) {
             // Naviguer vers l'écran des paramètres
             startActivity(new Intent(this, SettingsActivity.class));
@@ -328,8 +400,13 @@ public class HomeActivity extends AppCompatActivity implements CameraPermissionH
         // Mettre à jour le texte du bouton de langue au retour de l'activité de sélection
         updateLanguageButtonText();
 
-        // Vous pourriez vérifier ici s'il y a de nouvelles notifications
-         checkForNewNotifications();
+        // Vérifier s'il y a de nouvelles notifications
+        checkForNewNotifications();
+
+        // Reconfigurer le menu au cas où les permissions auraient changé
+        if (optionsMenu != null) {
+            configureMenuVisibility();
+        }
     }
 
     /**

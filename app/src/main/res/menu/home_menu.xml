@@ -2,6 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Menu pour ajouter un utilisateur (visible uniquement pour les admins) -->
+    <item
+        android:id="@+id/action_add_user"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/add_user"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/action_logout"
         android:title="@string/logout"

@@ -153,6 +153,18 @@
                 android:value=".activities.products.ProductListActivity" />
         </activity>
 
+        <activity
+            android:name=".activities.appuser.AdminAddUserActivity"
+            android:exported="false"
+            android:label="@string/add_user"
+            android:parentActivityName=".activities.HomeActivity"
+            android:theme="@style/Theme.DrogPulseAI">
+
+            <!-- Support pour la navigation parent -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.HomeActivity" />
+        </activity>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.drogpulseai.fileprovider"

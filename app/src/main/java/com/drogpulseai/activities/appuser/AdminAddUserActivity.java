@@ -1,6 +1,7 @@
 package com.drogpulseai.activities.appuser;
 
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -8,7 +9,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,6 +19,7 @@ import com.drogpulseai.api.ApiClient;
 import com.drogpulseai.api.ApiService;
 import com.drogpulseai.models.User;
 import com.drogpulseai.utils.LocationUtils;
+import com.drogpulseai.utils.SessionManager;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
@@ -28,36 +29,47 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Activité de création de compte utilisateur
+ * Activité pour l'ajout d'utilisateurs par les administrateurs
  */
-public class RegisterActivity extends AppCompatActivity implements LocationUtils.LocationCallback {
+public class AdminAddUserActivity extends AppCompatActivity implements LocationUtils.LocationCallback {
 
     // UI Components
     private EditText etNom, etPrenom, etTelephone, etEmail, etPassword, etConfirmPassword;
     private AutoCompleteTextView spinnerTypeUser;
     private TextInputLayout tilTypeUser;
-    private Button btnRegister;
-    private TextView tvLogin;
+    private Button btnCreateUser, btnGetLocation;
     private ProgressBar progressBar;
 
     // Utilities
     private ApiService apiService;
     private LocationUtils locationUtils;
+    private SessionManager sessionManager;
 
     // Données
     private double latitude = 0.0;
     private double longitude = 0.0;
     private String selectedUserType = User.TYPE_COMMERCIAL; // Valeur par défaut
+    private User currentAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        setContentView(R.layout.activity_admin_add_user);
+
+        // Vérification des droits d'accès
+        sessionManager = new SessionManager(this);
+        currentAdmin = sessionManager.getUser();
+
+        if (currentAdmin == null || !currentAdmin.isAdmin()) {
+            Toast.makeText(this, "Accès refusé : droits administrateur requis", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
         // Configurer la barre d'action
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.register);
+            getSupportActionBar().setTitle(R.string.add_user);
         }
 
         // Initialisation des utilitaires
@@ -72,9 +84,6 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
 
         // Configuration des listeners
         setupListeners();
-
-        // Démarrer la détection de localisation
-        locationUtils.getCurrentLocation();
     }
 
     /**
@@ -89,8 +98,8 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
         etConfirmPassword = findViewById(R.id.et_confirm_password);
         spinnerTypeUser = findViewById(R.id.spinner_type_user);
         tilTypeUser = findViewById(R.id.til_type_user);
-        btnRegister = findViewById(R.id.btn_register);
-        tvLogin = findViewById(R.id.tv_login);
+        btnCreateUser = findViewById(R.id.btn_create_user);
+        btnGetLocation = findViewById(R.id.btn_get_location);
         progressBar = findViewById(R.id.progress_bar);
     }
 
@@ -118,8 +127,6 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
         // Listener pour la sélection
         spinnerTypeUser.setOnItemClickListener((parent, view, position, id) -> {
             selectedUserType = userTypeValues[position];
-
-            // Optionnel : Afficher des informations différentes selon le type
             showUserTypeInfo(selectedUserType);
         });
     }
@@ -132,23 +139,22 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
 
         switch (userType) {
             case User.TYPE_ADMIN:
-                message = "Accès complet à toutes les fonctionnalités";
+                message = "⚠️ Accès complet à toutes les fonctionnalités";
                 break;
             case User.TYPE_MANAGER:
-                message = "Accès aux rapports et gestion d'équipe";
+                message = "📊 Accès aux rapports et gestion d'équipe";
                 break;
             case User.TYPE_COMMERCIAL:
-                message = "Gestion des produits et des ventes";
+                message = "🛍️ Gestion des produits et des ventes";
                 break;
             case User.TYPE_VENDEUR:
-                message = "Accès aux ventes et aux clients";
+                message = "💼 Accès aux ventes et aux clients";
                 break;
             case User.TYPE_INVITE:
-                message = "Accès limité en consultation";
+                message = "👁️ Accès limité en consultation";
                 break;
         }
 
-        // Optionnel : Afficher un toast informatif
         if (!message.isEmpty()) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
@@ -158,17 +164,21 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
      * Configuration des écouteurs d'événements
      */
     private void setupListeners() {
-        // Bouton d'inscription
-        btnRegister.setOnClickListener(v -> register());
+        // Bouton de création d'utilisateur
+        btnCreateUser.setOnClickListener(v -> createUser());
 
-        // Lien vers la connexion
-        tvLogin.setOnClickListener(v -> finish());
+        // Bouton pour obtenir la localisation
+        btnGetLocation.setOnClickListener(v -> {
+            btnGetLocation.setText("Récupération...");
+            btnGetLocation.setEnabled(false);
+            locationUtils.getCurrentLocation();
+        });
     }
 
     /**
-     * Processus d'inscription
+     * Processus de création d'utilisateur
      */
-    private void register() {
+    private void createUser() {
         // Récupération et validation des données saisies
         String nom = etNom.getText().toString().trim();
         String prenom = etPrenom.getText().toString().trim();
@@ -182,17 +192,11 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
             return;
         }
 
-        // Vérifier la localisation
-        if (latitude == 0.0 && longitude == 0.0) {
-            Toast.makeText(this, "Récupération de la localisation en cours...", Toast.LENGTH_SHORT).show();
-            locationUtils.getCurrentLocation();
-            return;
-        }
-
         // Afficher la progression
         setLoading(true);
 
         // Création de l'objet utilisateur avec le type sélectionné
+        // Note: La géolocalisation est optionnelle pour les admins
         User user = new User(nom, prenom, telephone, email, password, selectedUserType, latitude, longitude);
 
         // Appel à l'API d'inscription
@@ -207,21 +211,30 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
                     boolean success = (boolean) result.get("success");
 
                     if (success) {
-                        Toast.makeText(RegisterActivity.this, "Inscription réussie", Toast.LENGTH_SHORT).show();
-                        finish();
+                        Toast.makeText(AdminAddUserActivity.this,
+                                "Utilisateur créé avec succès ✅", Toast.LENGTH_LONG).show();
+
+                        // Réinitialiser le formulaire
+                        resetForm();
+
+                        // Optionnel : Fermer l'activité après succès
+                        // finish();
                     } else {
                         String message = (String) result.get("message");
-                        Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(AdminAddUserActivity.this,
+                                "Erreur : " + message, Toast.LENGTH_LONG).show();
                     }
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Erreur de connexion au serveur", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AdminAddUserActivity.this,
+                            "Erreur de connexion au serveur", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                 setLoading(false);
-                Toast.makeText(RegisterActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(AdminAddUserActivity.this,
+                        "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
                 System.out.println("Erreur réseau : " + t.getMessage());
             }
         });
@@ -233,21 +246,21 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
     private boolean validateForm(String nom, String prenom, String telephone, String email, String password, String confirmPassword) {
         // Validation du nom
         if (nom.isEmpty()) {
-            etNom.setError("Veuillez saisir votre nom");
+            etNom.setError("Nom requis");
             etNom.requestFocus();
             return false;
         }
 
         // Validation du prénom
         if (prenom.isEmpty()) {
-            etPrenom.setError("Veuillez saisir votre prénom");
+            etPrenom.setError("Prénom requis");
             etPrenom.requestFocus();
             return false;
         }
 
         // Validation du type d'utilisateur
         if (selectedUserType == null || selectedUserType.isEmpty()) {
-            tilTypeUser.setError("Veuillez sélectionner un type d'utilisateur");
+            tilTypeUser.setError("Type d'utilisateur requis");
             return false;
         } else {
             tilTypeUser.setError(null);
@@ -255,19 +268,24 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
 
         // Validation du téléphone
         if (telephone.isEmpty()) {
-            etTelephone.setError("Veuillez saisir votre numéro de téléphone");
+            etTelephone.setError("Téléphone requis");
+            etTelephone.requestFocus();
+            return false;
+        }
+
+        if (!Patterns.PHONE.matcher(telephone).matches()) {
+            etTelephone.setError("Format du némuro téléphone invalide");
             etTelephone.requestFocus();
             return false;
         }
 
         // Validation de l'email
         if (email.isEmpty()) {
-            etEmail.setError("Veuillez saisir votre email");
+            etEmail.setError("Email requis");
             etEmail.requestFocus();
             return false;
         }
 
-        // Validation basique du format email
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("Format d'email invalide");
             etEmail.requestFocus();
@@ -276,21 +294,20 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
 
         // Validation du mot de passe
         if (password.isEmpty()) {
-            etPassword.setError("Veuillez saisir un mot de passe");
+            etPassword.setError("Mot de passe requis");
             etPassword.requestFocus();
             return false;
         }
 
-        // Validation de la longueur du mot de passe
         if (password.length() < 6) {
-            etPassword.setError("Le mot de passe doit contenir au moins 6 caractères");
+            etPassword.setError("Minimum 6 caractères");
             etPassword.requestFocus();
             return false;
         }
 
         // Validation de la confirmation du mot de passe
-        if (confirmPassword.isEmpty() || !confirmPassword.equals(password)) {
-            etConfirmPassword.setError("Les mots de passe ne correspondent pas");
+        if (!confirmPassword.equals(password)) {
+            etConfirmPassword.setError("Mots de passe non identiques");
             etConfirmPassword.requestFocus();
             return false;
         }
@@ -299,11 +316,38 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
     }
 
     /**
+     * Réinitialise le formulaire après création réussie
+     */
+    private void resetForm() {
+        etNom.setText("");
+        etPrenom.setText("");
+        etTelephone.setText("");
+        etEmail.setText("");
+        etPassword.setText("");
+        etConfirmPassword.setText("");
+
+        // Remettre le type par défaut
+        String[] userTypeLabels = getResources().getStringArray(R.array.user_types);
+        String[] userTypeValues = getResources().getStringArray(R.array.user_types_values);
+        spinnerTypeUser.setText(userTypeLabels[0], false);
+        selectedUserType = userTypeValues[0];
+
+        // Réinitialiser la localisation
+        latitude = 0.0;
+        longitude = 0.0;
+        btnGetLocation.setText(R.string.get_location);
+        btnGetLocation.setEnabled(true);
+    }
+
+    /**
      * Gérer l'état de chargement de l'interface
      */
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        btnRegister.setEnabled(!isLoading);
+        btnCreateUser.setEnabled(!isLoading);
+        btnGetLocation.setEnabled(!isLoading && latitude == 0.0 && longitude == 0.0);
+
+        // Désactiver les champs pendant le chargement
         etNom.setEnabled(!isLoading);
         etPrenom.setEnabled(!isLoading);
         spinnerTypeUser.setEnabled(!isLoading);
@@ -326,11 +370,18 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
     public void onLocationReceived(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
-        Toast.makeText(this, "Localisation obtenue", Toast.LENGTH_SHORT).show();
+
+        btnGetLocation.setText("📍 Localisation obtenue");
+        btnGetLocation.setEnabled(false);
+
+        Toast.makeText(this, "Localisation obtenue avec succès", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onLocationError(String message) {
+        btnGetLocation.setText(R.string.get_location);
+        btnGetLocation.setEnabled(true);
+
         Toast.makeText(this, "Erreur de localisation : " + message, Toast.LENGTH_LONG).show();
     }
 
@@ -343,6 +394,8 @@ public class RegisterActivity extends AppCompatActivity implements LocationUtils
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        locationUtils.stopLocationUpdates();
+        if (locationUtils != null) {
+            locationUtils.stopLocationUpdates();
+        }
     }
 }

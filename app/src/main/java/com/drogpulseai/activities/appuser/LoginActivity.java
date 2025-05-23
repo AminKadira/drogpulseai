@@ -35,7 +35,6 @@ public class LoginActivity extends AppCompatActivity {
     // UI Components
     private EditText etEmail, etPassword;
     private Button btnLogin;
-    private TextView tvRegister;
     private ProgressBar progressBar;
 
     // Utilities
@@ -54,10 +53,10 @@ public class LoginActivity extends AppCompatActivity {
         apiService = ApiClient.getApiService();
         sessionManager = new SessionManager(this);
 
-        Toast.makeText(LoginActivity.this, "Welcome to DrogpulseAi "+ApiClient.getBaseUrl().substring(8,15), Toast.LENGTH_SHORT).show();
+       // Toast.makeText(LoginActivity.this, "Welcome to DrogpulseAi "+ApiClient.getBaseUrl().substring(8,15), Toast.LENGTH_SHORT).show();
 
         TextView tv1 = (TextView)findViewById(R.id.tv_app_subtitle);
-        tv1.setText(tv1.getText()+" -"+ApiClient.getBaseUrl().substring(8,15));
+        tv1.setText(tv1.getText());
 
         // Vérifier si l'utilisateur est déjà connecté
         if (sessionManager.isLoggedIn()) {
@@ -80,7 +79,6 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         btnLogin = findViewById(R.id.btn_login);
-        tvRegister = findViewById(R.id.tv_register);
         progressBar = findViewById(R.id.progress_bar);
     }
 
@@ -91,11 +89,6 @@ public class LoginActivity extends AppCompatActivity {
         // Bouton de connexion
         btnLogin.setOnClickListener(v -> login());
 
-        // Lien vers l'inscription
-        tvRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(intent);
-        });
     }
 
     /**
@@ -139,6 +132,8 @@ public class LoginActivity extends AppCompatActivity {
                         // Conversion des données en objet User
                         Gson gson = new Gson();
                         User user = gson.fromJson(gson.toJson(userData), User.class);
+
+                        user.setTypeUser(userData.get("typeUser").toString());
 
                         // Enregistrement de la session
                         sessionManager.createSession(user);

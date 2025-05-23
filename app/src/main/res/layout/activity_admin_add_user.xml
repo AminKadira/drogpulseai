@@ -5,25 +5,79 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    tools:context=".activities.appuser.RegisterActivity">
+    tools:context=".activities.appuser.AdminAddUserActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="24dp">
 
-        <TextView
-            android:id="@+id/tv_register_title"
+        <!-- Titre avec icône admin -->
+        <LinearLayout
+            android:id="@+id/ll_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/create_account"
-            android:textColor="@color/primary"
-            android:textSize="24sp"
-            android:textStyle="bold"
+            android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="12dp"
+                android:src="@android:drawable/ic_menu_add"
+                app:tint="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_user"
+                android:textColor="@color/primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Information sur l'admin connecté -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_admin_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/primaryLight"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ll_title">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@android:drawable/ic_dialog_info"
+                    app:tint="@color/primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_add_user_info"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Formulaire -->
         <LinearLayout
             android:id="@+id/ll_form"
             android:layout_width="match_parent"
@@ -32,7 +86,7 @@
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_register_title">
+            app:layout_constraintTop_toBottomOf="@+id/card_admin_info">
 
             <!-- Nom -->
             <com.google.android.material.textfield.TextInputLayout
@@ -79,10 +133,10 @@
                     android:id="@+id/spinner_type_user"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:focusable="false"
                     android:clickable="true"
-                    android:cursorVisible="false" />
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Téléphone -->
@@ -140,7 +194,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="16dp"
                 app:endIconMode="password_toggle">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -151,32 +205,50 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Section Localisation -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/location_optional"
+                    android:textColor="@color/secondaryText"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_get_location"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/get_location"
+                    android:textSize="12sp"
+                    app:icon="@android:drawable/ic_menu_mylocation"
+                    app:iconSize="16dp" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
+        <!-- Bouton de création -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_register"
+            android:id="@+id/btn_create_user"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:paddingVertical="12dp"
-            android:text="@string/register"
+            android:text="@string/create_user"
             android:textSize="16sp"
+            app:icon="@android:drawable/ic_menu_add"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ll_form" />
 
-        <TextView
-            android:id="@+id/tv_login"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="@string/already_account_login"
-            android:textColor="@color/primary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_register" />
-
+        <!-- Indicateur de progression -->
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"

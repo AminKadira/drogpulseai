@@ -132,19 +132,28 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         // Swipe-to-refresh
         swipeRefreshLayout.setOnRefreshListener(this::loadProducts);
 
-        // Bouton d'ajout de produit
-        fabAddProduct.setOnClickListener(v -> {
-            try {
-                Intent intent = new Intent(ProductListActivity.this, ProductFormActivity.class);
-                intent.putExtra("mode", "create");
-                startActivity(intent);
-            } catch (Exception e) {
-                // Afficher l'erreur pour diagnostic
-                Log.e(TAG, "Erreur lors du lancement de ProductFormActivity: " + e.getMessage(), e);
-                Toast.makeText(ProductListActivity.this,
-                        "Erreur: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        if (currentUser.canManageThisOption()) {
+            // Bouton d'ajout de produit
+            fabAddProduct.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(ProductListActivity.this, ProductFormActivity.class);
+                    intent.putExtra("mode", "create");
+                    startActivity(intent);
+                } catch (Exception e) {
+                    // Afficher l'erreur pour diagnostic
+                    Log.e(TAG, "Erreur lors du lancement de ProductFormActivity: " + e.getMessage(), e);
+                    Toast.makeText(ProductListActivity.this,
+                            "Erreur: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }else {
+            // Désactiver la carte pour les utilisateurs sans permission
+            fabAddProduct.setAlpha(0.5f);
+            fabAddProduct.setEnabled(false);
+            fabAddProduct.setOnClickListener(v -> {
+                Toast.makeText(this, "Accès non autorisé pour votre type de compte", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     /**
@@ -227,13 +236,11 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
         intent.putExtra("product_id", product.getId());
         startActivity(intent);
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.product_menu, menu);
         return true;
     }
-
     @Override
     public void onViewSuppliersClick(Product product) {
         Intent intent = new Intent(ProductListActivity.this, ProductSuppliersActivity.class);
@@ -256,7 +263,6 @@ public class ProductListActivity extends AppCompatActivity implements ProductAda
 
         return super.onOptionsItemSelected(item);
     }
-
     @Override
     protected void onResume() {
         super.onResume();

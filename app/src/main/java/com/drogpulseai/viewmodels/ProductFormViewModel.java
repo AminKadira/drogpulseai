@@ -126,6 +126,9 @@ public class ProductFormViewModel extends AndroidViewModel {
         return currentUser.getId();
     }
 
+    public User getCurrentUser(){
+            return  currentUser;
+    }
     /**
      * Load product details from repository
      */

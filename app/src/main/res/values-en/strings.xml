@@ -237,4 +237,29 @@
         <item>@string/expense_type_supplies</item>
         <item>@string/expense_type_other</item>
     </string-array>
+
+
+    <!-- Menu and admin actions -->
+    <string name="add_user">Add User</string>
+    <string name="create_user">Create User</string>
+    <string name="admin_add_user_info">As an administrator, you can create new user accounts</string>
+    <string name="location_optional">Location (optional)</string>
+    <string name="get_location">Get location</string>
+
+    <!-- Admin interface messages -->
+    <string name="admin_user_created_success">User created successfully ✅</string>
+    <string name="admin_access_denied">Access denied: administrator rights required</string>
+    <string name="admin_creating_user">Creating user...</string>
+
+    <!-- Admin-specific validation -->
+    <string name="admin_all_fields_required">All fields are required</string>
+    <string name="admin_password_requirements">Password must contain at least 6 characters</string>
+    <string name="admin_location_obtained">Location obtained successfully</string>
+
+    <!-- Access info by role -->
+    <string name="access_info_admin">⚠️ Full access to all features</string>
+    <string name="access_info_manager">📊 Access to reports and team management</string>
+    <string name="access_info_commercial">🛍️ Product and sales management</string>
+    <string name="access_info_vendeur">💼 Access to sales and customers</string>
+    <string name="access_info_invite">👁️ Limited consultation access</string>
 </resources>

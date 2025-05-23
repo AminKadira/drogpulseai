@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">DrogPulseAI</string>
     <string name="app_subtitle">Le rythme intelligent de votre quincaillerie</string>
 
@@ -246,4 +246,67 @@
         <item>@string/expense_type_other</item>
     </string-array>
 
-</resources>
+
+    <!-- Types d'utilisateurs -->
+    <string name="user_type" translatable="false">Type d\'utilisateur</string>
+    <string name="user_type_admin" translatable="false">Administrateur</string>
+    <string name="user_type_commercial" translatable="false">Commercial</string>
+    <string name="user_type_vendeur" translatable="false">Vendeur</string>
+    <string name="user_type_invite" translatable="false">Invité</string>
+    <string name="user_type_manager" translatable="false">Manager</string>
+
+    <!-- Tableau pour le Spinner des types d'utilisateurs -->
+    <string-array name="user_types">
+        <item>@string/user_type_commercial</item>
+        <item>@string/user_type_admin</item>
+        <item>@string/user_type_manager</item>
+        <item>@string/user_type_vendeur</item>
+        <item>@string/user_type_invite</item>
+    </string-array>
+
+    <!-- Tableau pour les valeurs internes (ne pas traduire) -->
+    <string-array name="user_types_values" translatable="false">
+        <item>Commercial</item>
+        <item>Admin</item>
+        <item>Manager</item>
+        <item>Vendeur</item>
+        <item>Invité</item>
+    </string-array>
+
+
+    <!-- Menu et actions admin -->
+    <string name="add_user">Ajouter un utilisateur</string>
+    <string name="create_user">Créer l\'utilisateur</string>
+    <string name="admin_add_user_info">En tant qu\'administrateur, vous pouvez créer de nouveaux comptes utilisateurs</string>
+    <string name="location_optional">Localisation (optionnelle)</string>
+    <string name="get_location">Obtenir position</string>
+
+    <!-- Messages de l'interface admin -->
+    <string name="admin_user_created_success">Utilisateur créé avec succès ✅</string>
+    <string name="admin_access_denied">Accès refusé : droits administrateur requis</string>
+    <string name="admin_creating_user">Création de l\'utilisateur en cours...</string>
+
+    <!-- Validation spécifique admin -->
+    <string name="admin_all_fields_required">Tous les champs sont obligatoires</string>
+    <string name="admin_password_requirements">Le mot de passe doit contenir au moins 6 caractères</string>
+    <string name="admin_location_obtained">Localisation obtenue avec succès</string>
+
+    <!-- Types d'accès selon le rôle (pour information) -->
+    <string name="access_info_admin">⚠️ Accès complet à toutes les fonctionnalités</string>
+    <string name="access_info_manager">📊 Accès aux rapports et gestion d\'équipe</string>
+    <string name="access_info_commercial">🛍️ Gestion des produits et des ventes</string>
+    <string name="access_info_vendeur">💼 Accès aux ventes et aux clients</string>
+    <string name="access_info_invite">👁️ Accès limité en consultation</string>
+
+    <!-- Confirmations admin -->
+    <string name="admin_reset_form_confirm" translatable="false">Voulez-vous réinitialiser le formulaire ?</string>
+    <string name="admin_form_reset" translatable="false">Formulaire réinitialisé</string>
+
+    <!-- Erreurs spécifiques admin -->
+    <string name="admin_error_network" translatable="false">Erreur réseau lors de la création</string>
+    <string name="admin_error_server" translatable="false">Erreur serveur lors de la création</string>
+    <string name="admin_error_validation" translatable="false">Erreur de validation des données</string>
+
+    <!-- Instructions pour l'admin -->
+    <string name="admin_instruction_title" translatable="false">Instructions</string>
+    <string name="admin_instruction_text" translatable="false">Remplissez tous les champs requis. La localisation est optionnelle mais recommandée pour les utilisateurs mobiles.</string></resources>
